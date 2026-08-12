@@ -18,6 +18,7 @@ import {
   Plus,
   Trash,
   Scales,
+  Coins,
 } from "@phosphor-icons/react";
 
 import { ApplicationSuccessModal } from "../application/ApplicationSuccessModal";
@@ -34,6 +35,16 @@ interface ContributorEntry {
   amount: number | "";
 }
 
+// Color palette for friend progress bar segments
+const BAR_COLORS = [
+  "bg-blue-600",
+  "bg-emerald-500",
+  "bg-amber-500",
+  "bg-indigo-600",
+  "bg-rose-500",
+  "bg-violet-600",
+];
+
 export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const { members, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
@@ -45,7 +56,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const minInvest = ipo.metrics?.minInvestment || 14964;
   const targetRequiredCapital = minInvest * effectiveIpos;
 
-  // Dynamic Contributors State (Clean input text for names and custom rupee amounts)
+  // Dynamic Contributors State
   const [contributors, setContributors] = useState<ContributorEntry[]>([
     { memberId: members[0]?.id || "mem_1", memberName: "Ankit", amount: Math.floor(targetRequiredCapital / 2) },
     { memberId: members[1]?.id || "mem_2", memberName: "Ashay", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
@@ -100,7 +111,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     const remainingNeeded = Math.max(0, targetRequiredCapital - totalPooledCapital);
     const nextIdx = contributors.length + 1;
     const defaultFriendName = members[contributors.length]?.name || `Friend #${nextIdx}`;
-    
+
     setContributors((prev) => [
       ...prev,
       {
@@ -190,12 +201,12 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-fade-in font-sans">
-      <div className="w-full max-w-[540px] bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-md p-4 animate-fade-in font-sans">
+      <div className="w-full max-w-[560px] bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
         {/* Modal Header */}
         <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-slate-50">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shadow-xs shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shadow-2xs shrink-0">
               {ipo.logo}
             </div>
             <div>
@@ -237,17 +248,17 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
         ) : (
           <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
             {/* VIP Premium Boost Banner */}
-            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-amber-500/30 text-white flex items-center justify-between shadow-md">
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border border-amber-500/30 text-white flex items-center justify-between shadow-xl">
               <div className="flex items-center gap-3">
                 <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
                   <Crown size={20} weight="fill" />
                 </div>
                 <div>
                   <span className="font-bold text-amber-300 block text-xs flex items-center gap-1">
-                    <Sparkle size={13} weight="fill" className="text-amber-400" /> Nexo Pro VIP Allotment Boost
+                    <Sparkle size={13} weight="fill" className="text-amber-400 animate-pulse" /> Nexo Pro VIP Allotment Boost
                   </span>
                   <span className="text-[11px] text-slate-300 font-medium">
-                    {isPremiumUser ? "4.8x Allotment Boost Unlocked" : "Boost allotment probability from 18% → 88%"}
+                    {isPremiumUser ? "4.8x Allotment Multiplier Active" : "Boost allotment probability from 18% → 88%"}
                   </span>
                 </div>
               </div>
@@ -259,19 +270,19 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                     onClose();
                     openPremiumModal(ipo);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-[11px] hover:from-amber-300 hover:to-amber-400 transition-all shadow-xs cursor-pointer whitespace-nowrap flex items-center gap-1"
+                  className="px-3.5 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-[11px] hover:from-amber-300 hover:to-amber-400 transition-all shadow-md cursor-pointer whitespace-nowrap flex items-center gap-1 active:scale-95"
                 >
                   Upgrade <CaretRight size={12} weight="bold" />
                 </button>
               )}
             </div>
 
-            {/* APPLICATION TYPE SWITCHER (SOLO vs MULTI-FRIEND SPLIT) */}
+            {/* CAPITAL FUNDING STRUCTURE SWITCHER */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-800">
+              <label className="block text-xs font-bold text-slate-800">
                 Capital Funding Structure
               </label>
-              <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
+              <div className="grid grid-cols-2 gap-2 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80">
                 <button
                   type="button"
                   onClick={() => setApplicantMode("SOLO")}
@@ -302,7 +313,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
 
             {/* 1. Primary Applicant Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <User size={15} className="text-blue-600" /> Primary Applicant Name <span className="text-rose-500">*</span>
               </label>
               <input
@@ -311,22 +322,22 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                 placeholder="e.g. Ankit"
                 value={applicantName}
                 onChange={(e) => setApplicantName(e.target.value)}
-                className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
               />
             </div>
 
-            {/* FRIEND NAME | AMOUNT TABLE WITH CLEAN INPUTS */}
+            {/* FRIEND NAME | AMOUNT TABLE WITH VISUAL PROGRESS BAR & SUM MATCHING */}
             {applicantMode === "JOINT" && (
-              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3 animate-fade-in">
+              <div className="p-4 rounded-2xl bg-gradient-to-b from-blue-50/70 to-slate-50/70 border border-blue-200/80 space-y-3.5 animate-fade-in shadow-2xs">
                 {/* Header Actions */}
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-800">
-                    Capital Split
+                  <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
+                    <Coins size={16} className="text-blue-600" /> Capital Allocation Pool
                   </span>
                   <button
                     type="button"
                     onClick={handleEqualSplit}
-                    className="text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
+                    className="text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
                   >
                     <Scales size={13} /> Split Equally
                   </button>
@@ -344,11 +355,11 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                   {contributors.map((c, idx) => (
                     <div
                       key={idx}
-                      className="grid grid-cols-12 gap-2 items-center p-2 bg-white border border-slate-200 rounded-xl shadow-2xs"
+                      className="grid grid-cols-12 gap-2 items-center p-2 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition-all"
                     >
-                      {/* Clean Friend Name Text Input */}
+                      {/* Clean Friend Name Input */}
                       <div className="col-span-6 flex items-center gap-1.5">
-                        <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        <span className={`w-5 h-5 rounded-full ${BAR_COLORS[idx % BAR_COLORS.length]} text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-2xs`}>
                           #{idx + 1}
                         </span>
                         <input
@@ -357,7 +368,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           placeholder={`Friend #${idx + 1} Name`}
                           value={c.memberName}
                           onChange={(e) => handleContributorNameChange(idx, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
+                          className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
                         />
                       </div>
 
@@ -370,7 +381,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           placeholder="0"
                           value={c.amount}
                           onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
+                          className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
                         />
                       </div>
 
@@ -380,7 +391,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           <button
                             type="button"
                             onClick={() => handleRemoveContributor(idx)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
                             title="Remove Friend"
                           >
                             <Trash size={15} />
@@ -391,12 +402,33 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                   ))}
                 </div>
 
+                {/* VISUAL MULTI-COLOR CAPITAL SHARE PROGRESS BAR */}
+                {totalPooledCapital > 0 && (
+                  <div className="space-y-1 pt-1">
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex border border-slate-200/60 shadow-inner">
+                      {contributors.map((c, idx) => {
+                        const amt = typeof c.amount === "number" ? c.amount : 0;
+                        const pct = Math.min(100, Math.max(0, (amt / totalPooledCapital) * 100));
+                        if (pct === 0) return null;
+                        return (
+                          <div
+                            key={idx}
+                            style={{ width: `${pct}%` }}
+                            className={`${BAR_COLORS[idx % BAR_COLORS.length]} transition-all duration-300 h-full`}
+                            title={`${c.memberName}: ${formatINR(amt)} (${pct.toFixed(1)}%)`}
+                          />
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 {/* Footer: Add Friend Button + Target Sum Validation */}
                 <div className="flex items-center justify-between pt-2 border-t border-blue-200/60">
                   <button
                     type="button"
                     onClick={handleAddContributor}
-                    className="px-3.5 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                    className="px-3.5 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                   >
                     <Plus size={14} weight="bold" /> Add Friend
                   </button>
@@ -434,7 +466,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
             {/* 2. Number of PAN Cards */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
                 </label>
                 <span className="text-[11px] text-slate-500 font-mono">
@@ -461,15 +493,15 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                     setNumberOfIpos(1);
                   }
                 }}
-                className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+                className="w-full bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
                 placeholder="Enter number of PAN cards (e.g. 5)"
               />
             </div>
 
-            {/* 3. Dynamic PAN Inputs with status indicators */}
+            {/* 3. Dynamic PAN Cards Section */}
             <div className="space-y-2.5">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <IdentificationCard size={15} className="text-blue-600" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
                 </label>
                 <span className="text-[11px] text-slate-400 font-medium">
@@ -499,7 +531,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
                         />
                         {valid && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600">
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-fade-in">
                             <CheckCircle size={16} weight="fill" />
                           </div>
                         )}
@@ -522,7 +554,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-75 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 hover:from-slate-800 hover:to-blue-800 disabled:opacity-75 text-white font-bold text-xs shadow-lg shadow-blue-950/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
                 {isSubmitting ? (
                   <>
