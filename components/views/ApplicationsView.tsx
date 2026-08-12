@@ -477,30 +477,29 @@ export function ApplicationsView() {
                         {formattedSeq}
                       </div>
 
-                      {/* Applicant Name & Lot Count */}
+                      {/* Contributors List as name1, name2 */}
                       <div className="col-span-3">
-                        <div className="text-sm font-bold text-slate-900 flex items-center gap-2">
-                          {applicantName}
-                          <span className="px-1.5 py-0.5 text-[10px] font-semibold text-slate-600 bg-slate-100 rounded">
-                            {lotCount} {lotCount === 1 ? "Lot" : "Lots"}
-                          </span>
+                        <div className="text-sm font-bold text-slate-900 tracking-tight">
+                          {app.participants && app.participants.length > 0
+                            ? app.participants.map((p) => p.memberName).join(", ")
+                            : applicantName}
                         </div>
                       </div>
 
                       {/* PAN Card Column */}
-                      <div className="col-span-2">
+                      <div className="col-span-2 self-center">
                         <div className="text-xs font-semibold text-slate-700 font-mono">
                           {app.panMasked || "ABCDE2741D"}
                         </div>
                       </div>
 
                       {/* Amount */}
-                      <div className="col-span-2 text-right font-mono text-sm font-bold text-slate-900 num-tabular">
+                      <div className="col-span-2 text-right self-center font-mono text-sm font-bold text-slate-900 num-tabular">
                         {formatINR(app.totalContribution)}
                       </div>
 
                       {/* Status */}
-                      <div className="col-span-2 text-center">
+                      <div className="col-span-2 text-center self-center">
                         {renderStatusControl(currentStatus)}
                       </div>
 

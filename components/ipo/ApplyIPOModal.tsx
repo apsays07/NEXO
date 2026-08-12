@@ -202,7 +202,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                 </span>
               </div>
               <p className="text-xs text-slate-500 font-medium">
-                Official Syndicate IPO Application Form
+                Official IPO Application Form
               </p>
             </div>
           </div>
@@ -315,7 +315,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                 {/* Section Header */}
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                    <Coins size={16} className="text-blue-600" /> Syndicate Multi-Friend Capital Pool
+                    <Coins size={16} className="text-blue-600" /> Multi-Friend Capital Pool
                   </span>
                   <button
                     type="button"
