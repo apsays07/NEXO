@@ -12,22 +12,22 @@ interface PortfolioOverviewProps {
 
 export function PortfolioOverview({ summary }: PortfolioOverviewProps) {
   return (
-    <Card className="p-5 md:p-6 bg-white border-[#E4E7EC] shadow-none rounded-xl">
+    <Card className="p-4 sm:p-6 bg-white border-[#E2E8F0] shadow-none rounded-2xl space-y-4 sm:space-y-5 font-sans">
       {/* ROW 1: TOTAL CAPITAL & OVERALL RETURN */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-[#E2E8F0]">
         <div>
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-1">
+          <span className="text-[11px] font-bold text-[#5F6673] uppercase tracking-wider block mb-1">
             TOTAL CAPITAL
           </span>
-          <div className="text-3xl sm:text-4xl font-extrabold text-[#111827] num-tabular tracking-tight">
+          <div className="text-2xl sm:text-4xl font-extrabold text-[#111318] num-tabular tracking-tight">
             {formatINR(summary.totalCapital)}
           </div>
         </div>
 
-        <div className="flex items-center gap-2.5 bg-[#ECFDF3] border border-[#A6F4C5] px-3.5 py-2 rounded-lg self-start sm:self-auto">
+        <div className="flex items-center gap-2 bg-[#ECFDF3] border border-[#A6F4C5] px-3 py-1.5 rounded-xl self-start sm:self-auto">
           <TrendUp size={16} className="text-[#12B76A]" />
           <div className="text-xs">
-            <span className="text-[#027A48] font-medium block text-[11px]">
+            <span className="text-[#027A48] font-bold block text-[10px] uppercase">
               Overall Return
             </span>
             <span className="font-extrabold text-[#12B76A] num-tabular">
@@ -37,76 +37,70 @@ export function PortfolioOverview({ summary }: PortfolioOverviewProps) {
         </div>
       </div>
 
-      {/* HAIRLINE DIVIDER 1 */}
-      <div className="h-px bg-[#E4E7EC] w-full" />
-
-      {/* ROW 2: DEPLOYED, BLOCKED, AVAILABLE */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 py-5">
-        <div className="sm:border-r sm:border-[#E4E7EC] sm:pr-4">
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
-            Deployed
+      {/* METRICS 2-COLUMN GRID ON MOBILE / 3-COLUMN ON DESKTOP */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 sm:gap-5">
+        <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80">
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#5F6673] uppercase tracking-wider block mb-0.5">
+            Capital Deployed
           </span>
-          <div className="text-xl font-extrabold text-[#111827] num-tabular">
+          <div className="text-sm sm:text-lg font-extrabold text-[#111318] num-tabular">
             {formatINR(summary.capitalDeployed)}
           </div>
-          <span className="text-[11px] text-[#667085] font-medium block mt-0.5">
-            Active holdings (40%)
+          <span className="text-[10px] text-[#5F6673] font-medium block mt-0.5">
+            Active holdings
           </span>
         </div>
 
-        <div className="sm:border-r sm:border-[#E4E4EC] sm:pr-4">
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
+        <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200/80">
+          <span className="text-[10px] sm:text-[11px] font-bold text-amber-700 uppercase tracking-wider block mb-0.5">
             Blocked
           </span>
-          <div className="text-xl font-extrabold text-[#D98A16] num-tabular">
+          <div className="text-sm sm:text-lg font-extrabold text-amber-700 num-tabular">
             {formatINR(summary.currentlyBlocked)}
           </div>
-          <span className="text-[11px] text-[#D98A16] font-medium block mt-0.5">
-            Pending allotment (25%)
+          <span className="text-[10px] text-amber-600 font-medium block mt-0.5">
+            Pending allotment
           </span>
         </div>
 
-        <div>
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
-            Available
+        <div className="p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80 col-span-2 sm:col-span-1">
+          <span className="text-[10px] sm:text-[11px] font-bold text-emerald-700 uppercase tracking-wider block mb-0.5">
+            Available Capital
           </span>
-          <div className="text-xl font-extrabold text-[#12B76A] num-tabular">
+          <div className="text-sm sm:text-lg font-extrabold text-emerald-700 num-tabular">
             {formatINR(summary.availableCapital)}
           </div>
-          <span className="text-[11px] text-[#12B76A] font-medium block mt-0.5">
-            Ready to allocate (35%)
+          <span className="text-[10px] text-emerald-600 font-medium block mt-0.5">
+            Ready to allocate
           </span>
         </div>
       </div>
 
-      {/* HAIRLINE DIVIDER 2 */}
-      <div className="h-px bg-[#E4E7EC] w-full" />
-
-      {/* ROW 3: REALIZED, UNREALIZED, TOTAL RETURN */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-5">
+      {/* RETURN SUMMARY ROW */}
+      <div className="grid grid-cols-3 gap-2 sm:gap-4 pt-3 border-t border-[#E2E8F0] text-center sm:text-left">
         <div>
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#5F6673] uppercase tracking-wider block mb-0.5">
             Realized
           </span>
-          <div className="text-base font-extrabold text-[#12B76A] num-tabular">
+          <div className="text-xs sm:text-sm font-bold text-[#12B76A] num-tabular">
             {formatINR(summary.realizedPnL, true)}
           </div>
         </div>
 
         <div>
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#5F6673] uppercase tracking-wider block mb-0.5">
             Unrealized
           </span>
-          <div className="text-base font-extrabold text-[#12B76A] num-tabular">
+          <div className="text-xs sm:text-sm font-bold text-[#12B76A] num-tabular">
             {formatINR(summary.unrealizedPnL, true)}
           </div>
         </div>
 
         <div>
-          <span className="text-[11px] font-semibold text-[#667085] uppercase tracking-wider block mb-0.5">
+          <span className="text-[10px] sm:text-[11px] font-bold text-[#5F6673] uppercase tracking-wider block mb-0.5">
             Total Return
           </span>
-          <div className="text-base font-extrabold text-[#12B76A] num-tabular">
+          <div className="text-xs sm:text-sm font-bold text-[#12B76A] num-tabular">
             {formatINR(summary.totalReturn, true)}
           </div>
         </div>

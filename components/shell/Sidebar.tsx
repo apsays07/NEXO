@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import {
   SquaresFour,
@@ -8,10 +8,15 @@ import {
   Files,
   ChartPie,
   Users,
+  DotsThree,
+  Lightning,
+  Gear,
 } from "@phosphor-icons/react";
+import { MoreDrawer } from "./MoreDrawer";
 
 export function Sidebar() {
   const { activeTab, setActiveTab, members, ipos } = useNexo();
+  const [isMoreOpen, setIsMoreOpen] = useState(false);
 
   const workspaceNav = [
     { id: "dashboard", label: "Home", icon: SquaresFour },
@@ -29,10 +34,10 @@ export function Sidebar() {
     { id: "ipos", label: "IPOs", icon: TrendUp, badge: ipos.length },
     { id: "applications", label: "Apps", icon: Files },
     { id: "portfolio", label: "Portfolio", icon: ChartPie },
-    { id: "members", label: "Members", icon: Users },
+    { id: "more", label: "More", icon: DotsThree },
   ];
 
-  const adminMember = members[0]; // Primary Admin
+  const adminMember = members[0];
 
   return (
     <>
@@ -174,33 +179,92 @@ export function Sidebar() {
         </div>
       </aside>
 
-      {/* MOBILE BOTTOM NAVIGATION BAR (Visible on mobile/tablet screens < 1024px) */}
-      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-2 flex items-center justify-around shadow-lg font-sans">
+      {/* TABLET COLLAPSED SIDEBAR (Visible on md screens 768px - 1023px) */}
+      <aside className="hidden md:flex lg:hidden w-16 bg-[#FCFCFD] border-r border-[#E2E8F0] flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans py-3 items-center">
+        <div className="space-y-6 flex flex-col items-center">
+          {/* Logo */}
+          <div className="w-8 h-8 rounded-xl bg-[#2563EB] flex items-center justify-center text-white font-bold text-sm shadow-2xs">
+            N
+          </div>
+
+          {/* Icons Nav */}
+          <div className="space-y-3">
+            {workspaceNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  title={item.label}
+                  className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                    isActive ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-500 hover:bg-slate-100"
+                  }`}
+                >
+                  <Icon size={20} />
+                </button>
+              );
+            })}
+            <button
+              onClick={() => setActiveTab("members" as any)}
+              title="Members"
+              className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all ${
+                activeTab === "members" ? "bg-blue-50 text-blue-600 font-bold" : "text-slate-500 hover:bg-slate-100"
+              }`}
+            >
+              <Users size={20} />
+            </button>
+          </div>
+        </div>
+
+        {/* User Profile Avatar */}
+        <img
+          src={adminMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+          alt={adminMember?.name || "User"}
+          className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-100"
+          title={adminMember?.name || "Ankit"}
+        />
+      </aside>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (Visible on screens < 768px) */}
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1 px-2 flex items-center justify-around shadow-lg pb-safe font-sans">
         {mobileNav.map((item) => {
           const Icon = item.icon;
-          const isActive = activeTab === item.id;
+          const isMore = item.id === "more";
+          const isActive = isMore
+            ? isMoreOpen || ["members", "activity", "settings"].includes(activeTab)
+            : activeTab === item.id;
 
           return (
             <button
               key={item.id}
-              onClick={() => setActiveTab(item.id as any)}
-              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+              onClick={() => {
+                if (isMore) {
+                  setIsMoreOpen(true);
+                } else {
+                  setActiveTab(item.id as any);
+                }
+              }}
+              className={`flex flex-col items-center justify-center py-1 px-3.5 rounded-xl transition-all cursor-pointer touch-target ${
                 isActive ? "text-blue-600 font-bold" : "text-slate-500 font-medium"
               }`}
             >
               <div className="relative">
-                <Icon size={20} className={isActive ? "text-blue-600" : "text-slate-500"} />
+                <Icon size={22} className={isActive ? "text-blue-600" : "text-slate-500"} />
                 {item.badge !== undefined && item.badge > 0 && (
                   <span className="absolute -top-1 -right-2 bg-blue-600 text-white text-[9px] font-bold px-1 py-0.2 rounded-full min-w-[14px] text-center leading-none">
                     {item.badge}
                   </span>
                 )}
               </div>
-              <span className="text-[10px] tracking-tight mt-0.5">{item.label}</span>
+              <span className="text-[11px] tracking-tight mt-0.5">{item.label}</span>
             </button>
           );
         })}
-      </div>
+      </nav>
+
+      {/* More Drawer Sheet */}
+      <MoreDrawer isOpen={isMoreOpen} onClose={() => setIsMoreOpen(false)} />
     </>
   );
 }

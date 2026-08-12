@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { MagnifyingGlass, TrendUp } from "@phosphor-icons/react";
+import { MagnifyingGlass, TrendUp, X } from "@phosphor-icons/react";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -42,30 +42,40 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-slate-900/30 backdrop-blur-xs p-4 animate-fade-in font-sans">
-      <div className="w-full max-w-[560px] bg-white border border-[#E2E8F0] rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center pt-0 sm:pt-20 bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans">
+      {/* Backdrop click to close */}
+      <div className="absolute inset-0" onClick={onClose} />
+
+      {/* Container Card */}
+      <div className="relative z-10 w-full sm:max-w-[560px] max-h-[85vh] sm:max-h-[500px] bg-white border-t sm:border border-[#E2E8F0] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Search input header */}
-        <div className="p-3.5 border-b border-[#E2E8F0] flex items-center gap-3">
-          <MagnifyingGlass size={18} className="text-[#5F6673]" />
+        <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex items-center gap-3 bg-slate-50/50">
+          <MagnifyingGlass size={20} className="text-[#5F6673] shrink-0" />
           <input
             type="text"
             autoFocus
             placeholder="Search IPOs, members, PAN, applications..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-[15px] font-medium tracking-tight text-[#111318] placeholder-[#7B8491] focus:outline-none"
+            className="flex-1 bg-transparent text-sm sm:text-base font-semibold tracking-tight text-[#111318] placeholder-[#7B8491] focus:outline-none"
           />
-          <kbd className="px-1.5 py-0.5 text-[12px] font-mono font-medium rounded bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]">
+          <button
+            onClick={onClose}
+            className="sm:hidden p-1.5 text-slate-400 hover:text-slate-700"
+          >
+            <X size={20} />
+          </button>
+          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-mono font-bold rounded bg-white text-[#5F6673] border border-[#E2E8F0]">
             ESC
           </kbd>
         </div>
 
         {/* Results List */}
-        <div className="p-2 max-h-[360px] overflow-y-auto space-y-3 text-xs">
+        <div className="p-3 max-h-[380px] overflow-y-auto space-y-3 text-xs">
           {/* Quick Nav Section */}
           {!query && (
             <div className="space-y-1">
-              <div className="px-3 py-1 text-[12px] font-medium text-[#7B8491] uppercase tracking-wider">
+              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
                 Quick Navigation
               </div>
               <button
@@ -73,39 +83,39 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                   setActiveTab("dashboard");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-semibold text-[15px] transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
               >
                 <span>Go to Dashboard</span>
-                <kbd className="text-[12px] font-mono font-medium text-[#5F6673]">⌘1</kbd>
+                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘1</kbd>
               </button>
               <button
                 onClick={() => {
                   setActiveTab("ipos");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-semibold text-[15px] transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
               >
                 <span>Open IPO Workspace</span>
-                <kbd className="text-[12px] font-mono font-medium text-[#5F6673]">⌘2</kbd>
+                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘2</kbd>
               </button>
               <button
                 onClick={() => {
                   setActiveTab("portfolio");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-semibold text-[15px] transition-colors cursor-pointer"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
               >
                 <span>Open Portfolio</span>
-                <kbd className="text-[12px] font-mono font-medium text-[#5F6673]">⌘3</kbd>
+                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘3</kbd>
               </button>
             </div>
           )}
 
-          {/* IPO Opportunities */}
+          {/* IPO Matches */}
           {filteredIpos.length > 0 && (
             <div className="space-y-1">
-              <div className="px-3 py-1 text-[12px] font-medium text-[#7B8491] uppercase tracking-wider">
-                IPO Opportunities
+              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
+                IPOs ({filteredIpos.length})
               </div>
               {filteredIpos.map((ipo) => (
                 <button
@@ -114,16 +124,22 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     openIpoDetail(ipo);
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] text-left transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] transition-colors cursor-pointer text-left touch-target"
                 >
-                  <div className="flex items-center gap-2.5">
-                    <TrendUp size={16} className="text-[#2563EB]" />
-                    <div>
-                      <div className="text-[15px] font-semibold text-[#111318]">{ipo.name}</div>
-                      <div className="text-[13px] font-normal text-[#5F6673]">{ipo.company}</div>
+                  <div className="flex items-center gap-2.5 min-w-0">
+                    <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0">
+                      {ipo.logo}
+                    </div>
+                    <div className="min-w-0">
+                      <div className="font-bold text-slate-900 text-xs truncate">
+                        {ipo.name}
+                      </div>
+                      <div className="text-[10px] text-slate-500 truncate">
+                        {ipo.company}
+                      </div>
                     </div>
                   </div>
-                  <span className="text-[12px] font-medium text-[#12B76A] bg-[#ECFDF3] px-2 py-0.5 rounded border border-[#A6F4C5]">
+                  <span className="text-[11px] font-mono font-bold text-blue-600 shrink-0">
                     {ipo.status}
                   </span>
                 </button>
@@ -131,40 +147,43 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             </div>
           )}
 
-          {/* Group Members */}
+          {/* Member Matches */}
           {filteredMembers.length > 0 && (
-            <div className="space-y-1">
-              <div className="px-3 py-1 text-[12px] font-medium text-[#7B8491] uppercase tracking-wider">
-                Syndicate Members
+            <div className="space-y-1 pt-1">
+              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
+                Members ({filteredMembers.length})
               </div>
-              {filteredMembers.map((m) => (
+              {filteredMembers.map((member) => (
                 <button
-                  key={m.id}
+                  key={member.id}
                   onClick={() => {
                     setActiveTab("members");
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] text-left transition-colors cursor-pointer"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] transition-colors cursor-pointer text-left touch-target"
                 >
                   <div className="flex items-center gap-2.5">
                     <img
-                      src={m.avatar}
-                      alt={m.name}
-                      className="w-5 h-5 rounded-full object-cover"
+                      src={member.avatar}
+                      alt={member.name}
+                      className="w-6 h-6 rounded-full object-cover shrink-0"
                     />
-                    <span className="text-[15px] font-semibold text-[#111318]">{m.name}</span>
+                    <div>
+                      <div className="font-bold text-slate-900 text-xs">
+                        {member.name}
+                      </div>
+                      <div className="text-[10px] text-slate-500 font-mono">
+                        {member.panMasked}
+                      </div>
+                    </div>
                   </div>
-                  <span className="text-[13px] font-mono text-[#5F6673]">{m.panMasked}</span>
+                  <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                    {member.role}
+                  </span>
                 </button>
               ))}
             </div>
           )}
-        </div>
-
-        {/* Footer info */}
-        <div className="p-2.5 border-t border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-between text-[13px] text-[#5F6673]">
-          <span>Type to search IPOs, PAN, members...</span>
-          <span className="font-mono text-[12px] font-medium">NEXO Command ⌘K</span>
         </div>
       </div>
     </div>
