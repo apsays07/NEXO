@@ -65,7 +65,7 @@ export function IPODetailDrawer() {
               </div>
 
               <p className="text-xs text-[#027A48] font-medium leading-relaxed italic">
-                "{selectedIpo.thesis}"
+                &ldquo;{selectedIpo.thesis}&rdquo;
               </p>
 
               <div className="text-[12px] text-[#059669] pt-1.5 border-t border-[#A6F4C5]/60 font-medium">

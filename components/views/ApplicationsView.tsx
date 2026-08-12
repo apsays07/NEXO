@@ -55,7 +55,9 @@ export function ApplicationsView() {
   useEffect(() => {
     const target = activeApplicationIpo || selectedIpo;
     if (target) {
-      setIpoFilter(target.id);
+      setTimeout(() => {
+        setIpoFilter(target.id);
+      }, 0);
     }
   }, [selectedIpo, activeApplicationIpo]);
 
@@ -194,7 +196,7 @@ export function ApplicationsView() {
               }`}
             >
               <Users size={14} weight="bold" />
-              <span>All Friends' Applications</span>
+              <span>All Friends&apos; Applications</span>
             </button>
 
             <button
@@ -325,7 +327,7 @@ export function ApplicationsView() {
                 Configure Registrar URL ({activeIpo?.name})
               </h3>
               <p className="text-xs text-slate-500 mt-1">
-                Enter the official IPO allotment status URL for this company's registrar.
+                Enter the official IPO allotment status URL for this company&apos;s registrar.
               </p>
             </div>
 
