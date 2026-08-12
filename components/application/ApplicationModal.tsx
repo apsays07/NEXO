@@ -270,7 +270,7 @@ export function ApplicationModal() {
                 }`}
               >
                 <User size={15} className={applicantMode === "SOLO" ? "text-blue-600" : ""} />
-                <span>Solo (100% Capital)</span>
+                <span>Solo</span>
               </button>
 
               <button
@@ -283,7 +283,7 @@ export function ApplicationModal() {
                 }`}
               >
                 <UsersThree size={16} />
-                <span>Multi-Friend Split</span>
+                <span>Multi-Friend</span>
               </button>
             </div>
           </div>
