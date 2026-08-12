@@ -35,23 +35,30 @@ export function TopBar() {
 
   return (
     <>
-      <header className="h-14 border-b border-slate-200/80 bg-white/70 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-slate-100/50">
+      <header className="h-14 border-b border-slate-100 bg-white/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-slate-100/30">
         {/* Title & Breadcrumb + Mobile Brand Header */}
         <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-500">
           <div className="flex lg:hidden items-center gap-2 mr-1">
-            <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/20">
+            <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/20">
               N
             </div>
           </div>
-          <span className="text-slate-900 font-extrabold text-sm sm:text-base tracking-tight">{titles[activeTab] || "Dashboard"}</span>
-          <span className="text-slate-300 font-light select-none hidden sm:inline">/</span>
-          <span className="text-slate-400 font-medium tracking-wide bg-slate-100/80 border border-slate-200/60 rounded-md px-2 py-0.5 text-[10px] hidden sm:inline shadow-3xs">
-            Private Group
+          <span className="text-slate-900 font-extrabold text-sm sm:text-base tracking-tight hover:text-blue-600 transition-colors cursor-pointer select-none">
+            {titles[activeTab] || "Dashboard"}
+          </span>
+          <svg className="w-3 h-3 text-slate-300 hidden sm:inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+          </svg>
+          <span className="inline-flex items-center gap-1 bg-slate-50 border border-slate-200/60 rounded-full px-2.5 py-0.8 text-[10px] font-bold text-slate-400 shadow-3xs hidden sm:inline select-none">
+            <svg className="w-2.5 h-2.5 text-slate-400 fill-current" viewBox="0 0 20 20" fill="currentColor">
+              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
+            </svg>
+            Private Vault
           </span>
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Mobile Search Button */}
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
@@ -64,13 +71,13 @@ export function TopBar() {
           {/* Desktop Search Trigger */}
           <button
             onClick={() => setIsCommandPaletteOpen(true)}
-            className="h-9 w-48 md:w-64 hidden sm:flex items-center justify-between bg-slate-50/60 hover:bg-slate-50 border border-slate-200/80 hover:border-slate-300 rounded-xl px-3 text-xs transition-all duration-150 hover:shadow-2xs cursor-pointer"
+            className="h-9 w-48 md:w-64 hidden sm:flex items-center justify-between bg-slate-50/60 hover:bg-white border border-slate-200 hover:border-blue-500/40 rounded-full px-3.5 text-xs transition-all duration-200 hover:shadow-xs cursor-pointer select-none group focus:outline-none"
           >
             <div className="flex items-center gap-2">
-              <MagnifyingGlass size={15} className="text-slate-400 font-bold" />
-              <span className="text-xs font-medium text-slate-400 truncate">Search IPOs, members...</span>
+              <MagnifyingGlass size={14} className="text-slate-400 group-hover:text-blue-500 transition-colors" />
+              <span className="text-xs font-semibold text-slate-400 group-hover:text-slate-500 transition-colors truncate">Search anything...</span>
             </div>
-            <kbd className="px-1.5 py-0.5 text-[9px] font-sans font-bold rounded-md bg-white text-slate-400 border border-slate-200 shadow-3xs">
+            <kbd className="px-1.5 py-0.5 text-[9px] font-sans font-bold rounded-full bg-slate-100 text-slate-400 border border-slate-200 shadow-3xs group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-100 transition-colors">
               ⌘K
             </kbd>
           </button>
