@@ -17,6 +17,8 @@ import {
   CaretRight,
 } from "@phosphor-icons/react";
 
+import { ApplicationSuccessModal } from "../application/ApplicationSuccessModal";
+
 interface ApplyIPOModalProps {
   ipo: IPOOpportunity;
   isOpen: boolean;
@@ -27,7 +29,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const { members, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
   const [applicantName, setApplicantName] = useState("Ashay");
-  const [numberOfIpos, setNumberOfIpos] = useState<number>(1);
+  const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>(["ABCDE2741D"]);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -59,10 +61,6 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     setPanNumbers(updated);
   };
 
-  const handleStepper = (delta: number) => {
-    setNumberOfIpos((prev) => Math.max(1, Math.min(20, (prev || 1) + delta)));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -84,13 +82,27 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     );
 
     setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      onClose();
-    }, 1200);
+  };
+
+  const handleCloseSuccess = () => {
+    setIsSuccess(false);
+    onClose();
   };
 
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+
+  if (isSuccess) {
+    return (
+      <ApplicationSuccessModal
+        isOpen={true}
+        onClose={handleCloseSuccess}
+        ipoName={ipo.name}
+        ipoLogo={ipo.logo}
+        applicantName={applicantName}
+        panCount={panNumbers.length}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-fade-in font-sans">

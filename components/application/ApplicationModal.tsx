@@ -13,6 +13,8 @@ import {
   Minus,
 } from "@phosphor-icons/react";
 
+import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
+
 export function ApplicationModal() {
   const {
     isApplicationModalOpen,
@@ -23,7 +25,7 @@ export function ApplicationModal() {
   } = useNexo();
 
   const [applicantName, setApplicantName] = useState<string>("");
-  const [numberOfIpos, setNumberOfIpos] = useState<number>(1);
+  const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSuccess, setIsSuccess] = useState(false);
 
@@ -62,10 +64,6 @@ export function ApplicationModal() {
     setPanNumbers(updated);
   };
 
-  const handleStepper = (delta: number) => {
-    setNumberOfIpos((prev) => Math.max(1, Math.min(20, (prev || 1) + delta)));
-  };
-
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -87,13 +85,27 @@ export function ApplicationModal() {
     );
 
     setIsSuccess(true);
-    setTimeout(() => {
-      setIsSuccess(false);
-      closeApplicationModal();
-    }, 1200);
+  };
+
+  const handleCloseSuccess = () => {
+    setIsSuccess(false);
+    closeApplicationModal();
   };
 
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+
+  if (isSuccess) {
+    return (
+      <ApplicationSuccessModal
+        isOpen={true}
+        onClose={handleCloseSuccess}
+        ipoName={activeApplicationIpo.name}
+        ipoLogo={activeApplicationIpo.logo}
+        applicantName={applicantName}
+        panCount={panNumbers.length}
+      />
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-fade-in font-sans">
