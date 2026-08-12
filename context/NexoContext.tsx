@@ -30,6 +30,10 @@ interface NexoContextType {
   actionItems: ActionItem[];
   dismissActionItem: (id: string) => void;
   portfolioSummary: PortfolioSummary;
+  individualSavings: number;
+  updateIndividualSavings: (amount: number) => void;
+  userContributions: Record<string, number>;
+  updateUserContribution: (ipoId: string, amount: number) => void;
   selectedIpo: IPOOpportunity | null;
   openIpoDetail: (ipo: IPOOpportunity) => void;
   closeIpoDetail: () => void;
@@ -74,6 +78,19 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
   const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
+  const [individualSavings, setIndividualSavings] = useState<number>(0);
+  const [userContributions, setUserContributions] = useState<Record<string, number>>({});
+
+  const updateIndividualSavings = (amount: number) => {
+    setIndividualSavings(amount);
+  };
+
+  const updateUserContribution = (ipoId: string, amount: number) => {
+    setUserContributions((prev) => ({
+      ...prev,
+      [ipoId]: amount,
+    }));
+  };
 
   const [selectedIpo, setSelectedIpo] = useState<IPOOpportunity | null>(null);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
@@ -277,6 +294,10 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         actionItems,
         dismissActionItem,
         portfolioSummary,
+        individualSavings,
+        updateIndividualSavings,
+        userContributions,
+        updateUserContribution,
         selectedIpo,
         openIpoDetail,
         closeIpoDetail,

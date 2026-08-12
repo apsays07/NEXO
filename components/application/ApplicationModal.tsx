@@ -28,9 +28,13 @@ export function ApplicationModal() {
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
   const [participationType, setParticipationType] = useState<ParticipationType>("COMBO");
 
+  const oneLotValue = activeApplicationIpo
+    ? activeApplicationIpo.metrics.minInvestment ||
+      activeApplicationIpo.metrics.lotSize * activeApplicationIpo.metrics.priceBand.max
+    : 14900;
+
   const [contributions, setContributions] = useState<Record<string, number>>({
-    mem_1: 50000,
-    mem_2: 50000,
+    mem_1: oneLotValue,
   });
 
   const [proofUrl, setProofUrl] = useState<string>("");
@@ -52,8 +56,7 @@ export function ApplicationModal() {
       if (copy[memberId] !== undefined) {
         delete copy[memberId];
       } else {
-        const member = members.find((m) => m.id === memberId);
-        copy[memberId] = member?.defaultContribution || 30000;
+        copy[memberId] = oneLotValue;
       }
       return copy;
     });
@@ -106,7 +109,7 @@ export function ApplicationModal() {
                   type="button"
                   onClick={() => {
                     setParticipationType("SOLO");
-                    setContributions({ mem_1: activeApplicationIpo.metrics.minInvestment });
+                    setContributions({ mem_1: oneLotValue });
                   }}
                   className={`p-5 rounded-2xl border text-left transition-all ${
                     participationType === "SOLO"
@@ -119,7 +122,7 @@ export function ApplicationModal() {
                   </div>
                   <div className="font-bold text-sm text-[#0F172A]">SOLO Application</div>
                   <div className="text-xs text-[#64748B] mt-1 font-medium">
-                    One member applies independently under their own PAN.
+                    1 Lot value: {formatINR(oneLotValue)} under your own PAN.
                   </div>
                 </button>
 
@@ -127,7 +130,7 @@ export function ApplicationModal() {
                   type="button"
                   onClick={() => {
                     setParticipationType("COMBO");
-                    setContributions({ mem_1: 50000, mem_2: 50000 });
+                    setContributions({ mem_1: oneLotValue, mem_2: oneLotValue });
                   }}
                   className={`p-5 rounded-2xl border text-left transition-all ${
                     participationType === "COMBO"
@@ -145,7 +148,7 @@ export function ApplicationModal() {
                     </span>
                   </div>
                   <div className="text-xs text-[#64748B] mt-1 font-medium">
-                    Two or more friends pool capital together. NEXO auto-calculates split percentages.
+                    Pool capital starting at 1 Lot ({formatINR(oneLotValue)}) per member.
                   </div>
                 </button>
               </div>
