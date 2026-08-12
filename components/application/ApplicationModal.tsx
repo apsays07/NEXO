@@ -196,6 +196,14 @@ export function ApplicationModal() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    // Validate PAN card numbers (must be exactly 10 characters matching standard regex format)
+    const anyInvalid = panNumbers.some((pan) => !isValidPan(pan));
+    if (anyInvalid) {
+      alert("Please enter a valid 10-character PAN card number for all entries.");
+      return;
+    }
+
     setIsSubmitting(true);
 
     setTimeout(() => {
