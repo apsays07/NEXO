@@ -2,10 +2,20 @@
 
 import React, { useState, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { Button } from "../ui/Button";
-import { formatINR } from "@/lib/mockData";
 import { IPOOpportunity } from "@/types/nexo";
-import { X, Check, CheckCircle, User, IdentificationCard, ShieldCheck, Crown, Sparkle } from "@phosphor-icons/react";
+import {
+  X,
+  Check,
+  CheckCircle,
+  User,
+  IdentificationCard,
+  ShieldCheck,
+  Crown,
+  Sparkle,
+  Plus,
+  Minus,
+  CaretRight,
+} from "@phosphor-icons/react";
 
 interface ApplyIPOModalProps {
   ipo: IPOOpportunity;
@@ -17,44 +27,48 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const { members, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
   const [applicantName, setApplicantName] = useState("Ashay");
-  const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
+  const [numberOfIpos, setNumberOfIpos] = useState<number>(1);
   const [panNumbers, setPanNumbers] = useState<string[]>(["ABCDE2741D"]);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const effectiveIpos = typeof numberOfIpos === "number" && numberOfIpos > 0 ? numberOfIpos : 1;
+  const effectiveIpos = Math.max(1, numberOfIpos || 1);
 
-  // Synchronize array length: no of ipo = no of pan card numbers
+  // Synchronize array length: 1 PAN per IPO
   useEffect(() => {
     setPanNumbers((prev) => {
       const updated = [...prev];
       if (effectiveIpos > updated.length) {
         while (updated.length < effectiveIpos) {
-          updated.push("");
+          const defaultPan = members[updated.length]?.panFull || "";
+          updated.push(defaultPan);
         }
       } else if (effectiveIpos < updated.length) {
         return updated.slice(0, effectiveIpos);
       }
       return updated;
     });
-  }, [effectiveIpos]);
+  }, [effectiveIpos, members]);
 
   if (!isOpen) return null;
 
   const minInvest = ipo.metrics?.minInvestment || 14964;
-  const totalAmount = effectiveIpos * minInvest;
 
   const handlePanChange = (index: number, value: string) => {
     const updated = [...panNumbers];
-    updated[index] = value.toUpperCase();
+    updated[index] = value.toUpperCase().slice(0, 10);
     setPanNumbers(updated);
+  };
+
+  const handleStepper = (delta: number) => {
+    setNumberOfIpos((prev) => Math.max(1, Math.min(20, (prev || 1) + delta)));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    const member = members.find(
-      (m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()
-    ) || members[0];
+    const member =
+      members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
+      members[0];
 
     const participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
       memberId: member.id,
@@ -76,58 +90,67 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     }, 1200);
   };
 
+  const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/30 backdrop-blur-xs p-4 animate-fade-in font-sans">
-      <div className="w-full max-w-[520px] bg-white border border-[#E2E8F0] rounded-2xl overflow-hidden shadow-2xl flex flex-col justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-fade-in font-sans">
+      <div className="w-full max-w-[540px] bg-white border border-slate-200/80 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
         {/* Modal Header */}
-        <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-white">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold text-base">
+        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-slate-50">
+          <div className="flex items-center gap-3.5">
+            <div className="w-11 h-11 rounded-2xl bg-blue-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shadow-xs shrink-0">
               {ipo.logo}
             </div>
             <div>
-              <h3 className="nexo-h4 text-[#111318]">
-                Apply for {ipo.name}
-              </h3>
-              <p className="text-xs text-[#5F6673] font-normal">
-                Syndicate IPO Application Form
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                  Apply for {ipo.name}
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-full">
+                  Open
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">
+                Official Syndicate IPO Application Form
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-[#5F6673] hover:text-[#111318] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
         </div>
 
         {isSuccess ? (
-          <div className="p-10 text-center space-y-3">
-            <div className="w-12 h-12 rounded-full bg-[#ECFDF3] border border-[#A6F4C5] text-[#12B76A] flex items-center justify-center mx-auto">
-              <Check size={24} />
+          <div className="p-12 text-center space-y-4">
+            <div className="w-14 h-14 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 flex items-center justify-center mx-auto shadow-xs animate-bounce">
+              <Check size={28} weight="bold" />
             </div>
-            <h4 className="nexo-h4 text-[#111318]">
-              Application Filed Successfully!
-            </h4>
-            <p className="text-xs text-[#5F6673] font-normal">
-              Registered {numberOfIpos} IPO application(s) with {panNumbers.length} PAN card(s) for {applicantName}.
-            </p>
+            <div>
+              <h4 className="text-lg font-bold text-slate-900 tracking-tight">
+                Application Filed Successfully!
+              </h4>
+              <p className="text-xs text-slate-500 font-medium mt-1">
+                Registered {effectiveIpos} IPO application(s) with {panNumbers.length} PAN card(s) for {applicantName}.
+              </p>
+            </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-5 text-xs">
+          <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
             {/* VIP Premium Boost Banner */}
-            <div className="p-3.5 rounded-xl bg-gradient-to-r from-[#0F172A] via-[#1E293B] to-[#0F172A] border border-amber-500/40 text-white flex items-center justify-between shadow-md">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                  <Crown size={18} weight="fill" />
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-amber-500/30 text-white flex items-center justify-between shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <Crown size={20} weight="fill" />
                 </div>
                 <div>
-                  <span className="font-semibold text-amber-300 block text-xs flex items-center gap-1">
-                    <Sparkle size={12} weight="fill" /> Nexo Pro VIP Allotment Boost
+                  <span className="font-bold text-amber-300 block text-xs flex items-center gap-1">
+                    <Sparkle size={13} weight="fill" className="text-amber-400" /> Nexo Pro VIP Allotment Boost
                   </span>
-                  <span className="text-[11px] text-slate-300 font-normal">
+                  <span className="text-[11px] text-slate-300 font-medium">
                     {isPremiumUser ? "4.8x Allotment Boost Unlocked" : "Boost allotment probability from 18% → 88%"}
                   </span>
                 </div>
@@ -140,96 +163,143 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                     onClose();
                     openPremiumModal(ipo);
                   }}
-                  className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-amber-500 to-yellow-400 text-slate-950 font-bold text-[11px] hover:from-amber-400 hover:to-yellow-300 transition-all shadow-sm cursor-pointer whitespace-nowrap"
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-[11px] hover:from-amber-300 hover:to-amber-400 transition-all shadow-xs cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
-                  Upgrade →
+                  Upgrade <CaretRight size={12} weight="bold" />
                 </button>
               )}
             </div>
 
             {/* 1. Applicant Name */}
             <div className="space-y-1.5">
-              <label className="block text-xs font-semibold text-[#111318] flex items-center gap-1.5">
-                <User size={14} className="text-[#2563EB]" /> Applicant Name *
+              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <User size={15} className="text-blue-600" /> Applicant Primary Name <span className="text-rose-500">*</span>
               </label>
-              <input
-                type="text"
-                required
-                placeholder="e.g. Ankit Sharma"
-                value={applicantName}
-                onChange={(e) => setApplicantName(e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111318] tracking-tight focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 focus:outline-none transition-all placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
-              />
+              <div className="relative">
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Ankit Sharma"
+                  value={applicantName}
+                  onChange={(e) => setApplicantName(e.target.value)}
+                  className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+                />
+              </div>
             </div>
 
-            {/* 2. Number of IPOs */}
-            <div className="space-y-1.5">
+            {/* 2. Number of IPOs (Lots Stepper + Quick Pills) */}
+            <div className="space-y-2">
               <div className="flex items-center justify-between">
-                <label className="block text-xs font-semibold text-[#111318] flex items-center gap-1.5">
-                  <CheckCircle size={14} className="text-[#2563EB]" /> Number of IPOs (Lots) *
+                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                  <CheckCircle size={15} className="text-blue-600" /> Number of Applications / Lots <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-[#5F6673] font-mono">
-                  1 PAN per IPO
+                <span className="text-[11px] text-slate-500 font-mono">
+                  1 PAN per Application
                 </span>
               </div>
-              <input
-                type="number"
-                min={1}
-                required
-                value={numberOfIpos}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setNumberOfIpos("");
-                  } else {
-                    const parsed = parseInt(val, 10);
-                    setNumberOfIpos(isNaN(parsed) ? "" : parsed);
-                  }
-                }}
-                onBlur={() => {
-                  if (numberOfIpos === "" || numberOfIpos < 1) {
-                    setNumberOfIpos(1);
-                  }
-                }}
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111318] tracking-tight focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 focus:outline-none transition-all placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
-                placeholder="Enter number of IPOs (Min: 1)"
-              />
-            </div>
 
-            {/* 3. Dynamic PAN Inputs */}
-            <div className="space-y-2">
-              <label className="block text-xs font-semibold text-[#111318] flex items-center gap-1.5">
-                <IdentificationCard size={14} className="text-[#2563EB]" /> PAN Card Numbers ({panNumbers.length} Required) *
-              </label>
+              <div className="flex items-center gap-3">
+                {/* Stepper Widget */}
+                <div className="flex items-center bg-slate-50 border border-slate-200 rounded-xl p-1 shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => handleStepper(-1)}
+                    disabled={effectiveIpos <= 1}
+                    className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center transition-all shadow-2xs"
+                  >
+                    <Minus size={14} weight="bold" />
+                  </button>
+                  <span className="w-12 text-center font-mono font-bold text-sm text-slate-900">
+                    {effectiveIpos}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => handleStepper(1)}
+                    className="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-all shadow-2xs"
+                  >
+                    <Plus size={14} weight="bold" />
+                  </button>
+                </div>
 
-              <div className="space-y-2 max-h-44 overflow-y-auto pr-1">
-                {panNumbers.map((pan, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
-                    <span className="text-[11px] font-semibold text-[#5F6673] w-14 shrink-0 font-mono">
-                      PAN #{idx + 1}:
-                    </span>
-                    <input
-                      type="text"
-                      required
-                      maxLength={10}
-                      placeholder={`e.g. ABCDE274${idx + 1}D`}
-                      value={pan}
-                      onChange={(e) => handlePanChange(idx, e.target.value)}
-                      className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2 text-xs font-mono font-semibold text-[#111318] tracking-widest uppercase focus:border-[#2563EB] focus:outline-none transition-colors placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-[#94A3B8]"
-                    />
-                  </div>
-                ))}
+                {/* Preset Chips */}
+                <div className="flex items-center gap-1.5 overflow-x-auto">
+                  {[1, 2, 3, 5, 10].map((num) => (
+                    <button
+                      key={num}
+                      type="button"
+                      onClick={() => setNumberOfIpos(num)}
+                      className={`px-3 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                        effectiveIpos === num
+                          ? "bg-blue-600 text-white border-blue-600 shadow-xs"
+                          : "bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100 hover:text-slate-900"
+                      }`}
+                    >
+                      {num} {num === 1 ? "Lot" : "Lots"}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
 
-            {/* Footer Buttons */}
-            <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
-              <Button variant="secondary" size="md" type="button" onClick={onClose}>
+            {/* 3. Dynamic PAN Inputs with status indicators */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                  <IdentificationCard size={15} className="text-blue-600" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  Auto-formatted Uppercase
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                {panNumbers.map((pan, idx) => {
+                  const valid = isValidPan(pan);
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
+                    >
+                      <span className="text-[11px] font-bold text-slate-500 w-16 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
+                        PAN #{idx + 1}
+                      </span>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          required
+                          maxLength={10}
+                          placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
+                          value={pan}
+                          onChange={(e) => handlePanChange(idx, e.target.value)}
+                          className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
+                        />
+                        {valid && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600">
+                            <CheckCircle size={16} weight="fill" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
+              >
                 Cancel
-              </Button>
-              <Button variant="success" size="md" type="submit">
-                <ShieldCheck size={16} /> Submit {numberOfIpos} IPO Application(s)
-              </Button>
+              </button>
+              <button
+                type="submit"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                <ShieldCheck size={18} weight="bold" /> Submit {effectiveIpos} IPO Application(s)
+              </button>
             </div>
           </form>
         )}
