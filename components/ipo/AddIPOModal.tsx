@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Button } from "../ui/Button";
-import { X, Plus } from "@phosphor-icons/react";
+import { X, Plus, CircleNotch } from "@phosphor-icons/react";
 
 export function AddIPOModal() {
   const { isAddIpoModalOpen, closeAddIpoModal, addNewIpo } = useNexo();
@@ -14,28 +14,82 @@ export function AddIPOModal() {
   const [closeDate, setCloseDate] = useState("20 Aug 2026");
   const [thesis, setThesis] = useState("");
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  React.useEffect(() => {
+    if (!isAddIpoModalOpen) {
+      setIsSuccess(false);
+      setIsSubmitting(false);
+    }
+  }, [isAddIpoModalOpen]);
+
   if (!isAddIpoModalOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name) return;
 
-    addNewIpo({
-      name,
-      company: `${name} Limited`,
-      priceMin: Math.max(1, Math.round(priceMax * 0.9)),
-      priceMax: priceMax || 270,
-      lotSize: lotSize || 50,
-      openDate: "18 Aug 2026",
-      closeDate: closeDate || "20 Aug 2026",
-      recommendation: "APPLY",
-      thesis: thesis || "Primary analysis for group participation.",
-    });
+    setIsSubmitting(true);
 
-    // Reset form
-    setName("");
-    setThesis("");
+    setTimeout(() => {
+      addNewIpo({
+        name,
+        company: `${name} Limited`,
+        priceMin: Math.max(1, Math.round(priceMax * 0.9)),
+        priceMax: priceMax || 270,
+        lotSize: lotSize || 50,
+        openDate: "18 Aug 2026",
+        closeDate: closeDate || "20 Aug 2026",
+        recommendation: "APPLY",
+        thesis: thesis || "Primary analysis for group participation.",
+      });
+
+      // Reset form
+      setName("");
+      setThesis("");
+      setIsSubmitting(false);
+      setIsSuccess(true);
+    }, 1200);
   };
+
+  const handleClose = () => {
+    setIsSuccess(false);
+    closeAddIpoModal();
+  };
+
+  if (isSuccess) {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
+        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center space-y-4 animate-modal-pop-in">
+          {/* Success Check Ring */}
+          <div className="relative">
+            <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 animate-pulse-glow shadow-md">
+              <svg className="w-8 h-8 animate-check-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+              </svg>
+            </div>
+          </div>
+
+          <div className="space-y-1.5">
+            <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">
+              IPO Opportunity Created
+            </h3>
+            <p className="text-xs text-slate-500 font-medium px-4 leading-relaxed">
+              The new IPO opportunity has been successfully published to the group's active watchlist.
+            </p>
+          </div>
+
+          <button
+            onClick={handleClose}
+            className="w-full py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer"
+          >
+            Okay, got it
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
@@ -141,12 +195,27 @@ export function AddIPOModal() {
 
           {/* Footer Controls */}
           <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
-            <Button variant="ghost" size="sm" type="button" onClick={closeAddIpoModal}>
+            <button 
+              type="button" 
+              onClick={closeAddIpoModal}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+            >
               Cancel
-            </Button>
-            <Button variant="primary" size="sm" type="submit">
-              Create IPO Opportunity
-            </Button>
+            </button>
+            <button 
+              type="submit"
+              disabled={isSubmitting}
+              className="px-5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 disabled:opacity-70 text-white font-bold text-xs shadow-md transition-all active:scale-[0.98] cursor-pointer flex items-center gap-1.5"
+            >
+              {isSubmitting ? (
+                <>
+                  <CircleNotch size={14} className="animate-spin text-white" />
+                  <span>Creating Opportunity...</span>
+                </>
+              ) : (
+                "Create IPO Opportunity"
+              )}
+            </button>
           </div>
         </form>
       </div>
