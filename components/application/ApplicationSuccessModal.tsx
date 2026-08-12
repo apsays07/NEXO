@@ -11,7 +11,7 @@ import {
   Check,
 } from "@phosphor-icons/react";
 import { useNexo } from "@/context/NexoContext";
-import confetti from "canvas-confetti";
+
 
 interface ApplicationSuccessModalProps {
   isOpen: boolean;
