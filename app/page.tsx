@@ -17,12 +17,12 @@ export default function Home() {
   const { activeTab } = useNexo();
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-[#111318] font-sans antialiased">
+    <div className="flex h-screen overflow-hidden bg-[#F8FAFC] text-[#111318] font-sans antialiased">
       {/* LEFT SIDEBAR NAVIGATION & MOBILE BOTTOM BAR */}
       <Sidebar />
 
       {/* MAIN WORKSPACE AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         <TopBar />
 
         <main className="p-4 sm:p-6 md:p-8 pb-24 lg:pb-8 flex-1 max-w-7xl w-full mx-auto">
