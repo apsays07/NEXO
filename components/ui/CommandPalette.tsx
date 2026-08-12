@@ -53,7 +53,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
             placeholder="Search IPOs, members, PAN, applications..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-[15px] font-normal text-[#111318] placeholder-[#7B8491] focus:outline-none"
+            className="flex-1 bg-transparent text-[15px] font-medium tracking-tight text-[#111318] placeholder-[#7B8491] focus:outline-none"
           />
           <kbd className="px-1.5 py-0.5 text-[12px] font-mono font-medium rounded bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]">
             ESC

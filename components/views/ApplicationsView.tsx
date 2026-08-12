@@ -189,7 +189,7 @@ export function ApplicationsView() {
                 value={customRegistrarUrl}
                 onChange={(e) => setCustomRegistrarUrl(e.target.value)}
                 placeholder="https://linkintime.co.in/initial_offer/public-issues.html"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:border-blue-600 focus:bg-white outline-none"
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium tracking-tight text-slate-900 focus:border-blue-600 focus:ring-2 focus:ring-blue-600/10 focus:bg-white outline-none"
               />
             </div>
 

@@ -397,7 +397,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
                   placeholder="Try 'NEXOPRO2026'"
                   value={promoCode}
                   onChange={(e) => setPromoCode(e.target.value)}
-                  className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-semibold uppercase text-white placeholder-slate-500 focus:border-amber-400 focus:outline-none w-full sm:w-40"
+                  className="bg-slate-950 border border-slate-700 rounded-lg px-3 py-1.5 text-xs font-mono font-medium tracking-wider uppercase text-white placeholder-slate-500 focus:border-amber-400 focus:ring-2 focus:ring-amber-400/10 focus:outline-none w-full sm:w-40"
                 />
                 <button
                   type="button"

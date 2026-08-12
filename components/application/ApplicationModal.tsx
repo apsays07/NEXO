@@ -137,7 +137,7 @@ export function ApplicationModal() {
                 placeholder="e.g. Ankit Sharma"
                 value={applicantName}
                 onChange={(e) => setApplicantName(e.target.value)}
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#0F172A] focus:border-[#2563EB] focus:outline-none transition-colors placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111318] tracking-tight focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 focus:outline-none transition-all placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
               />
             </div>
 
@@ -170,7 +170,7 @@ export function ApplicationModal() {
                     setNumberOfIpos(1);
                   }
                 }}
-                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-xs font-semibold text-[#0F172A] focus:border-[#2563EB] focus:outline-none transition-colors placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
+                className="w-full bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2.5 text-sm font-medium text-[#111318] tracking-tight focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 focus:outline-none transition-all placeholder:text-[#94A3B8] placeholder:font-normal placeholder:tracking-normal"
                 placeholder="Enter number of IPOs (Min: 1)"
               />
             </div>
@@ -194,7 +194,7 @@ export function ApplicationModal() {
                       placeholder={`e.g. ABCDE274${idx + 1}D`}
                       value={pan}
                       onChange={(e) => handlePanChange(idx, e.target.value)}
-                      className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-[#0F172A] tracking-widest uppercase focus:border-[#2563EB] focus:outline-none transition-colors placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-[#94A3B8]"
+                      className="flex-1 bg-[#F8FAFC] border border-[#E2E8F0] hover:border-[#CBD5E1] rounded-xl px-3.5 py-2 text-xs font-mono font-semibold text-[#111318] tracking-widest uppercase focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-[#94A3B8]"
                     />
                   </div>
                 ))}
