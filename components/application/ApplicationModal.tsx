@@ -339,6 +339,31 @@ export function ApplicationModal() {
             />
           </div>
 
+          {/* 2. Number of PAN Cards */}
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
+              </label>
+              <span className="text-[11px] text-slate-500 font-mono">
+                1 PAN per Application
+              </span>
+            </div>
+            <input
+              type="number"
+              min={1}
+              max={50}
+              required
+              value={numberOfIpos}
+              onChange={(e) => {
+                const parsed = parseInt(e.target.value, 10);
+                setNumberOfIpos(isNaN(parsed) ? 1 : Math.max(1, Math.min(50, parsed)));
+              }}
+              className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+              placeholder="Enter number of PAN cards (e.g. 5)"
+            />
+          </div>
+
           {/* FRIEND NAME | AMOUNT TABLE WITH VISUAL PROGRESS BAR & SUM MATCHING */}
           {applicantMode === "JOINT" && (
             <div className="p-4 rounded-2xl bg-gradient-to-b from-blue-50/70 to-slate-50/70 border border-blue-200/80 space-y-3.5 animate-fade-in shadow-2xs">
