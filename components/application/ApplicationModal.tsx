@@ -11,6 +11,7 @@ import {
   Check,
   Plus,
   Minus,
+  CircleNotch,
 } from "@phosphor-icons/react";
 
 import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
@@ -27,9 +28,10 @@ export function ApplicationModal() {
   const [applicantName, setApplicantName] = useState<string>("");
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
-  const effectiveIpos = Math.max(1, numberOfIpos || 1);
+  const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
 
   // Initialize default applicant name
   useEffect(() => {
@@ -66,25 +68,29 @@ export function ApplicationModal() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const member =
-      members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
-      members[0];
+    setTimeout(() => {
+      const member =
+        members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
+        members[0];
 
-    const participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
-      memberId: member.id,
-      contribution: minInvest,
-    }));
+      const participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
+        memberId: member.id,
+        contribution: minInvest,
+      }));
 
-    createApplication(
-      activeApplicationIpo.id,
-      effectiveIpos > 1 ? "COMBO" : "SOLO",
-      participantContributions,
-      undefined,
-      member.id
-    );
+      createApplication(
+        activeApplicationIpo.id,
+        effectiveIpos > 1 ? "COMBO" : "SOLO",
+        participantContributions,
+        undefined,
+        member.id
+      );
 
-    setIsSuccess(true);
+      setIsSubmitting(false);
+      setIsSuccess(true);
+    }, 400);
   };
 
   const handleCloseSuccess = () => {
@@ -261,9 +267,18 @@ export function ApplicationModal() {
               </button>
               <button
                 type="submit"
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-75 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
               >
-                <ShieldCheck size={18} weight="bold" /> Submit {effectiveIpos} IPO Application(s)
+                {isSubmitting ? (
+                  <>
+                    <CircleNotch size={18} className="animate-spin" /> Filing Application...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={18} weight="bold" /> Submit {effectiveIpos} IPO Application(s)
+                  </>
+                )}
               </button>
             </div>
           </form>
