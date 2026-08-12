@@ -1,19 +1,27 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { formatINR } from "@/lib/mockData";
 import { AllotmentStatus } from "@/types/nexo";
 import { CheckCircle, LockKey, ArrowSquareOut, Gear } from "@phosphor-icons/react";
 
 export function ApplicationsView() {
-  const { ipos, currentUserRole, updateRegistrarUrl } = useNexo();
+  const { ipos, currentUserRole, updateRegistrarUrl, selectedIpo, activeApplicationIpo } = useNexo();
 
   // Local Filter for selecting IPO / Company
   const [ipoFilter, setIpoFilter] = useState<string>(ipos[0]?.id || "ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ALLOTTED" | "AWAITING" | "NOT_ALLOTTED">("ALL");
   const [isUrlModalOpen, setIsUrlModalOpen] = useState(false);
   const [customRegistrarUrl, setCustomRegistrarUrl] = useState("");
+
+  // Sync filter when navigating from Home / applying for specific IPO
+  useEffect(() => {
+    const target = activeApplicationIpo || selectedIpo;
+    if (target) {
+      setIpoFilter(target.id);
+    }
+  }, [selectedIpo, activeApplicationIpo]);
 
   // Dynamically select the active IPO to display based on ipoFilter
   const selectedIpoList = useMemo(() => {

@@ -312,6 +312,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
     setActivities((prev) => [newActivity, ...prev]);
     closeApplicationModal();
+    setActiveTab("applications");
   };
 
   const updateRegistrarUrl = (ipoId: string, url: string) => {

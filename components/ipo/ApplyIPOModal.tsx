@@ -14,7 +14,7 @@ interface ApplyIPOModalProps {
 }
 
 export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
-  const { members, createApplication } = useNexo();
+  const { members, createApplication, setActiveTab } = useNexo();
 
   const [applicantName, setApplicantName] = useState("Ashay");
   const [numberOfIpos, setNumberOfIpos] = useState<number>(1);
@@ -69,6 +69,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     setTimeout(() => {
       setIsSuccess(false);
       onClose();
+      setActiveTab("applications");
     }, 1200);
   };
 
