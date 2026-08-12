@@ -21,13 +21,16 @@ import { PerformanceSummary } from "@/components/ipo-detail/PerformanceSummary";
 import { IPOSidebar } from "@/components/ipo-detail/IPOSidebar";
 import { ApplicationModal } from "@/components/application/ApplicationModal";
 import { ParticipationType } from "@/types/nexo";
-import { ArrowLeft } from "@phosphor-icons/react";
 import Link from "next/link";
 
 export default function IPODetailPage() {
   const params = useParams();
   const router = useRouter();
-  const { ipos, createApplication, openApplicationModal } = useNexo();
+  const {
+    ipos,
+    createApplication,
+    openApplicationModal,
+  } = useNexo();
 
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
 
@@ -44,12 +47,12 @@ export default function IPODetailPage() {
 
   if (!ipo) {
     return (
-      <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A]">
+      <div className="flex min-h-screen bg-[#F8FAFC] text-[#111318]">
         <Sidebar />
-        <div className="flex-1 p-8 text-center space-y-4">
-          <h2 className="text-xl font-extrabold">IPO Opportunity Not Found</h2>
-          <p className="text-xs text-[#64748B]">The requested IPO opportunity could not be found.</p>
-          <Link href="/" className="text-xs text-[#2563EB] font-bold underline">
+        <div className="flex-1 p-8 text-center space-y-4 font-sans">
+          <h2 className="text-xl font-semibold">IPO Opportunity Not Found</h2>
+          <p className="text-xs text-[#5F6673]">The requested IPO opportunity could not be found.</p>
+          <Link href="/" className="text-xs text-[#2563EB] font-semibold underline">
             ← Back to Workspace
           </Link>
         </div>
@@ -64,7 +67,7 @@ export default function IPODetailPage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans antialiased">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-[#111318] font-sans antialiased">
       {/* LEFT SIDEBAR NAVIGATION */}
       <Sidebar />
 

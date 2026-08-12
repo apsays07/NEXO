@@ -13,31 +13,31 @@ export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
   > = {
     RESEARCHING: {
       label: "Researching",
-      dotColor: "bg-[#2F6BFF]",
-      bg: "bg-[#EEF4FF]",
-      text: "text-[#2F6BFF]",
-      border: "border-[#D0E1FF]",
+      dotColor: "bg-[#2563EB]",
+      bg: "bg-[#EFF6FF]",
+      text: "text-[#2563EB]",
+      border: "border-[#BFDBFE]",
     },
     WATCHLIST: {
       label: "Watchlist",
-      dotColor: "bg-[#667085]",
-      bg: "bg-[#F8F9FA]",
-      text: "text-[#667085]",
-      border: "border-[#E4E7EC]",
+      dotColor: "bg-[#5F6673]",
+      bg: "bg-[#F8FAFC]",
+      text: "text-[#5F6673]",
+      border: "border-[#E2E8F0]",
     },
     APPLYING: {
       label: "Applying",
-      dotColor: "bg-[#2F6BFF]",
-      bg: "bg-[#EEF4FF]",
-      text: "text-[#2F6BFF]",
-      border: "border-[#D0E1FF]",
+      dotColor: "bg-[#2563EB]",
+      bg: "bg-[#EFF6FF]",
+      text: "text-[#2563EB]",
+      border: "border-[#BFDBFE]",
     },
     APPLICATION_OPEN: {
       label: "Open for Application",
-      dotColor: "bg-[#2F6BFF]",
-      bg: "bg-[#EEF4FF]",
-      text: "text-[#2F6BFF]",
-      border: "border-[#D0E1FF]",
+      dotColor: "bg-[#2563EB]",
+      bg: "bg-[#EFF6FF]",
+      text: "text-[#2563EB]",
+      border: "border-[#BFDBFE]",
     },
     APPLIED: {
       label: "Applied",
@@ -50,7 +50,7 @@ export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
       label: "Allotment Pending",
       dotColor: "bg-[#F79009]",
       bg: "bg-[#FFFAEB]",
-      text: "text-[#D98A16]",
+      text: "text-[#D97706]",
       border: "border-[#FEF0C7]",
     },
     ALLOTTED: {
@@ -69,10 +69,10 @@ export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
     },
     LISTED: {
       label: "Listed",
-      dotColor: "bg-[#2F6BFF]",
-      bg: "bg-[#EEF4FF]",
-      text: "text-[#2F6BFF]",
-      border: "border-[#D0E1FF]",
+      dotColor: "bg-[#2563EB]",
+      bg: "bg-[#EFF6FF]",
+      text: "text-[#2563EB]",
+      border: "border-[#BFDBFE]",
     },
     HOLDING: {
       label: "Holding",
@@ -83,26 +83,26 @@ export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
     },
     SOLD: {
       label: "Sold / Settled",
-      dotColor: "bg-[#667085]",
-      bg: "bg-[#F8F9FA]",
-      text: "text-[#667085]",
-      border: "border-[#E4E7EC]",
+      dotColor: "bg-[#5F6673]",
+      bg: "bg-[#F8FAFC]",
+      text: "text-[#5F6673]",
+      border: "border-[#E2E8F0]",
     },
     CLOSED: {
       label: "Closed",
-      dotColor: "bg-[#98A2B3]",
-      bg: "bg-[#F8F9FA]",
-      text: "text-[#98A2B3]",
-      border: "border-[#E4E7EC]",
+      dotColor: "bg-[#98A0AC]",
+      bg: "bg-[#F8FAFC]",
+      text: "text-[#98A0AC]",
+      border: "border-[#E2E8F0]",
     },
   };
 
   const config = statusMap[status] || statusMap.APPLYING;
-  const padding = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs";
+  const padding = size === "sm" ? "px-2 py-0.5 text-[12px] leading-4 font-medium" : "px-2.5 py-1 text-xs leading-4 font-semibold";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-semibold rounded-full border ${config.bg} ${config.text} ${config.border} ${padding}`}
+      className={`inline-flex items-center gap-1.5 rounded-full border ${config.bg} ${config.text} ${config.border} ${padding}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
       <span>{config.label}</span>
@@ -129,9 +129,9 @@ export function RecommendationBadge({
     },
     WATCH: {
       label: "Group Decision: WATCH",
-      dotColor: "bg-[#D98A16]",
+      dotColor: "bg-[#D97706]",
       bg: "bg-[#FFFAEB]",
-      text: "text-[#D98A16]",
+      text: "text-[#D97706]",
       border: "border-[#FEF0C7]",
     },
     SKIP: {
@@ -143,11 +143,11 @@ export function RecommendationBadge({
     },
   }[type];
 
-  const padding = size === "sm" ? "px-2 py-0.5 text-[11px]" : "px-2.5 py-1 text-xs";
+  const padding = size === "sm" ? "px-2 py-0.5 text-[12px] leading-4 font-semibold" : "px-2.5 py-1 text-xs leading-4 font-semibold";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-bold rounded-md border ${config.bg} ${config.text} ${config.border} ${padding}`}
+      className={`inline-flex items-center gap-1.5 rounded-md border ${config.bg} ${config.text} ${config.border} ${padding}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
       <span>{config.label}</span>

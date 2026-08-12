@@ -7,6 +7,10 @@ import {
   ActivityItem,
   PortfolioSummary,
   ParticipationType,
+  ApplicationType,
+  Application,
+  AllotmentStatus,
+  MemberRole,
   IPOLifecycleStage,
   ActionItem,
   RecommendationType,
@@ -68,6 +72,12 @@ interface NexoContextType {
   updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
   updateRegistrarUrl: (ipoId: string, url: string) => void;
   isLoading: boolean;
+  isPremiumUser: boolean;
+  activePlan: string;
+  isPremiumModalOpen: boolean;
+  openPremiumModal: (ipo?: IPOOpportunity | null) => void;
+  closePremiumModal: () => void;
+  activatePremiumPlan: (planName: string) => void;
 }
 
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
@@ -89,6 +99,16 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [revealedPans, setRevealedPans] = useState<Record<string, boolean>>({});
   const [isLoading] = useState(false);
+  const [isPremiumUser, setIsPremiumUser] = useState(false);
+  const [activePlan, setActivePlan] = useState("Free");
+  const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+
+  const openPremiumModal = (_ipo?: IPOOpportunity | null) => setIsPremiumModalOpen(true);
+  const closePremiumModal = () => setIsPremiumModalOpen(false);
+  const activatePremiumPlan = (planName: string) => {
+    setIsPremiumUser(true);
+    setActivePlan(planName);
+  };
 
   const togglePanReveal = (memberId: string) => {
     setRevealedPans((prev) => ({
@@ -232,7 +252,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       return {
         memberId: p.memberId,
         memberName: member?.name || "Member",
-        avatar: member?.avatar || "",
+        avatar: member?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         contribution: p.contribution,
         percentage: Number(percentage.toFixed(1)),
         panMasked: member?.panMasked || "XXXXXXXX41",
@@ -244,22 +264,34 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     });
 
     const newAppId = `app_${Date.now()}`;
+    const targetIpo = ipos.find((i) => i.id === ipoId);
     const newApplication: Application = {
       id: newAppId,
       ipoId,
       type: canonicalType,
-      applicantName: canonicalType === "INDIVIDUAL" ? applicantMember?.name || "Shivam Prasad" : undefined,
-      memberId: canonicalType === "INDIVIDUAL" ? applicantMember?.id || "mem_1" : undefined,
-      panMasked: canonicalType === "INDIVIDUAL" ? applicantMember?.panMasked || "XXXXX1234X" : undefined,
+      applicantName: applicantMember?.name || "Ankit",
+      memberId: applicantMember?.id || "mem_1",
+      panMasked: applicantMember?.panMasked || "XXXXXXXX41",
       totalContribution: total,
-      lotCount: 1,
+      lotCount: Math.max(1, participantContributions.length),
       verified: true,
       allotmentStatus: "AWAITING",
       status: "AWAITING",
       createdAt: new Date().toISOString(),
       applicationNumber: `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`,
       applicationProofUrl: proofUrl,
-      participants: canonicalType === "COMBINED" ? formattedParticipants : [],
+      participants: formattedParticipants.length > 0 ? formattedParticipants : [
+        {
+          memberId: applicantMember?.id || "mem_1",
+          memberName: applicantMember?.name || "Ankit",
+          avatar: applicantMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          contribution: total,
+          percentage: 100,
+          panMasked: applicantMember?.panMasked || "XXXXXXXX41",
+          panFull: applicantMember?.panFull,
+          status: "SUBMITTED" as const,
+        }
+      ],
     };
 
     setIpos((prev) =>
@@ -272,9 +304,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           );
           const uniqueParticipants = new Set(
             updatedApps.flatMap((a) =>
-              a.type === "INDIVIDUAL" && a.memberId
-                ? [a.memberId]
-                : a.participants.map((p) => p.memberId)
+              a.participants.map((p: { memberId: string }) => p.memberId)
             )
           ).size;
 
@@ -301,13 +331,15 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
       type: "APPLICATION_SUBMITTED",
-      title: `${canonicalType} Application Submitted`,
-      subtitle: `Lot of ₹${total.toLocaleString("en-IN")} submitted for ${
-        activeApplicationIpo?.name || "IPO"
+      title: `${applicantMember?.name || "Member"} filed ${newApplication.lotCount} IPO Application(s)`,
+      subtitle: `Combined ₹${total.toLocaleString("en-IN")} for ${
+        targetIpo?.name || activeApplicationIpo?.name || "IPO"
       }`,
       timestamp: "Just now",
+      memberName: applicantMember?.name || "Ankit",
+      memberAvatar: applicantMember?.avatar || members[0].avatar,
       ipoId,
-      ipoName: activeApplicationIpo?.name,
+      ipoName: targetIpo?.name || activeApplicationIpo?.name,
     };
 
     setActivities((prev) => [newActivity, ...prev]);
@@ -354,6 +386,12 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateApplicationStatus,
         updateRegistrarUrl,
         isLoading,
+        isPremiumUser,
+        activePlan,
+        isPremiumModalOpen,
+        openPremiumModal,
+        closePremiumModal,
+        activatePremiumPlan,
       }}
     >
       {children}

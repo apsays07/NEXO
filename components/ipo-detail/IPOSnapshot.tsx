@@ -22,18 +22,18 @@ export function IPOSnapshot({ ipo }: IPOSnapshotProps) {
   ];
 
   return (
-    <Card id="snapshot" className="p-6 bg-white border-[#E2E8F0] shadow-sm space-y-4">
-      <h3 className="text-base font-extrabold text-[#0F172A] tracking-tight uppercase">
+    <Card id="snapshot" className="p-6 bg-white border-[#E2E8F0] shadow-2xs space-y-4 font-sans">
+      <h3 className="nexo-h4 text-[#111318] uppercase">
         IPO SNAPSHOT
       </h3>
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
         {metrics.map((item, idx) => (
           <div key={idx} className="space-y-1">
-            <span className="text-xs text-[#64748B] font-medium block">
+            <span className="text-xs text-[#5F6673] font-medium block">
               {item.label}
             </span>
-            <span className="text-sm font-extrabold text-[#0F172A] num-tabular block">
+            <span className="text-sm font-semibold text-[#111318] num-tabular block">
               {item.value}
             </span>
           </div>

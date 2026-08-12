@@ -19,9 +19,9 @@ export function Card({
     <div
       id={id}
       onClick={onClick}
-      className={`bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-5 transition-all duration-200 shadow-xs ${
+      className={`bg-white rounded-2xl border border-[#E2E8F0] p-5 transition-all duration-200 shadow-2xs font-sans ${
         hoverable
-          ? "hover:bg-[#FFFFFF] hover:border-[#CBD5E1] hover:shadow-md hover:shadow-slate-200/50 cursor-pointer active:scale-[0.99]"
+          ? "hover:bg-white hover:border-[#CBD5E1] hover:shadow-md hover:shadow-slate-200/50 cursor-pointer active:scale-[0.99]"
           : ""
       } ${className}`}
     >
@@ -50,37 +50,37 @@ export function MetricCard({
   return (
     <Card className="flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
+        <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
           {label}
         </span>
         {icon && (
-          <div className="p-2.5 rounded-xl bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]">
+          <div className="p-2 rounded-xl bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]">
             {icon}
           </div>
         )}
       </div>
 
       <div>
-        <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] num-tabular">
+        <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#111318] num-tabular">
           {value}
         </div>
 
         <div className="flex items-center gap-2 mt-2">
           {change && (
             <span
-              className={`text-xs font-bold px-2 py-0.5 rounded-md ${
+              className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
                 changeType === "positive"
-                  ? "bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0]"
+                  ? "bg-[#ECFDF3] text-[#059669] border border-[#A6F4C5]"
                   : changeType === "negative"
-                  ? "bg-[#FEF2F2] text-[#DC2626] border border-[#FCA5A5]"
-                  : "bg-[#F1F5F9] text-[#475569] border border-[#E2E8F0]"
+                  ? "bg-[#FEF3F2] text-[#D92D20] border border-[#FECDCA]"
+                  : "bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]"
               }`}
             >
               {change}
             </span>
           )}
           {subtitle && (
-            <span className="text-xs text-[#64748B] font-medium">
+            <span className="text-xs text-[#5F6673] font-normal">
               {subtitle}
             </span>
           )}

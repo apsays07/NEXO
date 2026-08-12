@@ -17,7 +17,7 @@ export default function Home() {
   const { activeTab } = useNexo();
 
   return (
-    <div className="flex min-h-screen bg-[#F8FAFC] text-[#0F172A] font-sans antialiased">
+    <div className="flex min-h-screen bg-[#F8FAFC] text-[#111318] font-sans antialiased">
       {/* LEFT SIDEBAR NAVIGATION */}
       <Sidebar />
 

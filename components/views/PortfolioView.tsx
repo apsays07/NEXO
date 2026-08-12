@@ -15,7 +15,7 @@ export function PortfolioView() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in font-sans">
       {/* Portfolio Overview Header Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <MetricCard
@@ -49,13 +49,13 @@ export function PortfolioView() {
       </div>
 
       {/* Detailed Holdings & History */}
-      <Card>
+      <Card className="border-[#E2E8F0]">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="text-base font-extrabold text-[#0F172A]">
+            <h3 className="nexo-h3 text-[#111318]">
               Syndicate Portfolio Performance & Holdings
             </h3>
-            <p className="text-xs text-[#64748B] font-medium">
+            <p className="text-xs text-[#5F6673] font-normal mt-0.5">
               Track individual member shares and proportional returns
             </p>
           </div>
@@ -64,30 +64,30 @@ export function PortfolioView() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E2E8F0] text-[#64748B] uppercase text-[10px] tracking-wider font-bold">
-                <th className="py-3 px-3">IPO / Asset</th>
-                <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3">Total Pooled</th>
-                <th className="py-3 px-3">Participating Members</th>
-                <th className="py-3 px-3">Issue Price</th>
-                <th className="py-3 px-3">Current / Exit</th>
-                <th className="py-3 px-3 text-right">Net Return</th>
+              <tr className="border-b border-[#E2E8F0] nexo-table-header">
+                <th className="py-3 px-4">IPO / Asset</th>
+                <th className="py-3 px-4">Status</th>
+                <th className="py-3 px-4">Total Pooled</th>
+                <th className="py-3 px-4">Participating Members</th>
+                <th className="py-3 px-4">Issue Price</th>
+                <th className="py-3 px-4">Current / Exit</th>
+                <th className="py-3 px-4 text-right">Net Return</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-[#F1F5F9]">
+            <tbody className="divide-y divide-[#F1F5F9] nexo-table-body">
               {activeHoldings.map((item) => (
                 <tr key={item.id} className="hover:bg-[#F8FAFC] transition-colors">
-                  <td className="py-3.5 px-3">
-                    <div className="font-extrabold text-[#0F172A] text-sm">{item.name}</div>
-                    <div className="text-[11px] text-[#64748B] font-medium">{item.company}</div>
+                  <td className="py-3.5 px-4">
+                    <div className="font-semibold text-[#111318] text-sm">{item.name}</div>
+                    <div className="text-[12px] text-[#5F6673] font-normal">{item.company}</div>
                   </td>
-                  <td className="py-3.5 px-3">
+                  <td className="py-3.5 px-4">
                     <StatusBadge status={item.status} size="sm" />
                   </td>
-                  <td className="py-3.5 px-3 font-bold text-[#0F172A] num-tabular">
+                  <td className="py-3.5 px-4 nexo-table-num text-[#111318]">
                     {formatINR(item.combinedCapital)}
                   </td>
-                  <td className="py-3.5 px-3">
+                  <td className="py-3.5 px-4">
                     <div className="flex -space-x-2">
                       {item.applications
                         .flatMap((a) => a.participants)
@@ -97,36 +97,36 @@ export function PortfolioView() {
                             src={p.avatar}
                             alt={p.memberName}
                             title={`${p.memberName} (${p.percentage}%)`}
-                            className="w-6 h-6 rounded-full border-2 border-[#FFFFFF] object-cover shadow-xs"
+                            className="w-6 h-6 rounded-full border-2 border-white object-cover shadow-2xs"
                           />
                         ))}
                     </div>
                   </td>
-                  <td className="py-3.5 px-3 text-[#475569] num-tabular">
+                  <td className="py-3.5 px-4 nexo-table-num text-[#5F6673]">
                     ₹{item.issuePrice || item.metrics.priceBand.max}
                   </td>
-                  <td className="py-3.5 px-3 font-bold text-[#0F172A] num-tabular">
+                  <td className="py-3.5 px-4 nexo-table-num text-[#111318]">
                     ₹{item.currentPrice || "-"}
                   </td>
-                  <td className="py-3.5 px-3 text-right">
+                  <td className="py-3.5 px-4 text-right">
                     {item.realizedProfit ? (
                       <div>
-                        <div className="text-[#059669] font-extrabold num-tabular">
+                        <div className="text-[#059669] font-semibold nexo-table-num">
                           {formatINR(item.realizedProfit, true)}
                         </div>
-                        <div className="text-[10px] text-[#059669] font-bold">
+                        <div className="text-[11px] text-[#059669] font-medium">
                           +{item.listingGainPercent}% Realized
                         </div>
                       </div>
                     ) : item.listingGainPercent ? (
                       <div>
-                        <div className="text-[#059669] font-extrabold num-tabular">
+                        <div className="text-[#059669] font-semibold nexo-table-num">
                           +{item.listingGainPercent}%
                         </div>
-                        <div className="text-[10px] text-[#64748B] font-medium">Unrealized</div>
+                        <div className="text-[11px] text-[#5F6673] font-normal">Unrealized</div>
                       </div>
                     ) : (
-                      <span className="text-[#94A3B8] font-medium">Pending</span>
+                      <span className="text-[#7B8491] font-normal">Pending</span>
                     )}
                   </td>
                 </tr>

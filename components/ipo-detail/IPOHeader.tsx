@@ -19,38 +19,38 @@ export function IPOHeader({
   onViewApplicationClick,
 }: IPOHeaderProps) {
   const hasApplied = ipo.applications.some((a) =>
-    a.participants.some((p) => p.memberName === "Ashay" || p.memberName === "Niranjan")
+    a.participants.some((p) => p.memberName === "Ankit" || p.memberName === "Ashay")
   );
 
   return (
-    <div className="space-y-3 pb-4 border-b border-[#E2E8F0]">
+    <div className="space-y-3 pb-4 border-b border-[#E2E8F0] font-sans">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-[#64748B] font-medium">
+      <div className="flex items-center gap-2 text-xs text-[#5F6673] font-normal">
         <Link
           href="/"
-          className="hover:text-[#0F172A] flex items-center gap-1 transition-colors"
+          className="hover:text-[#111318] flex items-center gap-1 transition-colors font-medium"
         >
           <ArrowLeft size={14} /> Back to IPOs
         </Link>
         <span>/</span>
-        <span className="text-[#0F172A] font-bold">{ipo.name}</span>
+        <span className="text-[#111318] font-semibold">{ipo.name}</span>
       </div>
 
       {/* Main Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-extrabold text-base shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold text-base shadow-2xs">
             {ipo.logo}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-xs text-[#64748B] font-bold">
+              <span className="text-xs text-[#5F6673] font-medium">
                 {ipo.category || "Mainboard IPO"}
               </span>
-              <span className="text-[#94A3B8]">•</span>
+              <span className="text-[#7B8491]">•</span>
               <StatusBadge status={ipo.status} size="sm" />
             </div>
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-[#0F172A] tracking-tight">
+            <h1 className="nexo-h1 text-[#111318]">
               {ipo.name}
             </h1>
           </div>

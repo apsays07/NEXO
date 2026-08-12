@@ -81,7 +81,7 @@ export function ParticipationSummary({
                   Share %
                 </span>
                 <span className="font-black text-[#2563EB] num-tabular">
-                  {p.percentage.toFixed(2)}%
+                  {(p.percentage ?? 0).toFixed(2)}%
                 </span>
               </div>
             </div>

@@ -12,13 +12,13 @@ export function MembersView() {
   const { members } = useNexo();
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in font-sans">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-extrabold text-[#0F172A] tracking-tight">
-            Syndicate Trusted Group Members
+          <h2 className="nexo-h2 text-[#111318]">
+            Syndicate Group Members
           </h2>
-          <p className="text-xs text-[#64748B] font-medium">
+          <p className="text-xs text-[#5F6673] font-normal mt-0.5">
             5 verified group members participating in private IPO opportunities
           </p>
         </div>
@@ -30,7 +30,7 @@ export function MembersView() {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {members.map((member) => (
-          <Card key={member.id} className="flex flex-col justify-between space-y-4">
+          <Card key={member.id} className="flex flex-col justify-between space-y-4 border-[#E2E8F0]">
             <div>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3">
@@ -40,15 +40,15 @@ export function MembersView() {
                     className="w-12 h-12 rounded-full object-cover ring-2 ring-[#BFDBFE]"
                   />
                   <div>
-                    <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-1.5">
+                    <h3 className="text-[18px] leading-[26px] font-semibold text-[#111318] flex items-center gap-1.5">
                       {member.name}
                       {member.role === "ADMIN" && (
-                        <span className="text-[9px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold uppercase font-mono">
+                        <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-semibold uppercase font-mono">
                           Admin
                         </span>
                       )}
                     </h3>
-                    <div className="text-xs text-[#64748B] font-medium">{member.email}</div>
+                    <div className="text-xs text-[#5F6673] font-normal">{member.email}</div>
                   </div>
                 </div>
               </div>
@@ -56,27 +56,27 @@ export function MembersView() {
               {/* Attributes */}
               <div className="mt-4 p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-xs">
                 <div className="flex justify-between items-center">
-                  <span className="text-[#64748B] font-medium">Registered PAN</span>
+                  <span className="text-[#5F6673] font-medium">Registered PAN</span>
                   <MaskedPAN panMasked={member.panMasked} panFull={member.panFull} />
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#64748B] font-medium">Default Lot Allocation</span>
-                  <span className="font-bold text-[#0F172A] num-tabular">
+                  <span className="text-[#5F6673] font-medium">Default Lot Allocation</span>
+                  <span className="font-semibold text-[#111318] num-tabular">
                     {formatINR(member.defaultContribution)}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#64748B] font-medium">Syndicate Member Since</span>
-                  <span className="text-[#334155] font-semibold">{member.joinedAt}</span>
+                  <span className="text-[#5F6673] font-medium">Syndicate Member Since</span>
+                  <span className="text-[#111318] font-medium">{member.joinedAt}</span>
                 </div>
               </div>
             </div>
 
             <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
-              <span className="text-[#059669] font-bold flex items-center gap-1">
+              <span className="text-[#059669] font-medium flex items-center gap-1">
                 <ShieldCheck size={14} /> KYC & PAN Verified
               </span>
-              <button className="text-[#2563EB] hover:underline font-bold">
+              <button className="text-[#2563EB] hover:underline font-semibold cursor-pointer">
                 Edit Limits
               </button>
             </div>

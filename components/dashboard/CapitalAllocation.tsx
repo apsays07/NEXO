@@ -14,16 +14,16 @@ export function CapitalAllocation({ summary }: CapitalAllocationProps) {
   const { allocation } = summary;
 
   return (
-    <Card className="p-6 bg-white border-[#E2E8F0] shadow-sm flex flex-col justify-between h-full">
+    <Card className="p-6 bg-white border-[#E2E8F0] shadow-2xs flex flex-col justify-between h-full font-sans">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
             <ChartPie size={18} className="text-[#2563EB]" />
-            <h3 className="text-sm font-extrabold text-[#0F172A]">
+            <h3 className="nexo-h4 text-[#111318]">
               Where is our capital?
             </h3>
           </div>
-          <span className="text-xs text-[#64748B] font-mono">Allocation</span>
+          <span className="text-xs text-[#5F6673] font-mono font-medium">Allocation</span>
         </div>
 
         {/* Minimal Segmented Bar */}
@@ -48,31 +48,31 @@ export function CapitalAllocation({ summary }: CapitalAllocationProps) {
 
           <div className="space-y-2 pt-1 text-xs">
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-[#475569] font-medium">
+              <span className="flex items-center gap-2 text-[#5F6673] font-medium">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#059669]" />
                 Available Capital
               </span>
-              <span className="font-extrabold text-[#0F172A] num-tabular">
+              <span className="font-semibold text-[#111318] num-tabular">
                 {allocation.availablePercent}% ({formatINR(summary.availableCapital)})
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-[#475569] font-medium">
+              <span className="flex items-center gap-2 text-[#5F6673] font-medium">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#D97706]" />
                 Blocked in Applications
               </span>
-              <span className="font-extrabold text-[#0F172A] num-tabular">
+              <span className="font-semibold text-[#111318] num-tabular">
                 {allocation.blockedPercent}% ({formatINR(summary.currentlyBlocked)})
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="flex items-center gap-2 text-[#475569] font-medium">
+              <span className="flex items-center gap-2 text-[#5F6673] font-medium">
                 <span className="w-2.5 h-2.5 rounded-full bg-[#2563EB]" />
                 Invested Holdings
               </span>
-              <span className="font-extrabold text-[#0F172A] num-tabular">
+              <span className="font-semibold text-[#111318] num-tabular">
                 {allocation.investedPercent}% ({formatINR(summary.capitalDeployed)})
               </span>
             </div>
@@ -81,7 +81,7 @@ export function CapitalAllocation({ summary }: CapitalAllocationProps) {
       </div>
 
       <div className="mt-4 pt-3 border-t border-[#E2E8F0] text-center">
-        <span className="text-xs text-[#64748B] font-bold num-tabular">
+        <span className="text-xs text-[#5F6673] font-semibold num-tabular">
           {formatINR(summary.totalCapital)} total tracked capital
         </span>
       </div>
