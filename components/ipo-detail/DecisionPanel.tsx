@@ -31,12 +31,16 @@ export function DecisionPanel({ ipo }: DecisionPanelProps) {
 
       <div className="flex flex-wrap items-center justify-between text-xs text-[#5F6673] pt-2 border-t border-[#E2E8F0]">
         <div className="flex items-center gap-4">
-          <span>
-            Decision made by: <strong className="text-[#111318] font-semibold">Ashay</strong>
-          </span>
-          <span>
-            Decision date: <strong className="text-[#111318] font-semibold">12 Aug 2026</strong>
-          </span>
+          {ipo.decisionBy && (
+            <span>
+              Decision made by: <strong className="text-[#111318] font-semibold">{ipo.decisionBy}</strong>
+            </span>
+          )}
+          {ipo.decisionDate && (
+            <span>
+              Decision date: <strong className="text-[#111318] font-semibold">{ipo.decisionDate}</strong>
+            </span>
+          )}
         </div>
         <span className="text-[12px] font-semibold text-[#059669] bg-white px-2.5 py-1 rounded-full border border-[#A6F4C5]">
           Verified Group Consensus

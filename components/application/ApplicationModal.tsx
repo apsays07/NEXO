@@ -198,38 +198,36 @@ export function ApplicationModal() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
-      const primaryMember =
-        members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
-        members[0];
+    const primaryMember =
+      members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
+      members[0];
 
-      let participantContributions;
+    let participantContributions;
 
-      if (applicantMode === "JOINT") {
-        participantContributions = contributors.map((c) => ({
-          memberId: c.memberId,
-          memberName: c.memberName.trim() || "Friend",
-          contribution: typeof c.amount === "number" ? c.amount : 0,
-        }));
-      } else {
-        participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
-          memberId: primaryMember.id,
-          memberName: primaryMember.name,
-          contribution: minInvest,
-        }));
-      }
+    if (applicantMode === "JOINT") {
+      participantContributions = contributors.map((c) => ({
+        memberId: c.memberId,
+        memberName: c.memberName.trim() || "Friend",
+        contribution: typeof c.amount === "number" ? c.amount : 0,
+      }));
+    } else {
+      participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
+        memberId: primaryMember.id,
+        memberName: primaryMember.name,
+        contribution: minInvest,
+      }));
+    }
 
-      createApplication(
-        activeApplicationIpo.id,
-        applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
-        participantContributions,
-        undefined,
-        primaryMember.id
-      );
+    createApplication(
+      activeApplicationIpo.id,
+      applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
+      participantContributions,
+      undefined,
+      primaryMember.id
+    );
 
-      setIsSubmitting(false);
-      setIsSuccess(true);
-    }, 400);
+    setIsSubmitting(false);
+    setIsSuccess(true);
   };
 
   const handleCloseSuccess = () => {
@@ -565,63 +563,7 @@ export function ApplicationModal() {
             </div>
           </div>
 
-          {/* 4. Application Screenshot Proof Upload (Section 23) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <UploadSimple size={15} className="text-blue-600" /> Application Screenshot Proof <span className="text-slate-400 font-normal">(Optional)</span>
-              </label>
-              <span className="text-[11px] text-slate-400 font-medium">PNG, JPG, PDF (Max 5MB)</span>
-            </div>
 
-            {uploadedFile ? (
-              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-center justify-between gap-3 animate-fade-in">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-2xs">
-                    <FileText size={20} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 truncate">{uploadedFile.name}</p>
-                    <p className="text-[10px] text-blue-600 font-semibold flex items-center gap-1">
-                      <CheckCircle size={12} weight="fill" /> Ready for verification ({(uploadedFile.size / 1024).toFixed(0)} KB)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setUploadedFile(null)}
-                    className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <label className="w-full min-h-[140px] rounded-2xl border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/30 flex flex-col items-center justify-center p-4 cursor-pointer transition-all text-center group">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setUploadedFile(e.target.files[0]);
-                    }
-                  }}
-                  className="hidden"
-                />
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 group-hover:border-blue-300 flex items-center justify-center text-slate-500 group-hover:text-blue-600 shadow-2xs transition-all mb-2">
-                  <Camera size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                  Tap to upload application screenshot
-                </span>
-                <span className="text-[11px] text-slate-400 mt-0.5">
-                  Choose from photo gallery or take a picture
-                </span>
-              </label>
-            )}
-          </div>
 
           {/* Footer Buttons */}
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
@@ -643,7 +585,7 @@ export function ApplicationModal() {
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} weight="bold" /> Submit {applicantMode === "JOINT" ? `${contributors.length} Friends Split` : ""} {effectiveIpos} IPO Application(s)
+                  <ShieldCheck size={18} weight="bold" /> Submit
                 </>
               )}
             </button>

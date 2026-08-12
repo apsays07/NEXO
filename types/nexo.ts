@@ -75,10 +75,12 @@ export interface FinancialMetrics {
   priceBand: { min: number; max: number };
   lotSize: number;
   minInvestment: number;
+  faceValue?: number; // e.g. 2
   openDate: string;
   closeDate: string;
   allotmentDate: string;
   listingDate: string;
+  rhpUrl?: string; // Link to RHP PDF document
   retailQuotaPercent?: number;
   gmp?: number; // Grey Market Premium in ₹
   gmpPercent?: number;
@@ -93,6 +95,8 @@ export interface IPOOpportunity {
   status: IPOLifecycleStage;
   recommendation: RecommendationType;
   thesis: string;
+  decisionDate?: string; // e.g. "12 Aug 2026"
+  decisionBy?: string;   // member name who authored the decision
   metrics: FinancialMetrics;
   createdBy: string;
   participantsCount: number;
