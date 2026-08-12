@@ -108,6 +108,7 @@ export interface IPOOpportunity {
   realizedProfit?: number;
   registrarUrl?: string;
   tags?: string[];
+  isHidden?: boolean;
   isFeatured?: boolean;
   closeCountdown?: string;
 }

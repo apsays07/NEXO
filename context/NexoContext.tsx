@@ -101,6 +101,14 @@ interface NexoContextType {
   listedIpos: import("@/types/nexo").ListedIPO[];
   addListedIpo: (ipo: Omit<import("@/types/nexo").ListedIPO, "id">) => void;
   deleteListedIpo: (id: string) => void;
+  createIPO: (data: {
+    name: string;
+    minInvestment: number;
+    issueSize: number;
+    description: string;
+    closeDate: string;
+  }) => { success: boolean; message?: string };
+  removeIPO: (ipoId: string) => { success: boolean; message?: string };
   isLoading: boolean;
   isPremiumUser: boolean;
   activePlan: string;
@@ -648,6 +656,101 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
+  const createIPO = (data: {
+    name: string;
+    minInvestment: number;
+    issueSize: number;
+    description: string;
+    closeDate: string;
+  }) => {
+    const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+    if (activeRole !== "ADMIN") {
+      return { success: false, message: "Unauthorized. Admin privileges required." };
+    }
+
+    const adminName = currentMember?.name || currentUser?.name || "Shivam Prasad";
+    const formattedIssueSize = `₹${Number(data.issueSize).toLocaleString("en-IN")} Cr`;
+
+    const newIpo: IPOOpportunity = {
+      id: `ipo_${Date.now()}`,
+      name: data.name,
+      company: data.name, // Direct company name without invented legal suffixes
+      logo: data.name.substring(0, 2).toUpperCase(),
+      category: "Mainboard",
+      status: "APPLICATION_OPEN",
+      recommendation: "APPLY",
+      thesis: data.description,
+      isHidden: false,
+      metrics: {
+        issueSize: formattedIssueSize,
+        priceBand: { min: 0, max: 0 },
+        lotSize: 1,
+        minInvestment: Number(data.minInvestment) || 15000,
+        openDate: "Open",
+        closeDate: data.closeDate || "28 Aug 2026",
+        allotmentDate: "—",
+        listingDate: "—",
+      },
+      createdBy: adminName,
+      participantsCount: 0,
+      combinedCapital: 0,
+      applications: [],
+    };
+
+    setIpos((prev) => [newIpo, ...prev]);
+
+    const newActivity: ActivityItem = {
+      id: `act_${Date.now()}`,
+      type: "IPO_ADDED",
+      title: `${adminName} added ${data.name}`,
+      subtitle: `Closes on ${data.closeDate} • Min. Investment ₹${Number(data.minInvestment).toLocaleString("en-IN")}`,
+      timestamp: "Today",
+      memberName: adminName,
+      memberAvatar: currentMember?.avatar || members[0].avatar,
+      ipoId: newIpo.id,
+      ipoName: data.name,
+    };
+
+    setActivities((prev) => [newActivity, ...prev]);
+
+    return { success: true, message: `✓ IPO published successfully. ${data.name} is now visible on the user website.` };
+  };
+
+  const removeIPO = (ipoId: string) => {
+    const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+    if (activeRole !== "ADMIN") {
+      return { success: false, message: "Unauthorized. Admin privileges required." };
+    }
+
+    const targetIpo = ipos.find((i) => i.id === ipoId);
+    if (!targetIpo) {
+      return { success: false, message: "IPO not found." };
+    }
+
+    const adminName = currentMember?.name || currentUser?.name || "Shivam Prasad";
+
+    // Soft hide from member-facing lists while preserving application references
+    setIpos((prev) =>
+      prev.map((ipo) => (ipo.id === ipoId ? { ...ipo, isHidden: true } : ipo))
+    );
+
+    const newActivity: ActivityItem = {
+      id: `act_${Date.now()}`,
+      type: "IPO_ADDED",
+      title: `${adminName} removed ${targetIpo.name}`,
+      subtitle: `IPO hidden from user website`,
+      timestamp: "Today",
+      memberName: adminName,
+      memberAvatar: currentMember?.avatar || members[0].avatar,
+      ipoId: targetIpo.id,
+      ipoName: targetIpo.name,
+    };
+
+    setActivities((prev) => [newActivity, ...prev]);
+
+    return { success: true, message: `✓ IPO removed. ${targetIpo.name} is no longer visible on the user website.` };
+  };
+
   return (
     <NexoContext.Provider
       value={{
@@ -714,6 +817,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         listedIpos,
         addListedIpo,
         deleteListedIpo,
+        createIPO,
+        removeIPO,
         isLoading,
         isPremiumUser,
         activePlan,
