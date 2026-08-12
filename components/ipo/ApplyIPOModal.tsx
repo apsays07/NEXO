@@ -352,54 +352,71 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
 
                 {/* Dynamic Clean Input Rows */}
                 <div className="space-y-2">
-                  {contributors.map((c, idx) => (
-                    <div
-                      key={idx}
-                      className="grid grid-cols-12 gap-2 items-center p-2 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition-all"
-                    >
-                      {/* Clean Friend Name Input */}
-                      <div className="col-span-6 flex items-center gap-1.5">
-                        <span className={`w-5 h-5 rounded-full ${BAR_COLORS[idx % BAR_COLORS.length]} text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-2xs`}>
+                  {contributors.map((c, idx) => {
+                    const numAmt = typeof c.amount === "number" ? c.amount : 0;
+                    const pctStr =
+                      totalPooledCapital > 0
+                        ? ((numAmt / totalPooledCapital) * 100).toFixed(1) + "%"
+                        : "0%";
+
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition-all"
+                      >
+                        {/* # Badge */}
+                        <span
+                          className={`w-5 h-5 rounded-full ${
+                            BAR_COLORS[idx % BAR_COLORS.length]
+                          } text-white font-bold text-[10px] flex items-center justify-center shrink-0 shadow-2xs`}
+                        >
                           #{idx + 1}
                         </span>
+
+                        {/* Clean Friend Name Input */}
                         <input
                           type="text"
                           required
                           placeholder={`Friend #${idx + 1} Name`}
                           value={c.memberName}
                           onChange={(e) => handleContributorNameChange(idx, e.target.value)}
-                          className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
+                          className="flex-1 min-w-0 bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
                         />
-                      </div>
 
-                      {/* Clean Custom Amount Input */}
-                      <div className="col-span-5 flex items-center gap-1">
-                        <span className="text-xs font-bold text-slate-400">₹</span>
-                        <input
-                          type="number"
-                          min={0}
-                          placeholder="0"
-                          value={c.amount}
-                          onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
-                          className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
-                        />
-                      </div>
+                        {/* Clean Custom Amount Input */}
+                        <div className="flex items-center gap-1 w-28 shrink-0">
+                          <span className="text-xs font-bold text-slate-400">₹</span>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="0"
+                            value={c.amount}
+                            onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
+                            className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
+                          />
+                        </div>
 
-                      {/* Delete Button */}
-                      <div className="col-span-1 flex justify-end">
-                        {contributors.length > 1 && (
-                          <button
-                            type="button"
-                            onClick={() => handleRemoveContributor(idx)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Remove Friend"
-                          >
-                            <Trash size={15} />
-                          </button>
-                        )}
+                        {/* Investment Percentage Badge */}
+                        <span className="text-[11px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100/80 shrink-0 w-14 text-center">
+                          {pctStr}
+                        </span>
+
+                        {/* Delete Button */}
+                        <div className="w-5 shrink-0 flex justify-end">
+                          {contributors.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveContributor(idx)}
+                              className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                              title="Remove Friend"
+                            >
+                              <Trash size={15} />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 {/* VISUAL MULTI-COLOR CAPITAL SHARE PROGRESS BAR */}
