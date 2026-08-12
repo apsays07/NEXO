@@ -1,20 +1,19 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
+import React, { createContext, useContext, useState } from "react";
 import {
   IPOOpportunity,
   Member,
-  MemberRole,
   ActivityItem,
   PortfolioSummary,
   ParticipationType,
   ApplicationType,
   Application,
   AllotmentStatus,
+  MemberRole,
   IPOLifecycleStage,
   ActionItem,
   RecommendationType,
-  Transaction,
 } from "@/types/nexo";
 import {
   MOCK_IPOS,
@@ -27,13 +26,6 @@ import {
 type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members";
 
 interface NexoContextType {
-  isAuthenticated: boolean;
-  isAuthLoaded: boolean;
-  currentUser: Member | null;
-  login: (userId: string, pass: string) => { success: boolean; message?: string };
-  logout: () => void;
-  authError: string | null;
-  setAuthError: (err: string | null) => void;
   activeTab: ViewTab;
   setActiveTab: (tab: ViewTab) => void;
   currentUserRole: MemberRole;
@@ -44,13 +36,6 @@ interface NexoContextType {
   actionItems: ActionItem[];
   dismissActionItem: (id: string) => void;
   portfolioSummary: PortfolioSummary;
-  individualSavings: number;
-  updateIndividualSavings: (amount: number) => void;
-  userContributions: Record<string, number>;
-  updateUserContribution: (ipoId: string, amount: number) => void;
-  transactions: Transaction[];
-  clearTransactions: () => void;
-  deleteTransaction: (txnId: string) => void;
   selectedIpo: IPOOpportunity | null;
   openIpoDetail: (ipo: IPOOpportunity) => void;
   closeIpoDetail: () => void;
@@ -83,16 +68,24 @@ interface NexoContextType {
     proofUrl?: string,
     applicantMemberId?: string
   ) => void;
+  currentMember: Member;
   updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
   updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
   updateRegistrarUrl: (ipoId: string, url: string) => void;
-  deleteApplication: (ipoId: string, applicationId: string) => void;
   updateApplication: (
     ipoId: string,
     applicationId: string,
-    newApplicantName: string,
-    newLotCount: number
+    data: {
+      applicantName?: string;
+      panMasked?: string;
+      totalContribution?: number;
+      participants?: import("@/types/nexo").ApplicationParticipant[];
+    }
   ) => void;
+  deleteApplication: (ipoId: string, applicationId: string) => void;
+  listedIpos: import("@/types/nexo").ListedIPO[];
+  addListedIpo: (ipo: Omit<import("@/types/nexo").ListedIPO, "id">) => void;
+  deleteListedIpo: (id: string) => void;
   isLoading: boolean;
   isPremiumUser: boolean;
   activePlan: string;
@@ -105,158 +98,13 @@ interface NexoContextType {
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
-  const [members] = useState<Member[]>(MOCK_MEMBERS);
-  const [currentUser, setCurrentUser] = useState<Member | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
-  const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
-  const [authError, setAuthError] = useState<string | null>(null);
-
   const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
   const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
-
-  // Restore session & persisted local storage state safely after hydration
-  useEffect(() => {
-    try {
-      const storedUser = localStorage.getItem("nexo_session_user");
-      if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setCurrentUser(parsed);
-        setCurrentUserRole(parsed.role || "ADMIN");
-        setIsAuthenticated(true);
-      }
-
-      const storedSavings = localStorage.getItem("nexo_individualSavings");
-      if (storedSavings !== null) setIndividualSavings(parseFloat(storedSavings));
-
-      const storedContribs = localStorage.getItem("nexo_userContributions");
-      if (storedContribs !== null) setUserContributions(JSON.parse(storedContribs));
-
-      const storedTxns = localStorage.getItem("nexo_transactions");
-      if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
-    } catch {}
-
-    setIsAuthLoaded(true);
-
-    async function syncDb() {
-      try {
-        const ipoRes = await fetch("/api/ipos");
-        const ipoData = await ipoRes.json();
-        if (ipoData?.success && Array.isArray(ipoData.ipos) && ipoData.ipos.length > 0) {
-          setIpos(ipoData.ipos);
-        }
-      } catch {}
-    }
-    syncDb();
-  }, []);
-
-  const login = (userId: string, pass: string): { success: boolean; message?: string } => {
-    setAuthError(null);
-    const cleanId = userId.trim().toLowerCase();
-    const cleanPass = pass.trim();
-
-    if (!cleanId) {
-      const msg = "Please enter a User ID or Email";
-      setAuthError(msg);
-      return { success: false, message: msg };
-    }
-
-    if (!cleanPass) {
-      const msg = "Please enter your password";
-      setAuthError(msg);
-      return { success: false, message: msg };
-    }
-
-    // Match against mock members or demo credentials
-    let foundMember = members.find(
-      (m) =>
-        m.id.toLowerCase() === cleanId ||
-        m.email.toLowerCase() === cleanId ||
-        m.name.toLowerCase() === cleanId
-    );
-
-    // Also support 'admin' alias for Ankit
-    if (!foundMember && cleanId === "admin") {
-      foundMember = members[0]; // Ankit
-    }
-
-    // Default password checks:
-    // admin / admin123, user123, password, nexo123, or any non-empty password for valid members
-    if (foundMember) {
-      // Valid member found
-      setCurrentUser(foundMember);
-      setCurrentUserRole(foundMember.role);
-      setIsAuthenticated(true);
-      try {
-        localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
-      } catch {}
-      return { success: true };
-    } else {
-      // If user provided a custom ID, create a dynamic guest session if password is valid
-      if (cleanPass.length >= 4) {
-        const dynamicUser: Member = {
-          id: `user_${Date.now()}`,
-          name: userId.trim(),
-          email: `${cleanId}@nexo.private`,
-          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          role: cleanId.includes("admin") ? "ADMIN" : "MEMBER",
-          panMasked: "XXXXXXXX99",
-          panFull: "ABCDE9999Z",
-          defaultContribution: 50000,
-          joinedAt: "Today",
-        };
-        setCurrentUser(dynamicUser);
-        setCurrentUserRole(dynamicUser.role);
-        setIsAuthenticated(true);
-        try {
-          localStorage.setItem("nexo_session_user", JSON.stringify(dynamicUser));
-        } catch {}
-        return { success: true };
-      }
-    }
-
-    const msg = "Invalid User ID or Password. Try demo login: 'admin' / 'admin123'";
-    setAuthError(msg);
-    return { success: false, message: msg };
-  };
-
-  const logout = () => {
-    setIsAuthenticated(false);
-    setCurrentUser(null);
-    setAuthError(null);
-    try {
-      localStorage.removeItem("nexo_session_user");
-    } catch {}
-  };
   const [ipos, setIpos] = useState<IPOOpportunity[]>(MOCK_IPOS);
+  const [members] = useState<Member[]>(MOCK_MEMBERS);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
   const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
-  const [individualSavings, setIndividualSavings] = useState<number>(0);
-  const [userContributions, setUserContributions] = useState<Record<string, number>>({});
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  // Persist to localStorage on change
-  useEffect(() => {
-    try { localStorage.setItem("nexo_individualSavings", String(individualSavings)); } catch {}
-  }, [individualSavings]);
-  useEffect(() => {
-    try { localStorage.setItem("nexo_userContributions", JSON.stringify(userContributions)); } catch {}
-  }, [userContributions]);
-  useEffect(() => {
-    try { localStorage.setItem("nexo_transactions", JSON.stringify(transactions)); } catch {}
-  }, [transactions]);
-
-
-  const updateIndividualSavings = (amount: number) => {
-    setIndividualSavings(amount);
-  };
-
-  const updateUserContribution = (ipoId: string, amount: number) => {
-    setUserContributions((prev) => ({
-      ...prev,
-      [ipoId]: amount,
-    }));
-  };
 
   const [selectedIpo, setSelectedIpo] = useState<IPOOpportunity | null>(null);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
@@ -397,62 +245,10 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deleteApplication = (ipoId: string, applicationId: string) => {
-    setIpos((prev) =>
-      prev.map((ipo) => {
-        if (ipo.id === ipoId) {
-          const updatedApps = ipo.applications.filter((app) => app.id !== applicationId);
-          const newTotalCapital = updatedApps.reduce((sum, a) => sum + a.totalContribution, 0);
-          return {
-            ...ipo,
-            applications: updatedApps,
-            participantsCount: updatedApps.length,
-            combinedCapital: newTotalCapital,
-          };
-        }
-        return ipo;
-      })
-    );
-  };
-
-  const updateApplication = (
-    ipoId: string,
-    applicationId: string,
-    newApplicantName: string,
-    newLotCount: number
-  ) => {
-    setIpos((prev) =>
-      prev.map((ipo) => {
-        if (ipo.id === ipoId) {
-          const minInvest = ipo.metrics?.minInvestment || 14964;
-          const updatedApps = ipo.applications.map((app) => {
-            if (app.id === applicationId) {
-              const newTotal = newLotCount * minInvest;
-              return {
-                ...app,
-                applicantName: newApplicantName,
-                lotCount: newLotCount,
-                totalContribution: newTotal,
-              };
-            }
-            return app;
-          });
-          const newTotalCapital = updatedApps.reduce((sum, a) => sum + a.totalContribution, 0);
-          return {
-            ...ipo,
-            applications: updatedApps,
-            combinedCapital: newTotalCapital,
-          };
-        }
-        return ipo;
-      })
-    );
-  };
-
   const createApplication = (
     ipoId: string,
     type: ParticipationType | ApplicationType,
-    participantContributions: { memberId: string; memberName?: string; contribution: number }[],
+    participantContributions: { memberId: string; contribution: number }[],
     proofUrl?: string,
     applicantMemberId?: string
   ) => {
@@ -470,7 +266,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       const percentage = total > 0 ? (p.contribution / total) * 100 : 0;
       return {
         memberId: p.memberId,
-        memberName: p.memberName || member?.name || "Member",
+        memberName: member?.name || "Member",
         avatar: member?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         contribution: p.contribution,
         percentage: Number(percentage.toFixed(1)),
@@ -484,7 +280,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
     const newAppId = `app_${Date.now()}`;
     const targetIpo = ipos.find((i) => i.id === ipoId);
-    const appNumber = `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`;
     const newApplication: Application = {
       id: newAppId,
       ipoId,
@@ -498,7 +293,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       allotmentStatus: "AWAITING",
       status: "AWAITING",
       createdAt: new Date().toISOString(),
-      applicationNumber: appNumber,
+      applicationNumber: `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`,
       applicationProofUrl: proofUrl,
       participants: formattedParticipants.length > 0 ? formattedParticipants : [
         {
@@ -547,34 +342,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
-    // Record transaction. Ledger keeps its own SOLO/COMBO vocabulary, so map
-    // from the canonical INDIVIDUAL/COMBINED type used by applications.
-    const newTransaction: Transaction = {
-      id: `txn_${Date.now()}`,
-      ipoId,
-      ipoName: activeApplicationIpo?.name || "IPO",
-      type: canonicalType === "INDIVIDUAL" ? "SOLO" : "COMBO",
-      amount: total,
-      applicationNumber: appNumber,
-      participants:
-        canonicalType === "INDIVIDUAL"
-          ? [applicantMember?.name || members[0].name]
-          : formattedParticipants.map((p) => p.memberName),
-      createdAt: new Date().toISOString(),
-      status: "SUBMITTED",
-    };
-    setTransactions((prev) => [newTransaction, ...prev]);
-
-    // Deduct applied amount from individual savings (only for solo applications)
-    if (canonicalType === "INDIVIDUAL") {
-      setIndividualSavings((prev) => Math.max(0, prev - total));
-      // Also record as a userContribution for the IPO
-      setUserContributions((prev) => ({
-        ...prev,
-        [ipoId]: (prev[ipoId] ?? 0) + total,
-      }));
-    }
-
     // Record activity
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
@@ -595,53 +362,172 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setActiveTab("applications");
   };
 
+  const currentMember = members[0]; // Active logged-in user (Shivam Prasad)
+
   const updateRegistrarUrl = (ipoId: string, url: string) => {
     setIpos((prev) =>
       prev.map((ipo) => (ipo.id === ipoId ? { ...ipo, registrarUrl: url } : ipo))
     );
   };
 
+  const updateApplication = (
+    ipoId: string,
+    applicationId: string,
+    data: {
+      applicantName?: string;
+      panMasked?: string;
+      totalContribution?: number;
+      participants?: import("@/types/nexo").ApplicationParticipant[];
+    }
+  ) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const updatedApps = ipo.applications.map((app) => {
+            if (app.id === applicationId) {
+              return {
+                ...app,
+                ...(data.applicantName !== undefined && { applicantName: data.applicantName }),
+                ...(data.panMasked !== undefined && { panMasked: data.panMasked }),
+                ...(data.totalContribution !== undefined && { totalContribution: data.totalContribution }),
+                ...(data.participants !== undefined && { participants: data.participants }),
+              };
+            }
+            return app;
+          });
+          const totalCombined = updatedApps.reduce(
+            (sum, a) => sum + a.totalContribution,
+            0
+          );
+          return {
+            ...ipo,
+            applications: updatedApps,
+            combinedCapital: totalCombined,
+          };
+        }
+        return ipo;
+      })
+    );
+  };
+
+  const deleteApplication = (ipoId: string, applicationId: string) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const updatedApps = ipo.applications.filter((app) => app.id !== applicationId);
+          const totalCombined = updatedApps.reduce(
+            (sum, a) => sum + a.totalContribution,
+            0
+          );
+          return {
+            ...ipo,
+            applications: updatedApps,
+            combinedCapital: totalCombined,
+          };
+        }
+        return ipo;
+      })
+    );
+  };
+
+  const [listedIpos, setListedIpos] = useState<import("@/types/nexo").ListedIPO[]>([
+    {
+      id: "listed_1",
+      name: "ABC Industries",
+      category: "Mainboard",
+      logo: "ABC",
+      lotsAllotted: 2,
+      totalProfit: 30000,
+      applicantsCount: 4,
+      oneLotProfit: 15000,
+      listingDate: "22 Aug 2026",
+      lotPrice: 15000,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 15000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 7500 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 7500 },
+      ],
+    },
+    {
+      id: "listed_2",
+      name: "Premier Energies",
+      category: "Mainboard",
+      logo: "PE",
+      lotsAllotted: 3,
+      totalProfit: 72000,
+      applicantsCount: 6,
+      oneLotProfit: 24000,
+      listingDate: "03 Sep 2026",
+      lotPrice: 14964,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 24000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 24000 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 24000 },
+      ],
+    },
+    {
+      id: "listed_3",
+      name: "Bajaj Housing Finance",
+      category: "Mainboard",
+      logo: "BHF",
+      lotsAllotted: 4,
+      totalProfit: 112000,
+      applicantsCount: 8,
+      oneLotProfit: 28000,
+      listingDate: "16 Sep 2026",
+      lotPrice: 15000,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 28000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 28000 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 28000 },
+        { memberId: "mem_4", memberName: "Amit", profit: 28000 },
+      ],
+    },
+    {
+      id: "listed_4",
+      name: "KRN Heat Exchanger",
+      category: "SME",
+      logo: "KRN",
+      lotsAllotted: 2,
+      totalProfit: 94000,
+      applicantsCount: 5,
+      oneLotProfit: 47000,
+      listingDate: "03 Oct 2026",
+      lotPrice: 14820,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 47000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 47000 },
+      ],
+    },
+  ]);
+
+  const addListedIpo = (ipoData: Omit<import("@/types/nexo").ListedIPO, "id">) => {
+    const newListed: import("@/types/nexo").ListedIPO = {
+      id: `listed_${Date.now()}`,
+      ...ipoData,
+      logo: ipoData.logo || ipoData.name.substring(0, 2).toUpperCase(),
+    };
+    setListedIpos((prev) => [newListed, ...prev]);
+  };
+
+  const deleteListedIpo = (id: string) => {
+    setListedIpos((prev) => prev.filter((i) => i.id !== id));
+  };
+
   return (
     <NexoContext.Provider
       value={{
-        isAuthenticated,
-        isAuthLoaded,
-        currentUser,
-        login,
-        logout,
-        authError,
-        setAuthError,
         activeTab,
         setActiveTab,
         currentUserRole,
         setCurrentUserRole,
         ipos,
         members,
+        currentMember,
         activities,
         actionItems,
         dismissActionItem,
         portfolioSummary,
-        individualSavings,
-        updateIndividualSavings,
-        userContributions,
-        updateUserContribution,
-        transactions,
-        clearTransactions: () => setTransactions([]),
-        deleteTransaction: (txnId: string) => {
-          const txn = transactions.find((t) => t.id === txnId);
-          if (!txn) return;
-          // Reverse balance deduction for SOLO
-          if (txn.type === "SOLO") {
-            setIndividualSavings((prev) => prev + txn.amount);
-            setUserContributions((prev) => {
-              const updated = { ...prev };
-              const existing = updated[txn.ipoId] ?? 0;
-              updated[txn.ipoId] = Math.max(0, existing - txn.amount);
-              return updated;
-            });
-          }
-          setTransactions((prev) => prev.filter((t) => t.id !== txnId));
-        },
         selectedIpo,
         openIpoDetail,
         closeIpoDetail,
@@ -661,8 +547,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateIpoStatus,
         updateApplicationStatus,
         updateRegistrarUrl,
-        deleteApplication,
         updateApplication,
+        deleteApplication,
+        listedIpos,
+        addListedIpo,
+        deleteListedIpo,
         isLoading,
         isPremiumUser,
         activePlan,
