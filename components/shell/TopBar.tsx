@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, User, Gear, SignOut } from "@phosphor-icons/react";
 import { AvailableCapitalPopover } from "./AvailableCapitalPopover";
 import { NotificationPopover } from "./NotificationPopover";
 import { CommandPalette } from "../ui/CommandPalette";
@@ -11,6 +11,18 @@ export function TopBar() {
   const { activeTab, searchQuery, setSearchQuery, portfolioSummary, members } = useNexo();
   const currentUser = members[0];
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(e.target as Node)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const titles: Record<string, string> = {
     dashboard: "Dashboard",
@@ -69,14 +81,58 @@ export function TopBar() {
           {/* Activity Bell Popover */}
           <NotificationPopover />
 
-          {/* Profile Circle */}
-          <div className="flex items-center gap-2 shrink-0">
-            <img
-              src={currentUser?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-              alt={currentUser?.name || "Ankit"}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/10 hover:ring-blue-500/30 transition-all hover:scale-[1.05] duration-200 cursor-pointer shadow-sm"
-              title={currentUser?.name || "Ankit"}
-            />
+          {/* Profile Circle with Interactive User Dropdown */}
+          <div className="relative shrink-0" ref={userMenuRef}>
+            <button
+              onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
+              className="flex items-center gap-1.5 focus:outline-none cursor-pointer"
+            >
+              <img
+                src={currentUser?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+                alt={currentUser?.name || "Ankit"}
+                className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-500/10 hover:ring-blue-500/30 transition-all hover:scale-[1.05] duration-200 shadow-sm"
+                title={currentUser?.name || "Ankit"}
+              />
+            </button>
+
+            {isUserMenuOpen && (
+              <div className="absolute right-0 mt-2.5 w-56 rounded-2xl bg-white/95 backdrop-blur-md border border-slate-200/80 shadow-2xl p-2.5 z-40 space-y-1 animate-fade-in text-xs font-sans">
+                {/* User Info Header */}
+                <div className="px-3 py-2 border-b border-slate-100 mb-1.5">
+                  <p className="font-extrabold text-slate-900 text-xs truncate">
+                    {currentUser?.name || "Ankit"}
+                  </p>
+                  <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wide truncate mt-0.5">
+                    {currentUser?.role || "Group Admin"}
+                  </p>
+                </div>
+
+                {/* Dropdown Items */}
+                <button
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-semibold transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <User size={14} className="text-slate-400" />
+                  <span>Profile Settings</span>
+                </button>
+                
+                <button
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-50 font-semibold transition-colors flex items-center gap-2 cursor-pointer"
+                >
+                  <Gear size={14} className="text-slate-400" />
+                  <span>System Settings</span>
+                </button>
+
+                <button
+                  onClick={() => setIsUserMenuOpen(false)}
+                  className="w-full text-left px-3 py-2 rounded-xl text-red-600 hover:text-red-700 hover:bg-red-50/50 font-bold transition-colors flex items-center gap-2 cursor-pointer mt-1 border-t border-slate-100 pt-2"
+                >
+                  <SignOut size={14} className="text-red-500" />
+                  <span>Log Out</span>
+                </button>
+              </div>
+            )}
           </div>
         </div>
       </header>
