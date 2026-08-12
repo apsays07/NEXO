@@ -22,10 +22,10 @@ export default function Home() {
       <Sidebar />
 
       {/* MAIN WORKSPACE AREA */}
-      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-hidden">
         <TopBar />
 
-        <main className="p-4 sm:p-6 md:p-8 pb-24 lg:pb-8 flex-1 max-w-7xl w-full mx-auto">
+        <main className="p-4 sm:p-6 md:p-8 pb-24 lg:pb-8 flex-1 max-w-7xl w-full mx-auto overflow-y-auto">
           {activeTab === "dashboard" && <DashboardView />}
           {activeTab === "ipos" && <IPOWorkspaceView />}
           {activeTab === "applications" && <ApplicationsView />}
