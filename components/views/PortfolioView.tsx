@@ -70,13 +70,6 @@ export function PortfolioView() {
   );
   const myTotalProfit = myRealizedProfit + myUnrealizedProfit;
 
-  const myProfitPercent =
-    myTotalApplied > 0
-      ? ((myTotalProfit / myTotalApplied) * 100).toFixed(1)
-      : "0";
-
-  const availableSavings = Math.max(0, individualSavings - myTotalApplied);
-
   const handleSaveSavings = (e: React.FormEvent) => {
     e.preventDefault();
     const val = parseFloat(savingsInput);
@@ -156,7 +149,6 @@ export function PortfolioView() {
         <MetricCard
           label="Total Balance (My Savings)"
           value={individualSavings > 0 ? formatINR(individualSavings) : "₹0"}
-          subtitle={`Unallocated: ${formatINR(availableSavings)}`}
           icon={<Wallet size={20} className="text-[#2563EB]" />}
           action={
             <button
@@ -176,16 +168,12 @@ export function PortfolioView() {
         <MetricCard
           label="Total Applied (My Capital)"
           value={myTotalApplied > 0 ? formatINR(myTotalApplied) : "₹0"}
-          subtitle={transactions.length > 0 ? `${transactions.length} application${transactions.length > 1 ? "s" : ""} submitted` : "No applications yet"}
           icon={<FileText size={20} className="text-[#D97706]" />}
         />
 
         <MetricCard
           label="Total Profit (My Return)"
           value={myTotalProfit !== 0 ? formatINR(myTotalProfit, true) : "₹0"}
-          change={myTotalApplied > 0 ? `+${myProfitPercent}%` : undefined}
-          changeType="positive"
-          subtitle={myTotalProfit !== 0 ? `Realized: ${formatINR(myRealizedProfit, true)} | Unrealized: ${formatINR(myUnrealizedProfit, true)}` : "No returns accrued"}
           icon={<TrendUp size={20} className="text-[#059669]" />}
         />
       </div>
@@ -405,12 +393,6 @@ export function PortfolioView() {
                 <div className="flex justify-between">
                   <span>Total Applied Capital:</span>
                   <span className="font-bold text-[#0F172A]">{formatINR(myTotalApplied)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Unallocated Balance:</span>
-                  <span className="font-bold text-[#059669]">
-                    {formatINR(Math.max(0, (parseFloat(savingsInput) || 0) - myTotalApplied))}
-                  </span>
                 </div>
               </div>
 
