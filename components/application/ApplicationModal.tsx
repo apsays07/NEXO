@@ -327,13 +327,6 @@ export function ApplicationModal() {
                 <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
                   <Coins size={16} className="text-blue-600" /> Capital Allocation Pool
                 </span>
-                <button
-                  type="button"
-                  onClick={handleEqualSplit}
-                  className="text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer active:scale-95"
-                >
-                  <Scales size={13} /> Split Equally
-                </button>
               </div>
 
               {/* Table Header: FRIEND NAME | AMOUNT (₹) */}
