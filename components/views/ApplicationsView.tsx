@@ -467,67 +467,127 @@ export function ApplicationsView() {
                   const applicantName = app.applicantName || "Ashay";
                   const lotCount = app.lotCount || 1;
 
+                  const displayNames =
+                    app.participants && app.participants.length > 0
+                      ? app.participants.map((p) => p.memberName).join(", ")
+                      : applicantName;
+
                   return (
-                    <div
-                      key={app.id}
-                      className="px-6 py-4 flex flex-col md:grid md:grid-cols-12 items-start md:items-center gap-3 md:gap-0 hover:bg-slate-50/60 transition-colors"
-                    >
-                      {/* # SR No */}
-                      <div className="col-span-1 font-mono text-xs font-bold text-slate-800">
-                        {formattedSeq}
-                      </div>
+                    <React.Fragment key={app.id}>
+                      {/* DESKTOP ROW (md and larger) */}
+                      <div className="hidden md:grid md:grid-cols-12 px-6 py-4 items-center hover:bg-slate-50/60 transition-colors">
+                        {/* # SR No */}
+                        <div className="col-span-1 font-mono text-xs font-bold text-slate-800">
+                          {formattedSeq}
+                        </div>
 
-                      {/* Contributors List as name1, name2 */}
-                      <div className="col-span-3">
-                        <div className="text-sm font-bold text-slate-900 tracking-tight">
-                          {app.participants && app.participants.length > 0
-                            ? app.participants.map((p) => p.memberName).join(", ")
-                            : applicantName}
+                        {/* Contributors List as name1, name2 */}
+                        <div className="col-span-3">
+                          <div className="text-sm font-bold text-slate-900 tracking-tight">
+                            {displayNames}
+                          </div>
+                        </div>
+
+                        {/* PAN Card Column */}
+                        <div className="col-span-2 self-center">
+                          <div className="text-xs font-semibold text-slate-700 font-mono">
+                            {app.panMasked || "ABCDE2741D"}
+                          </div>
+                        </div>
+
+                        {/* Amount */}
+                        <div className="col-span-2 text-right self-center font-mono text-sm font-bold text-slate-900 num-tabular">
+                          {formatINR(app.totalContribution)}
+                        </div>
+
+                        {/* Status */}
+                        <div className="col-span-2 text-center self-center">
+                          {renderStatusControl(currentStatus)}
+                        </div>
+
+                        {/* ACTIONS: EDIT & DELETE */}
+                        <div className="col-span-2 flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() =>
+                              setEditingApp({
+                                ipoId: ipo.id,
+                                appId: app.id,
+                                applicantName: applicantName,
+                                lotCount: lotCount,
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                            title="Edit Application"
+                          >
+                            <PencilSimple size={16} weight="bold" />
+                          </button>
+                          <button
+                            onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            title="Delete Application"
+                          >
+                            <Trash size={16} weight="bold" />
+                          </button>
                         </div>
                       </div>
 
-                      {/* PAN Card Column */}
-                      <div className="col-span-2 self-center">
-                        <div className="text-xs font-semibold text-slate-700 font-mono">
-                          {app.panMasked || "ABCDE2741D"}
+                      {/* MOBILE CARD VIEW (< md screens) */}
+                      <div className="md:hidden p-4 border-b border-slate-100/80 flex flex-col gap-3 hover:bg-slate-50/50 transition-colors">
+                        {/* Top: # SR + Names + Edit/Delete */}
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0">
+                              #{formattedSeq}
+                            </span>
+                            <span className="text-sm font-bold text-slate-900 tracking-tight truncate">
+                              {displayNames}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              onClick={() =>
+                                setEditingApp({
+                                  ipoId: ipo.id,
+                                  appId: app.id,
+                                  applicantName: applicantName,
+                                  lotCount: lotCount,
+                                })
+                              }
+                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                              title="Edit Application"
+                            >
+                              <PencilSimple size={16} weight="bold" />
+                            </button>
+                            <button
+                              onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
+                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                              title="Delete Application"
+                            >
+                              <Trash size={16} weight="bold" />
+                            </button>
+                          </div>
+                        </div>
+
+                        {/* Middle: PAN + Amount */}
+                        <div className="flex items-center justify-between bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/60 text-xs">
+                          <div>
+                            <span className="text-[10px] text-slate-400 block uppercase font-medium">PAN</span>
+                            <span className="font-mono font-bold text-slate-800">{app.panMasked || "ABCDE2741D"}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-[10px] text-slate-400 block uppercase font-medium">Total Amount</span>
+                            <span className="font-mono font-bold text-slate-900 text-sm">{formatINR(app.totalContribution)}</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom: Status */}
+                        <div className="flex items-center justify-between pt-1">
+                          <span className="text-xs font-semibold text-slate-500">Status</span>
+                          <div>{renderStatusControl(currentStatus)}</div>
                         </div>
                       </div>
-
-                      {/* Amount */}
-                      <div className="col-span-2 text-right self-center font-mono text-sm font-bold text-slate-900 num-tabular">
-                        {formatINR(app.totalContribution)}
-                      </div>
-
-                      {/* Status */}
-                      <div className="col-span-2 text-center self-center">
-                        {renderStatusControl(currentStatus)}
-                      </div>
-
-                      {/* ACTIONS: EDIT & DELETE */}
-                      <div className="col-span-2 flex items-center justify-end gap-1.5">
-                        <button
-                          onClick={() =>
-                            setEditingApp({
-                              ipoId: ipo.id,
-                              appId: app.id,
-                              applicantName: applicantName,
-                              lotCount: lotCount,
-                            })
-                          }
-                          className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                          title="Edit Application"
-                        >
-                          <PencilSimple size={16} weight="bold" />
-                        </button>
-                        <button
-                          onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                          className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                          title="Delete Application"
-                        >
-                          <Trash size={16} weight="bold" />
-                        </button>
-                      </div>
-                    </div>
+                    </React.Fragment>
                   );
                 })
               )}
