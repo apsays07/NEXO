@@ -125,12 +125,12 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
 
       {/* ── Scrollable Body ── */}
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 space-y-0">
+        <div className="max-w-3xl mx-auto px-4 sm:px-6 py-4 space-y-0">
 
           {/* SECTION 1: Company Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-7 border-b border-line">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-line">
+            <div className="flex items-center gap-3.5">
+              <div className="w-12 h-12 rounded-2xl bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold text-lg shadow-2xs shrink-0">
                 {ipo.logo}
               </div>
               <div>
@@ -152,48 +152,48 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
           </div>
 
           {/* SECTION 2: IPO Details */}
-          <div className="py-7 border-b border-line space-y-5">
-            <h2 className="text-[16px] font-semibold text-ink">IPO details</h2>
+          <div className="py-4 border-b border-line space-y-3">
+            <h2 className="text-small font-semibold text-ink">IPO details</h2>
 
-            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6">
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-6 gap-y-3">
               <div>
-                <p className="text-xs text-ink-secondary font-normal mb-1.5">Minimum investment</p>
-                <p className="text-[15px] font-semibold text-ink num-tabular">
+                <p className="text-caption text-ink-secondary font-normal mb-1">Minimum investment</p>
+                <p className="text-small font-semibold text-ink num-tabular">
                   {formatINR(ipo.metrics.minInvestment)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-ink-secondary font-normal mb-1.5">Price range</p>
-                <p className="text-[15px] font-semibold text-ink num-tabular">
+                <p className="text-caption text-ink-secondary font-normal mb-1">Price range</p>
+                <p className="text-small font-semibold text-ink num-tabular">
                   ₹{ipo.metrics.priceBand.min} – ₹{ipo.metrics.priceBand.max}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-ink-secondary font-normal mb-1.5">Lot size</p>
-                <p className="text-[15px] font-semibold text-ink num-tabular">
+                <p className="text-caption text-ink-secondary font-normal mb-1">Lot size</p>
+                <p className="text-small font-semibold text-ink num-tabular">
                   {ipo.metrics.lotSize}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-ink-secondary font-normal mb-1.5">Issue size</p>
-                <p className="text-[15px] font-semibold text-ink num-tabular">
+                <p className="text-caption text-ink-secondary font-normal mb-1">Issue size</p>
+                <p className="text-small font-semibold text-ink num-tabular">
                   {ipo.metrics.issueSize || "—"}
                 </p>
               </div>
               {ipo.metrics.faceValue !== undefined && (
                 <div>
-                  <p className="text-xs text-ink-secondary font-normal mb-1.5">Face value</p>
-                  <p className="text-[15px] font-semibold text-ink num-tabular">₹{ipo.metrics.faceValue}</p>
+                  <p className="text-caption text-ink-secondary font-normal mb-1">Face value</p>
+                  <p className="text-small font-semibold text-ink num-tabular">₹{ipo.metrics.faceValue}</p>
                 </div>
               )}
               {ipo.metrics.rhpUrl && (
                 <div>
-                  <p className="text-xs text-ink-secondary font-normal mb-1.5">IPO document</p>
+                  <p className="text-caption text-ink-secondary font-normal mb-1">IPO document</p>
                   <a
                     href={ipo.metrics.rhpUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-positive hover:underline"
+                    className="inline-flex items-center gap-1.5 text-small font-semibold text-positive hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     RHP PDF <ArrowSquareOut size={14} />
@@ -204,8 +204,8 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
           </div>
 
           {/* SECTION 3: Schedule Timeline */}
-          <div className="py-7 space-y-7">
-            <h2 className="text-[16px] font-semibold text-ink">Schedule</h2>
+          <div className="py-4 space-y-4">
+            <h2 className="text-small font-semibold text-ink">Schedule</h2>
 
             <div className="relative">
               {/* Connector line (desktop) */}

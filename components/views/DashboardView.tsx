@@ -20,7 +20,7 @@ export function DashboardView() {
   ];
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto animate-fade-in pb-12 font-sans">
+    <div className="space-y-4 max-w-5xl mx-auto animate-fade-in pb-6 font-sans">
       {/* GREETING HEADER */}
       <DashboardHeader />
 
