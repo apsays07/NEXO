@@ -136,8 +136,10 @@ export function ApplicationsView() {
       updateApplication(
         editingApp.ipoId,
         editingApp.appId,
-        editingApp.applicantName,
-        Math.max(1, editingApp.lotCount)
+        {
+          applicantName: editingApp.applicantName,
+          lotCount: Math.max(1, editingApp.lotCount),
+        }
       );
       setEditingApp(null);
     }

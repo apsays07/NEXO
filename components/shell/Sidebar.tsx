@@ -239,20 +239,6 @@ export function Sidebar() {
           className="w-8 h-8 rounded-full object-cover ring-2 ring-accent/10"
           title={adminMember?.name || "Ankit"}
         />
-            className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-100"
-            title={adminMember?.name || "Ankit"}
-          />
-          {logout && (
-            <button
-              onClick={logout}
-              title="Sign Out"
-              className="p-1 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
-            >
-              <SignOut size={15} />
-            </button>
-          )}
-        </div>
->>>>>>> origin/main
       </aside>
 
       {/* MOBILE BOTTOM NAVIGATION BAR (Visible on screens < 768px) */}
