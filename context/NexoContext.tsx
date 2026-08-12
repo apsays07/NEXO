@@ -68,16 +68,25 @@ interface NexoContextType {
     proofUrl?: string,
     applicantMemberId?: string
   ) => void;
+  currentMember: Member;
   updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
   updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
   updateRegistrarUrl: (ipoId: string, url: string) => void;
-  deleteApplication: (ipoId: string, applicationId: string) => void;
   updateApplication: (
     ipoId: string,
     applicationId: string,
-    newApplicantName: string,
-    newLotCount: number
+    dataOrName: string | {
+      applicantName?: string;
+      panMasked?: string;
+      totalContribution?: number;
+      participants?: import("@/types/nexo").ApplicationParticipant[];
+    },
+    newLotCount?: number
   ) => void;
+  deleteApplication: (ipoId: string, applicationId: string) => void;
+  listedIpos: import("@/types/nexo").ListedIPO[];
+  addListedIpo: (ipo: Omit<import("@/types/nexo").ListedIPO, "id">) => void;
+  deleteListedIpo: (id: string) => void;
   isLoading: boolean;
   isPremiumUser: boolean;
   activePlan: string;
@@ -258,8 +267,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const updateApplication = (
     ipoId: string,
     applicationId: string,
-    newApplicantName: string,
-    newLotCount: number
+    dataOrName: string | {
+      applicantName?: string;
+      panMasked?: string;
+      totalContribution?: number;
+      participants?: import("@/types/nexo").ApplicationParticipant[];
+    },
+    newLotCount?: number
   ) => {
     setIpos((prev) =>
       prev.map((ipo) => {
@@ -267,21 +281,37 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           const minInvest = ipo.metrics?.minInvestment || 14964;
           const updatedApps = ipo.applications.map((app) => {
             if (app.id === applicationId) {
-              const newTotal = newLotCount * minInvest;
-              return {
-                ...app,
-                applicantName: newApplicantName,
-                lotCount: newLotCount,
-                totalContribution: newTotal,
-              };
+              if (typeof dataOrName === "string") {
+                const name = dataOrName;
+                const lotCount = newLotCount !== undefined ? newLotCount : (app.lotCount || 1);
+                const newTotal = lotCount * minInvest;
+                return {
+                  ...app,
+                  applicantName: name,
+                  lotCount,
+                  totalContribution: newTotal,
+                };
+              } else {
+                const data = dataOrName;
+                return {
+                  ...app,
+                  ...(data.applicantName !== undefined && { applicantName: data.applicantName }),
+                  ...(data.panMasked !== undefined && { panMasked: data.panMasked }),
+                  ...(data.totalContribution !== undefined && { totalContribution: data.totalContribution }),
+                  ...(data.participants !== undefined && { participants: data.participants }),
+                };
+              }
             }
             return app;
           });
-          const newTotalCapital = updatedApps.reduce((sum, a) => sum + a.totalContribution, 0);
+          const totalCombined = updatedApps.reduce(
+            (sum, a) => sum + a.totalContribution,
+            0
+          );
           return {
             ...ipo,
             applications: updatedApps,
-            combinedCapital: newTotalCapital,
+            combinedCapital: totalCombined,
           };
         }
         return ipo;
@@ -406,10 +436,116 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setActiveTab("applications");
   };
 
+  const currentMember = members[0]; // Active logged-in user (Shivam Prasad)
+
   const updateRegistrarUrl = (ipoId: string, url: string) => {
     setIpos((prev) =>
       prev.map((ipo) => (ipo.id === ipoId ? { ...ipo, registrarUrl: url } : ipo))
     );
+  };
+
+  const deleteApplication = (ipoId: string, applicationId: string) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const updatedApps = ipo.applications.filter((app) => app.id !== applicationId);
+          const totalCombined = updatedApps.reduce(
+            (sum, a) => sum + a.totalContribution,
+            0
+          );
+          return {
+            ...ipo,
+            applications: updatedApps,
+            combinedCapital: totalCombined,
+          };
+        }
+        return ipo;
+      })
+    );
+  };
+
+  const [listedIpos, setListedIpos] = useState<import("@/types/nexo").ListedIPO[]>([
+    {
+      id: "listed_1",
+      name: "ABC Industries",
+      category: "Mainboard",
+      logo: "ABC",
+      lotsAllotted: 2,
+      totalProfit: 30000,
+      applicantsCount: 4,
+      oneLotProfit: 15000,
+      listingDate: "22 Aug 2026",
+      lotPrice: 15000,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 15000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 7500 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 7500 },
+      ],
+    },
+    {
+      id: "listed_2",
+      name: "Premier Energies",
+      category: "Mainboard",
+      logo: "PE",
+      lotsAllotted: 3,
+      totalProfit: 72000,
+      applicantsCount: 6,
+      oneLotProfit: 24000,
+      listingDate: "03 Sep 2026",
+      lotPrice: 14964,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 24000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 24000 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 24000 },
+      ],
+    },
+    {
+      id: "listed_3",
+      name: "Bajaj Housing Finance",
+      category: "Mainboard",
+      logo: "BHF",
+      lotsAllotted: 4,
+      totalProfit: 112000,
+      applicantsCount: 8,
+      oneLotProfit: 28000,
+      listingDate: "16 Sep 2026",
+      lotPrice: 15000,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 28000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 28000 },
+        { memberId: "mem_3", memberName: "Ranveer", profit: 28000 },
+        { memberId: "mem_4", memberName: "Amit", profit: 28000 },
+      ],
+    },
+    {
+      id: "listed_4",
+      name: "KRN Heat Exchanger",
+      category: "SME",
+      logo: "KRN",
+      lotsAllotted: 2,
+      totalProfit: 94000,
+      applicantsCount: 5,
+      oneLotProfit: 47000,
+      listingDate: "03 Oct 2026",
+      lotPrice: 14820,
+      userProfits: [
+        { memberId: "mem_1", memberName: "Niranjan", profit: 47000 },
+        { memberId: "mem_2", memberName: "Ashay", profit: 47000 },
+      ],
+    },
+  ]);
+
+  const addListedIpo = (ipoData: Omit<import("@/types/nexo").ListedIPO, "id">) => {
+    const newListed: import("@/types/nexo").ListedIPO = {
+      id: `listed_${Date.now()}`,
+      ...ipoData,
+      logo: ipoData.logo || ipoData.name.substring(0, 2).toUpperCase(),
+    };
+    setListedIpos((prev) => [newListed, ...prev]);
+  };
+
+  const deleteListedIpo = (id: string) => {
+    setListedIpos((prev) => prev.filter((i) => i.id !== id));
   };
 
   return (
@@ -421,6 +557,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         setCurrentUserRole,
         ipos,
         members,
+        currentMember,
         activities,
         actionItems,
         dismissActionItem,
@@ -446,6 +583,9 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateRegistrarUrl,
         deleteApplication,
         updateApplication,
+        listedIpos,
+        addListedIpo,
+        deleteListedIpo,
         isLoading,
         isPremiumUser,
         activePlan,
