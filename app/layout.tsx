@@ -15,6 +15,13 @@ export const metadata: Metadata = {
   title: "NEXO • Private Investment Workspace",
   description:
     "Private wealth operating system for trusted group IPO discovery, evaluation, solo/combo participation, and performance tracking.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+    ],
+    shortcut: "/favicon.svg",
+    apple: "/favicon.svg",
+  },
 };
 
 export default function RootLayout({
