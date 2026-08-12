@@ -11,7 +11,6 @@ import {
   Check,
 } from "@phosphor-icons/react";
 import { useNexo } from "@/context/NexoContext";
-import confetti from "canvas-confetti";
 
 interface ApplicationSuccessModalProps {
   isOpen: boolean;
@@ -33,37 +32,6 @@ export function ApplicationSuccessModal({
   const { setActiveTab } = useNexo();
   const [copied, setCopied] = React.useState(false);
 
-  React.useEffect(() => {
-    if (isOpen) {
-      // Primary center splash
-      confetti({
-        particleCount: 80,
-        spread: 65,
-        origin: { y: 0.6 },
-        colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-      });
-      // Side sprays for a celebratory feel
-      const end = Date.now() + 1000;
-      const interval = setInterval(() => {
-        if (Date.now() > end) return clearInterval(interval);
-        confetti({
-          particleCount: 25,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.8 },
-          colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-        });
-        confetti({
-          particleCount: 25,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.8 },
-          colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-        });
-      }, 150);
-      return () => clearInterval(interval);
-    }
-  }, [isOpen]);
 
   if (!isOpen) return null;
 
