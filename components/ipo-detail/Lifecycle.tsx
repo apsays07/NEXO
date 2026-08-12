@@ -23,7 +23,7 @@ export function Lifecycle({ ipo }: LifecycleProps) {
 
       <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs flex items-center justify-between">
         <span className="text-[#475569] font-medium">
-          Applications are currently open for syndicate members.
+          Applications are currently open for group members.
         </span>
         <span className="text-[#D97706] font-extrabold">
           Closes {ipo.metrics.closeDate}

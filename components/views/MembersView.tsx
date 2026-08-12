@@ -16,7 +16,7 @@ export function MembersView() {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="nexo-h2 text-[#111318]">
-            Syndicate Group Members
+            Group Members
           </h2>
           <p className="text-xs text-[#5F6673] font-normal mt-0.5">
             5 verified group members participating in private IPO opportunities
@@ -66,7 +66,7 @@ export function MembersView() {
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#5F6673] font-medium">Syndicate Member Since</span>
+                  <span className="text-[#5F6673] font-medium">Member Since</span>
                   <span className="text-[#111318] font-medium">{member.joinedAt}</span>
                 </div>
               </div>

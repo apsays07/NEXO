@@ -44,7 +44,7 @@ export function EvaluationScore() {
         ))}
       </div>
       <p className="text-[12px] text-[#5F6673] font-normal italic">
-        Internal syndicate scoring algorithm based on fundamental balance sheet health, operating margins, and relative peer multiples.
+        Internal scoring algorithm based on fundamental balance sheet health, operating margins, and relative peer multiples.
       </p>
     </Card>
   );

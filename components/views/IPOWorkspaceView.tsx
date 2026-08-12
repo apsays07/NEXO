@@ -80,7 +80,7 @@ export function IPOWorkspaceView() {
             IPO Workspace
           </h1>
           <p className="text-xs font-normal text-[#5F6673] mt-0.5">
-            Your private IPO pipeline and syndicate vault tracking.
+            Your private IPO pipeline and vault tracking.
           </p>
         </div>
 

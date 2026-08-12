@@ -29,7 +29,7 @@ export function AddIPOModal() {
       openDate: "18 Aug 2026",
       closeDate: closeDate || "20 Aug 2026",
       recommendation: "APPLY",
-      thesis: thesis || "Primary analysis for syndicate participation.",
+      thesis: thesis || "Primary analysis for group participation.",
     });
 
     // Reset form
@@ -51,7 +51,7 @@ export function AddIPOModal() {
                 Add IPO Opportunity
               </h3>
               <p className="text-xs text-[#64748B] font-medium">
-                Create a new opportunity for syndicate evaluation
+                Create a new opportunity for group evaluation
               </p>
             </div>
           </div>

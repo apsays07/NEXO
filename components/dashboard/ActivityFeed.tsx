@@ -20,7 +20,7 @@ export function ActivityFeed({ activities }: ActivityFeedProps) {
               RECENT ACTIVITY
             </h3>
           </div>
-          <span className="text-xs text-[#5F6673] font-medium">Syndicate Log</span>
+          <span className="text-xs text-[#5F6673] font-medium">Activity Log</span>
         </div>
 
         <div className="space-y-3.5">

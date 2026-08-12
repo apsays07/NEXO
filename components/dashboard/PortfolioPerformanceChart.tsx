@@ -90,7 +90,7 @@ export function PortfolioPerformanceChart({ summary }: PortfolioPerformanceChart
       </div>
 
       <div className="pt-2 border-t border-[#E4E7EC] flex items-center justify-between text-[11px] text-[#667085]">
-        <span>Net asset valuation based on syndicate ledger</span>
+        <span>Net asset valuation based on verified ledger</span>
         <span className="font-mono">{timeframe} Trend</span>
       </div>
     </Card>

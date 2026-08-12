@@ -19,10 +19,25 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
   return (
     <div className="sticky top-28 space-y-4 font-sans">
       <Card className="p-6 bg-white border-[#E2E8F0] shadow-2xs space-y-5">
-        <div className="space-y-3 pb-4 border-b border-[#E2E8F0]">
-          <span className="text-[12px] font-semibold text-[#5F6673] uppercase tracking-wider block">
-            Syndicate Overview
-          </span>
+        <div className="space-y-1.5 pb-4 border-b border-[#E2E8F0]">
+          <h3 className="text-sm font-semibold text-[#111318]">
+            Group Overview
+          </h3>
+          <p className="text-xs text-[#5F6673] font-normal leading-relaxed">
+            NEXO simplifies multi-friend IPO capital pooling.
+          </p>
+        </div>
+
+        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+          <div className="text-[11px] font-semibold text-[#5F6673] uppercase tracking-wider">
+            Pooled Capital Vault
+          </div>
+          <div className="text-xl font-bold text-[#111318] num-tabular">
+            {formatINR(ipo.combinedCapital)}
+          </div>
+        </div>
+
+        <div className="space-y-3 pb-4 border-b border-[#E2E8F0] text-xs">
           <div className="flex items-center justify-between">
             <span className="text-xs text-[#5F6673] font-medium">Our Decision</span>
             <RecommendationBadge type={ipo.recommendation} size="sm" />
@@ -73,7 +88,7 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
               ))}
             </div>
             <span className="text-xs text-[#5F6673] font-medium">
-              Pooled Syndicate Vault
+              Pooled Vault
             </span>
           </div>
         </div>

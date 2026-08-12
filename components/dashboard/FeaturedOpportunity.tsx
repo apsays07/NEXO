@@ -68,7 +68,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
           </div>
         </div>
 
-        {/* Syndicate Decision Box */}
+        {/* Group Analysis Box */}
         <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] space-y-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-[#027A48]">
@@ -98,18 +98,18 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
               {participants.slice(0, 3).map((p, idx) => (
                 <img
                   key={idx}
-                  src={p.avatar}
+                  src={`https://images.unsplash.com/photo-${1534528741775 + idx * 1000}?w=100&auto=format&fit=crop&q=80`}
                   alt={p.memberName}
-                  className="w-7 h-7 rounded-full border-2 border-white object-cover shadow-2xs"
+                  className="w-7 h-7 rounded-full border-2 border-white object-cover"
                 />
               ))}
             </div>
             <div>
-              <div className="text-xs font-semibold text-[#111318]">
-                {ipo.participantsCount} Members Committed
-              </div>
-              <span className="text-[12px] text-[#5F6673] font-medium">
-                Syndicate Combo Vault
+              <span className="font-bold text-[#111318] block">
+                {participants.length} Active Friends
+              </span>
+              <span className="text-[10px] text-[#5F6673]">
+                Multi-Friend Vault
               </span>
             </div>
           </div>

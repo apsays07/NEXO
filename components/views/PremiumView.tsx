@@ -47,11 +47,11 @@ export function PremiumView() {
 
   const faqs = [
     {
-      q: "How does Multi-PAN Syndicate Routing boost allotment chances by 4.8x?",
-      a: "SEBI allocates retail IPO lots on a lottery system per unique PAN card. By routing applications through multiple verified syndicate/family PAN cards simultaneously, your probability scales linearly with the number of unique PANs submitted.",
+      q: "How does Multi-PAN Group Routing boost allotment chances by 4.8x?",
+      a: "SEBI allocates retail IPO lots on a lottery system per unique PAN card. By routing applications through multiple verified family & friend PAN cards simultaneously, your probability scales linearly with the number of unique PANs submitted.",
     },
     {
-      q: "Is Multi-PAN Syndicate capital pooling SEBI compliant?",
+      q: "Is Multi-PAN capital pooling SEBI compliant?",
       a: "Yes. Nexo OS operates strictly within SEBI & RBI regulatory guidelines. Each application is filed under an individual verified DEMAT/PAN account with linked bank accounts or UPI handles.",
     },
     {
@@ -144,7 +144,7 @@ export function PremiumView() {
         <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
-              Syndicate Capital Deployed
+              Group Capital Deployed
             </span>
             <div className="p-2 rounded-xl bg-[#EFF6FF] text-[#2563EB]">
               <ChartLineUp size={20} />
@@ -178,7 +178,7 @@ export function PremiumView() {
         <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
             <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
-              Active Syndicate Members
+              Active Group Members
             </span>
             <div className="p-2 rounded-xl bg-[#FFF5F5] text-[#E11D48]">
               <UsersThree size={20} />
@@ -217,7 +217,7 @@ export function PremiumView() {
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
                 <label className="font-semibold text-[#111318]">
-                  Number of Syndicate / Family PAN Cards:
+                  Number of Friend / Family PAN Cards:
                 </label>
                 <span className="font-semibold text-[#2563EB] font-mono text-sm bg-[#EFF6FF] px-2.5 py-0.5 rounded-lg border border-[#BFDBFE]">
                   {selectedPanCount} PAN Cards
@@ -303,7 +303,7 @@ export function PremiumView() {
       <div id="pricing-matrix" className="space-y-6">
         <div className="text-center space-y-2 max-w-2xl mx-auto">
           <span className="px-3 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] text-xs font-semibold uppercase">
-            SYNDICATE PRICING TIERS
+            PRO PRICING TIERS
           </span>
           <h2 className="nexo-h2 text-[#111318]">
             Choose the Right Vault Level for Your Capital
@@ -386,7 +386,7 @@ export function PremiumView() {
 
             <div className="space-y-4 pt-1">
               <div className="text-xs font-semibold uppercase tracking-wider text-[#2563EB] flex items-center gap-1">
-                <Crown size={16} weight="fill" /> VIP Syndicate
+                <Crown size={16} weight="fill" /> VIP Pro
               </div>
               <div>
                 <h3 className="nexo-h3 text-[#111318]">Nexo VIP Pro</h3>
@@ -415,7 +415,7 @@ export function PremiumView() {
                   <Check size={16} className="text-[#2563EB]" /> Instant Zerodha / Groww / Angel Sync
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#2563EB]" /> Syndicate Tax & P&L Auto-Optimizer
+                  <Check size={16} className="text-[#2563EB]" /> Tax & P&L Auto-Optimizer
                 </li>
               </ul>
             </div>
@@ -448,7 +448,7 @@ export function PremiumView() {
 
               <ul className="space-y-3 text-xs text-[#111318] pt-3 border-t border-[#E2E8F0]">
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Unlimited Syndicate Member PANs
+                  <Check size={16} className="text-[#059669]" /> Unlimited Family Member PANs
                 </li>
                 <li className="flex items-center gap-2">
                   <Check size={16} className="text-[#059669]" /> Dedicated Institutional Desk & RM
@@ -501,7 +501,7 @@ export function PremiumView() {
                 <th className="py-2.5 px-3">Est. Listing Gain</th>
                 <th className="py-2.5 px-3">QIB Sub (x)</th>
                 <th className="py-2.5 px-3">HNI Sub (x)</th>
-                <th className="py-2.5 px-3 text-right">Syndicate Status</th>
+                <th className="py-2.5 px-3 text-right">Recommendation Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] nexo-table-body">

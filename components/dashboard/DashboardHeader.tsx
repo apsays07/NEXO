@@ -20,7 +20,7 @@ export function DashboardHeader() {
       <div>
         <div className="flex items-center gap-2 mb-1.5">
           <span className="text-[12px] font-medium text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2.5 py-0.5 rounded-full flex items-center gap-1">
-            <ShieldCheck size={13} /> Syndicate Active
+            <ShieldCheck size={13} /> Group Verified
           </span>
           <span className="text-xs text-[#7B8491]">•</span>
           <span className="text-xs text-[#5F6673] font-medium">

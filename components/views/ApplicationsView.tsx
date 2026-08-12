@@ -383,7 +383,7 @@ export function ApplicationsView() {
                       {ipo.name} IPO
                     </h2>
                     <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
-                      {viewScope === "MY" ? "My Submissions" : "Syndicate Ledger"}
+                      {viewScope === "MY" ? "My Submissions" : "Group Ledger"}
                     </span>
                   </div>
                   <div className="text-xs text-slate-500 font-medium mt-0.5">
@@ -601,7 +601,7 @@ export function ApplicationsView() {
               </div>
               <div className="flex items-center gap-1 text-slate-400">
                 <LockKey size={12} />
-                <span>Encrypted Syndicate Ledger</span>
+                <span>Encrypted Group Ledger</span>
               </div>
             </div>
           </div>

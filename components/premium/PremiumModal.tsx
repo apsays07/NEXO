@@ -39,7 +39,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
 
   if (!isOpen) return null;
 
-  const targetIpoName = ipo ? ipo.name : "Nexo Syndicate Opportunities";
+  const targetIpoName = ipo ? ipo.name : "Nexo Premium Opportunities";
   const minInvest = ipo?.metrics.minInvestment || 14964;
 
   const handleApplyPromo = () => {
@@ -95,7 +95,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
               Unlock 4.8x Allotment Boost for {targetIpoName}
             </h2>
             <p className="text-xs sm:text-sm text-slate-400 mt-1 max-w-2xl font-normal">
-              Multi-PAN Automated Syndicate Bidding, Institutional Grey Market Telemetry & HNI Priority Queue Execution.
+              Multi-PAN Automated Bidding, Institutional Grey Market Telemetry & HNI Priority Queue Execution.
             </p>
           </div>
 
@@ -117,7 +117,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
               🎉 Welcome to Nexo VIP Pro!
             </h3>
             <p className="text-sm text-slate-300 max-w-md mx-auto font-normal">
-              Your account has been upgraded with Multi-PAN syndicate privileges. Opening application form for <strong className="text-amber-400">{targetIpoName}</strong>...
+              Your account has been upgraded with Multi-PAN privileges. Opening application form for <strong className="text-amber-400">{targetIpoName}</strong>...
             </p>
           </div>
         ) : (
@@ -267,7 +267,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between pt-1">
                     <span className="text-xs font-semibold uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                      <Crown size={14} weight="fill" /> VIP Syndicate
+                      <Crown size={14} weight="fill" /> VIP Pro
                     </span>
                     {selectedPlan === "pro" && (
                       <CheckCircle size={20} className="text-amber-400" weight="fill" />
@@ -312,7 +312,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
                     </li>
                     <li className="flex items-center gap-2">
                       <Check size={14} className="text-amber-400 shrink-0" />
-                      Syndicate Capital Gains Tax Optimizer
+                      Capital Gains Tax Optimizer
                     </li>
                   </ul>
                 </div>
@@ -357,7 +357,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
                   <ul className="space-y-2.5 text-xs text-slate-300 pt-2 border-t border-slate-800">
                     <li className="flex items-center gap-2">
                       <Check size={14} className="text-blue-400 shrink-0" />
-                      Unlimited Syndicate Member PANs
+                      Unlimited Family Member PANs
                     </li>
                     <li className="flex items-center gap-2">
                       <Check size={14} className="text-blue-400 shrink-0" />
@@ -388,7 +388,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
             <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <Tag size={18} className="text-amber-400 shrink-0" />
-                <span className="font-semibold text-slate-300">Have a Syndicate Voucher Code?</span>
+                <span className="font-semibold text-slate-300">Have a Pro Voucher Code?</span>
               </div>
 
               <div className="flex items-center gap-2 w-full sm:w-auto">

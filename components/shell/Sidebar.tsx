@@ -172,7 +172,7 @@ export function Sidebar() {
                 {adminMember?.name || "Ankit"}
               </p>
               <p className="text-[10px] text-[#5F6673] truncate">
-                Syndicate Admin
+                Group Admin
               </p>
             </div>
           </div>

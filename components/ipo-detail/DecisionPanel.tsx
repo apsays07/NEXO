@@ -39,7 +39,7 @@ export function DecisionPanel({ ipo }: DecisionPanelProps) {
           </span>
         </div>
         <span className="text-[12px] font-semibold text-[#059669] bg-white px-2.5 py-1 rounded-full border border-[#A6F4C5]">
-          Verified Syndicate Consensus
+          Verified Group Consensus
         </span>
       </div>
     </Card>

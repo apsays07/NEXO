@@ -39,7 +39,7 @@ export function AvailableCapitalPopover({ summary }: AvailableCapitalPopoverProp
         <div className="absolute right-0 mt-2 w-64 rounded-xl bg-white border border-[#E4E7EC] shadow-xl p-4 z-40 space-y-3 animate-fade-in text-xs">
           <div className="flex items-center justify-between border-b border-[#E4E7EC] pb-2 font-bold text-[#111827]">
             <span>Capital Breakdown</span>
-            <span className="font-mono text-[#667085]">Syndicate Vault</span>
+            <span className="font-mono text-[#667085]">Vault Balance</span>
           </div>
 
           <div className="space-y-2">

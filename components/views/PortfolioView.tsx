@@ -43,7 +43,7 @@ export function PortfolioView() {
         <MetricCard
           label="Total Capital Deployed"
           value={formatINR(portfolioSummary.capitalDeployed)}
-          subtitle="Across 5 syndicate members"
+          subtitle="Across 5 group members"
           icon={<Vault size={20} className="text-[#D97706]" />}
         />
       </div>
@@ -53,7 +53,7 @@ export function PortfolioView() {
         <div className="flex items-center justify-between mb-4">
           <div>
             <h3 className="nexo-h3 text-[#111318]">
-              Syndicate Portfolio Performance & Holdings
+              Group Portfolio Performance & Holdings
             </h3>
             <p className="text-xs text-[#5F6673] font-normal mt-0.5">
               Track individual member shares and proportional returns

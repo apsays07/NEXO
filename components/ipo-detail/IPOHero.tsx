@@ -40,7 +40,7 @@ export function IPOHero({ ipo }: IPOHeroProps) {
           </div>
 
           <div className="flex items-center gap-2 text-xs font-semibold text-[#5F6673]">
-            <span>Syndicate Decision:</span>
+            <span>Group Recommendation:</span>
             <RecommendationBadge type={ipo.recommendation} size="sm" />
           </div>
         </div>

@@ -54,12 +54,12 @@ export function IPODetailDrawer() {
               <LifecycleBar currentStage={selectedIpo.status} />
             </div>
 
-            {/* SYNDICATE DECISION & COMMENT */}
+            {/* GROUP RECOMMENDATION & COMMENT */}
             <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] space-y-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-semibold text-[#027A48]">
                   <ShieldCheck size={16} />
-                  <span>SYNDICATE DECISION</span>
+                  <span>GROUP RECOMMENDATION</span>
                 </div>
                 <RecommendationBadge type={selectedIpo.recommendation} size="sm" />
               </div>

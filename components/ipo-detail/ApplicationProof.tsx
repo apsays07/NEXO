@@ -73,7 +73,7 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
                     dhoot_application_proof.png
                   </div>
                   <div className="text-[11px] text-[#64748B]">
-                    1.4 MB • Encrypted Syndicate Vault
+                    1.4 MB • Encrypted Group Vault
                   </div>
                 </div>
               </div>

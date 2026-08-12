@@ -30,17 +30,19 @@ export function AttentionPanel({
         </div>
 
         <div className="py-8 text-center space-y-2">
-          <div className="w-10 h-10 rounded-full bg-[#ECFDF3] border border-[#A6F4C5] text-[#12B76A] flex items-center justify-center mx-auto">
-            <CheckCircle size={20} />
+          <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] space-y-1.5">
+            <div className="flex items-center gap-2 text-[#027A48] font-bold text-xs">
+              <CheckCircle size={18} />
+              <span>All Systems Verified</span>
+            </div>
+            <p className="text-xs text-[#027A48] font-medium leading-relaxed">
+              All group applications, proof screenshots, and contribution payments are verified.
+            </p>
+            <div className="pt-2 border-t border-[#A6F4C5]/60 flex items-center justify-between text-[11px] text-[#059669] font-medium">
+              <span>Automated Audit Stream</span>
+              <span className="font-mono">100% Validated</span>
+            </div>
           </div>
-          <div className="text-sm font-semibold text-[#111318]">Everything is up to date</div>
-          <p className="text-xs text-[#5F6673] font-normal max-w-xs mx-auto">
-            All syndicate applications, proof screenshots, and contribution payments are verified.
-          </p>
-        </div>
-
-        <div className="pt-3 border-t border-[#E2E8F0] text-[11px] text-[#7B8491]">
-          Automated Syndicate Audit Stream
         </div>
       </Card>
     );
@@ -106,7 +108,7 @@ export function AttentionPanel({
 
       {/* Footer */}
       <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-[11px] text-[#5F6673]">
-        <span>Action required for syndicate tracking</span>
+        <span>Action required for group tracking</span>
         <span className="font-mono text-[#D97706] font-semibold">{items.length} Pending</span>
       </div>
     </Card>
