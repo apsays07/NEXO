@@ -180,7 +180,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     return () => window.removeEventListener("storage", loadSharedIpos);
   }, []);
 
-  const login = (userId: string, pass: string): { success: boolean; message?: string } => {
+  const login = (userId: string, pass: string): { success: boolean; role?: MemberRole; message?: string } => {
     setAuthError(null);
     const cleanId = userId.trim().toLowerCase();
     const cleanPass = pass.trim();
