@@ -24,9 +24,13 @@ export function IPOWorkspaceView() {
     addListedIpo,
     deleteListedIpo,
     currentUserRole,
+    currentUser,
     currentMember,
     searchQuery,
   } = useNexo();
+
+  const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+  const isAdmin = String(activeRole).toUpperCase() === "ADMIN";
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
@@ -119,13 +123,15 @@ export function IPOWorkspaceView() {
           </div>
         </div>
 
-        <button
-          onClick={() => setIsAddModalOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-98 shrink-0 self-start md:self-auto"
-        >
-          <Plus size={16} weight="bold" />
-          <span>Record Listed IPO</span>
-        </button>
+        {isAdmin && (
+          <button
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white text-xs font-semibold transition-all shadow-xs cursor-pointer active:scale-98 shrink-0 self-start md:self-auto"
+          >
+            <Plus size={16} weight="bold" />
+            <span>Record Listed IPO</span>
+          </button>
+        )}
       </div>
 
       {/* SUMMARY STATS BAR */}
@@ -371,7 +377,7 @@ export function IPOWorkspaceView() {
                         Listed
                       </span>
 
-                      {currentUserRole === "ADMIN" && (
+                      {isAdmin && (
                         <button
                           onClick={() => deleteListedIpo(ipo.id)}
                           title="Delete Card"
