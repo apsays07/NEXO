@@ -23,10 +23,11 @@ import {
   MOCK_PORTFOLIO_SUMMARY,
   MOCK_ACTION_ITEMS,
 } from "@/lib/mockData";
+import { mapIPOToOpportunity } from "@/src/features/ipo/mappers";
 
 type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members";
 
-interface NexoContextType {
+export interface NexoContextType {
   isAuthenticated: boolean;
   isAuthLoaded: boolean;
   currentUser: Member | null;
@@ -40,6 +41,7 @@ interface NexoContextType {
   currentUserRole: MemberRole;
   setCurrentUserRole: (role: MemberRole) => void;
   ipos: IPOOpportunity[];
+  setIpos: React.Dispatch<React.SetStateAction<IPOOpportunity[]>>;
   members: Member[];
   activities: ActivityItem[];
   actionItems: ActionItem[];
@@ -57,6 +59,7 @@ interface NexoContextType {
   closeIpoDetail: () => void;
   isApplicationModalOpen: boolean;
   activeApplicationIpo: IPOOpportunity | null;
+  applicationModalIpo: IPOOpportunity | null;
   openApplicationModal: (ipo: IPOOpportunity) => void;
   closeApplicationModal: () => void;
   isAddIpoModalOpen: boolean;
@@ -68,15 +71,11 @@ interface NexoContextType {
     priceMin: number;
     priceMax: number;
     lotSize: number;
-    openDate: string;
+    openDate?: string;
     closeDate: string;
-    recommendation: RecommendationType;
-    thesis: string;
+    recommendation?: RecommendationType;
+    thesis?: string;
   }) => void;
-  searchQuery: string;
-  setSearchQuery: (query: string) => void;
-  revealedPans: Record<string, boolean>;
-  togglePanReveal: (memberId: string) => void;
   createApplication: (
     ipoId: string,
     type: ParticipationType | ApplicationType,
@@ -84,7 +83,26 @@ interface NexoContextType {
     proofUrl?: string,
     applicantMemberId?: string
   ) => void;
-  updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
+  addApplicationToIpo: (
+    ipoId: string,
+    appData: {
+      type: ParticipationType | ApplicationType;
+      applicantName?: string;
+      memberId?: string;
+      panMasked?: string;
+      totalContribution: number;
+      lotCount?: number;
+      participants: {
+        memberId: string;
+        memberName: string;
+        avatar?: string;
+        contribution: number;
+        percentage?: number;
+        panMasked?: string;
+        panFull?: string;
+      }[];
+    }
+  ) => void;
   updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
   updateRegistrarUrl: (ipoId: string, url: string) => void;
   updateApplication: (
@@ -95,8 +113,8 @@ interface NexoContextType {
       lotCount?: number;
       panMasked?: string;
       totalContribution?: number;
-      allotmentStatus?: import("@/types/nexo").AllotmentStatus;
-      status?: import("@/types/nexo").AllotmentStatus;
+      allotmentStatus?: AllotmentStatus;
+      status?: AllotmentStatus;
       participants?: import("@/types/nexo").ApplicationParticipant[];
     }
   ) => void;
@@ -112,6 +130,12 @@ interface NexoContextType {
     closeDate: string;
   }) => { success: boolean; message?: string };
   removeIPO: (ipoId: string) => { success: boolean; message?: string };
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  revealedPans: Record<string, boolean>;
+  togglePanReveal: (memberId: string) => void;
+  updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
+  refreshIpos: () => Promise<void>;
   isLoading: boolean;
   isPremiumUser: boolean;
   activePlan: string;
@@ -132,6 +156,26 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
   const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
   const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
+
+  const refreshIpos = async () => {
+    try {
+      let ipoRes = await fetch("/api/ipos");
+      let ipoData = await ipoRes.json();
+
+      if (Array.isArray(ipoData?.ipos) && ipoData.ipos.length === 0) {
+        await fetch("/api/seed-ipos", { method: "POST" });
+        ipoRes = await fetch("/api/ipos");
+        ipoData = await ipoRes.json();
+      }
+
+      if (Array.isArray(ipoData?.ipos) && ipoData.ipos.length > 0) {
+        const mapped = ipoData.ipos.map((raw: any) => mapIPOToOpportunity(raw));
+        setIpos(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to refresh IPOs from MongoDB:", err);
+    }
+  };
 
   // Restore session & persisted local storage state safely after hydration
   useEffect(() => {
@@ -154,33 +198,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
     } catch {}
 
-    // Sync with shared storage key "nexo_ipos_v1"
-    const loadSharedIpos = () => {
-      try {
-        const saved = localStorage.getItem("nexo_ipos_v1");
-        if (saved) {
-          setIpos(JSON.parse(saved));
-        }
-      } catch {}
-    };
-    loadSharedIpos();
-
-    window.addEventListener("storage", loadSharedIpos);
-
     setIsAuthLoaded(true);
-
-    async function syncDb() {
-      try {
-        const ipoRes = await fetch("/api/ipos");
-        const ipoData = await ipoRes.json();
-        if (ipoData?.success && Array.isArray(ipoData.ipos) && ipoData.ipos.length > 0) {
-          setIpos(ipoData.ipos);
-        }
-      } catch {}
-    }
-    syncDb();
-
-    return () => window.removeEventListener("storage", loadSharedIpos);
+    refreshIpos();
   }, []);
 
   const login = (userId: string, pass: string): { success: boolean; role?: MemberRole; message?: string } => {
@@ -364,10 +383,10 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     priceMin: number;
     priceMax: number;
     lotSize: number;
-    openDate: string;
+    openDate?: string;
     closeDate: string;
-    recommendation: RecommendationType;
-    thesis: string;
+    recommendation?: RecommendationType;
+    thesis?: string;
   }) => {
     const minInv = data.priceMax * data.lotSize;
     const newIpo: IPOOpportunity = {
@@ -377,8 +396,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       logo: data.name.substring(0, 2).toUpperCase(),
       category: "Mainboard",
       status: "APPLYING",
-      recommendation: data.recommendation,
-      thesis: data.thesis,
+      recommendation: data.recommendation || "APPLY",
+      thesis: data.thesis || "Primary analysis for group participation.",
       metrics: {
         issueSize: "₹1,000 Cr",
         priceBand: { min: data.priceMin, max: data.priceMax },
@@ -799,6 +818,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         currentUserRole,
         setCurrentUserRole,
         ipos,
+        setIpos,
         members,
         activities,
         actionItems,
@@ -830,6 +850,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         closeIpoDetail,
         isApplicationModalOpen,
         activeApplicationIpo,
+        applicationModalIpo: activeApplicationIpo,
         openApplicationModal,
         closeApplicationModal,
         isAddIpoModalOpen,
@@ -841,6 +862,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         revealedPans,
         togglePanReveal,
         createApplication,
+        addApplicationToIpo: (_ipoId, _appData) => {},
         updateIpoStatus,
         updateApplicationStatus,
         updateRegistrarUrl,
@@ -851,6 +873,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         deleteListedIpo,
         createIPO,
         removeIPO,
+        refreshIpos,
         isLoading,
         isPremiumUser,
         activePlan,

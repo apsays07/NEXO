@@ -1,12 +1,19 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { createIPO as createIPOApi } from "@/src/features/ipo/api";
-import { X, Plus, CircleNotch, Warning } from "@phosphor-icons/react";
+import { updateIPO as updateIPOApi } from "@/src/features/ipo/api";
+import { X, PencilSimple, CircleNotch, Warning } from "@phosphor-icons/react";
+import { IPOOpportunity } from "@/types/nexo";
 
-export function AddIPOModal() {
-  const { isAddIpoModalOpen, closeAddIpoModal, refreshIpos } = useNexo();
+interface EditIPOModalProps {
+  ipo: IPOOpportunity | null;
+  isOpen: boolean;
+  onClose: () => void;
+}
+
+export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
+  const { refreshIpos } = useNexo();
 
   const [name, setName] = useState("");
   const [company, setCompany] = useState("");
@@ -14,34 +21,40 @@ export function AddIPOModal() {
   const [priceMin, setPriceMin] = useState<number>(245);
   const [priceMax, setPriceMax] = useState<number>(258);
   const [lotSize, setLotSize] = useState<number>(58);
-  const [closeDate, setCloseDate] = useState("2026-08-14");
+  const [closeDate, setCloseDate] = useState("");
   const [decision, setDecision] = useState<"APPLY" | "WATCH" | "SKIP">("APPLY");
   const [thesis, setThesis] = useState("");
 
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
 
-  React.useEffect(() => {
-    if (!isAddIpoModalOpen) {
-      setIsSuccess(false);
-      setIsSubmitting(false);
+  useEffect(() => {
+    if (ipo && isOpen) {
+      setName(ipo.name || "");
+      setCompany(ipo.company || "");
+      setType(ipo.category === "SME" ? "SME" : "MAINBOARD");
+      setPriceMin(ipo.metrics?.priceBand?.min || 100);
+      setPriceMax(ipo.metrics?.priceBand?.max || 110);
+      setLotSize(ipo.metrics?.lotSize || 50);
+      setCloseDate(ipo.metrics?.closeDate || "");
+      const rec = String(ipo.recommendation);
+      setDecision(rec === "WATCH" ? "WATCH" : rec === "AVOID" || rec === "SKIP" ? "SKIP" : "APPLY");
+      setThesis(ipo.thesis || "");
       setValidationError(null);
+      setIsSubmitting(false);
     }
-  }, [isAddIpoModalOpen]);
+  }, [ipo, isOpen]);
 
-  if (!isAddIpoModalOpen) return null;
+  if (!isOpen || !ipo) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setValidationError(null);
 
-    // Client-side validation
     if (!name.trim()) {
       setValidationError("IPO name is required.");
       return;
     }
-    const finalCompany = company.trim() || `${name.trim()} Limited`;
     if (priceMin <= 0) {
       setValidationError("Price minimum must be greater than zero.");
       return;
@@ -62,9 +75,9 @@ export function AddIPOModal() {
     setIsSubmitting(true);
 
     try {
-      await createIPOApi({
+      await updateIPOApi(ipo.id, {
         name: name.trim(),
-        company: finalCompany,
+        company: company.trim() || ipo.company,
         type,
         priceMin,
         priceMax,
@@ -72,8 +85,6 @@ export function AddIPOModal() {
         minimumInvestment: priceMax * lotSize,
         closeDate: closeDate.trim(),
         decision,
-        status: "APPLYING",
-        stage: "APPLICATION",
         thesis: thesis.trim(),
       });
 
@@ -81,54 +92,13 @@ export function AddIPOModal() {
         await refreshIpos();
       }
 
-      // Reset form
-      setName("");
-      setCompany("");
-      setThesis("");
       setIsSubmitting(false);
-      setIsSuccess(true);
+      onClose();
     } catch (err: any) {
-      setValidationError(err.message || "Failed to create IPO opportunity");
+      setValidationError(err.message || "Failed to update IPO opportunity");
       setIsSubmitting(false);
     }
   };
-
-  const handleClose = () => {
-    setIsSuccess(false);
-    closeAddIpoModal();
-  };
-
-  if (isSuccess) {
-    return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in font-sans">
-        <div className="w-full max-w-md bg-surface border border-line rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center space-y-4 animate-modal-pop-in">
-          <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-positive-soft border border-positive/30 flex items-center justify-center text-positive shadow-md">
-              <svg className="w-8 h-8 animate-check-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-          </div>
-
-          <div className="space-y-1.5">
-            <h3 className="text-h4 font-semibold text-ink tracking-tight">
-              IPO Opportunity Created
-            </h3>
-            <p className="text-small text-ink-tertiary font-medium px-4 leading-relaxed">
-              The new IPO opportunity has been successfully saved to MongoDB and published to your workspace.
-            </p>
-          </div>
-
-          <button
-            onClick={handleClose}
-            className="w-full py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-small shadow-xs transition-all active:scale-98 cursor-pointer"
-          >
-            Okay, got it
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in font-sans">
@@ -137,19 +107,19 @@ export function AddIPOModal() {
         <div className="p-5 border-b border-line flex items-center justify-between bg-surface">
           <div className="flex items-center gap-2.5">
             <div className="w-8 h-8 rounded-lg bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold">
-              <Plus size={18} />
+              <PencilSimple size={18} />
             </div>
             <div>
               <h3 className="text-h4 font-semibold text-ink">
-                Add IPO Opportunity
+                Edit IPO Opportunity
               </h3>
               <p className="text-caption text-ink-tertiary font-medium">
-                Create a new opportunity saved directly to MongoDB
+                Update parameters saved in MongoDB
               </p>
             </div>
           </div>
           <button
-            onClick={closeAddIpoModal}
+            onClick={onClose}
             className="p-2 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer"
           >
             <X size={18} />
@@ -174,7 +144,6 @@ export function AddIPOModal() {
               <input
                 type="text"
                 required
-                placeholder="e.g. Dhoot Transmission"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none"
@@ -186,7 +155,6 @@ export function AddIPOModal() {
               </label>
               <input
                 type="text"
-                placeholder="e.g. Dhoot Transmission Pvt Ltd"
                 value={company}
                 onChange={(e) => setCompany(e.target.value)}
                 className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none"
@@ -234,7 +202,6 @@ export function AddIPOModal() {
               <input
                 type="number"
                 required
-                placeholder="245"
                 value={priceMin}
                 onChange={(e) => setPriceMin(Number(e.target.value))}
                 className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink num-tabular focus:border-accent focus:bg-surface outline-none"
@@ -247,7 +214,6 @@ export function AddIPOModal() {
               <input
                 type="number"
                 required
-                placeholder="258"
                 value={priceMax}
                 onChange={(e) => setPriceMax(Number(e.target.value))}
                 className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink num-tabular focus:border-accent focus:bg-surface outline-none"
@@ -260,7 +226,6 @@ export function AddIPOModal() {
               <input
                 type="number"
                 required
-                placeholder="58"
                 value={lotSize}
                 onChange={(e) => setLotSize(Number(e.target.value))}
                 className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink num-tabular focus:border-accent focus:bg-surface outline-none"
@@ -276,7 +241,6 @@ export function AddIPOModal() {
             <input
               type="text"
               required
-              placeholder="e.g. 2026-08-14"
               value={closeDate}
               onChange={(e) => setCloseDate(e.target.value)}
               className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none"
@@ -290,7 +254,6 @@ export function AddIPOModal() {
             </label>
             <textarea
               rows={3}
-              placeholder="Add analysis, notes, valuation rationale, or comments..."
               value={thesis}
               onChange={(e) => setThesis(e.target.value)}
               className="w-full bg-surface-alt border border-line-strong rounded-xl p-3 text-small text-ink font-normal focus:border-accent focus:bg-surface outline-none leading-relaxed"
@@ -301,7 +264,7 @@ export function AddIPOModal() {
           <div className="pt-4 border-t border-line flex items-center justify-end gap-3">
             <button 
               type="button" 
-              onClick={closeAddIpoModal}
+              onClick={onClose}
               className="px-4 py-2 rounded-xl border border-line text-small font-semibold text-ink-secondary hover:bg-surface-alt transition-colors cursor-pointer"
             >
               Cancel
@@ -314,10 +277,10 @@ export function AddIPOModal() {
               {isSubmitting ? (
                 <>
                   <CircleNotch size={16} className="animate-spin text-white" />
-                  <span>Saving to MongoDB...</span>
+                  <span>Updating...</span>
                 </>
               ) : (
-                "Create IPO Opportunity"
+                "Save Changes"
               )}
             </button>
           </div>
@@ -326,4 +289,3 @@ export function AddIPOModal() {
     </div>
   );
 }
-

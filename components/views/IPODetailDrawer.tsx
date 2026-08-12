@@ -1,16 +1,24 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { StatusBadge, RecommendationBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { LifecycleBar } from "../ui/LifecycleBar";
 import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR } from "@/lib/mockData";
-import { X, UserPlus, ShieldCheck } from "@phosphor-icons/react";
+import { X, UserPlus, ShieldCheck, PencilSimple, Archive } from "@phosphor-icons/react";
+import { EditIPOModal } from "../ipo/EditIPOModal";
+import { ArchiveIPOModal } from "../ipo/ArchiveIPOModal";
 
 export function IPODetailDrawer() {
-  const { selectedIpo, closeIpoDetail, openApplicationModal } = useNexo();
+  const { selectedIpo, closeIpoDetail, openApplicationModal, currentUserRole, currentUser, currentMember } = useNexo();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+
+  const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+  const isAdmin = String(activeRole).toUpperCase() === "ADMIN";
 
   if (!selectedIpo) return null;
 
@@ -206,10 +214,28 @@ export function IPODetailDrawer() {
         </div>
 
         {/* BOTTOM ACTION BAR */}
-        <div className="p-4 border-t border-line bg-surface flex items-center justify-between text-xs">
-          <Button variant="secondary" size="sm" onClick={closeIpoDetail}>
-            Close
-          </Button>
+        <div className="p-4 border-t border-line bg-surface flex items-center justify-between gap-2 text-xs">
+          <div className="flex items-center gap-2">
+            <Button variant="secondary" size="sm" onClick={closeIpoDetail}>
+              Close
+            </Button>
+            {isAdmin && (
+              <>
+                <button
+                  onClick={() => setIsEditOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-ink-secondary hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <PencilSimple size={14} /> Edit IPO
+                </button>
+                <button
+                  onClick={() => setIsArchiveOpen(true)}
+                  className="px-3 py-1.5 rounded-lg border border-line text-xs font-semibold text-caution hover:bg-caution-soft transition-colors cursor-pointer flex items-center gap-1.5"
+                >
+                  <Archive size={14} /> Archive
+                </button>
+              </>
+            )}
+          </div>
           <Button
             variant="primary"
             size="sm"
@@ -219,6 +245,19 @@ export function IPODetailDrawer() {
           </Button>
         </div>
       </div>
+
+      <EditIPOModal
+        ipo={selectedIpo}
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+      />
+
+      <ArchiveIPOModal
+        ipo={selectedIpo}
+        isOpen={isArchiveOpen}
+        onClose={() => setIsArchiveOpen(false)}
+        onSuccess={() => closeIpoDetail()}
+      />
     </div>
   );
 }

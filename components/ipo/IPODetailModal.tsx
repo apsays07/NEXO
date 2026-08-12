@@ -1,9 +1,12 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import { IPOOpportunity } from "@/types/nexo";
 import { formatINR } from "@/lib/mockData";
+import { useNexo } from "@/context/NexoContext";
 import { Button } from "../ui/Button";
+import { EditIPOModal } from "./EditIPOModal";
+import { ArchiveIPOModal } from "./ArchiveIPOModal";
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,6 +14,8 @@ import {
   CheckCircle,
   Circle,
   Info,
+  PencilSimple,
+  Archive,
 } from "@phosphor-icons/react";
 
 interface IPODetailModalProps {
@@ -24,7 +29,7 @@ type StepStatus = "done" | "active" | "upcoming";
 
 function formatDate(d?: string): string {
   if (!d) return "—";
-  return d.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2").replace(/\s+/g, " ");
+  return d;
 }
 
 function getSteps(ipo: IPOOpportunity) {
@@ -66,25 +71,56 @@ function getSteps(ipo: IPOOpportunity) {
 }
 
 export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModalProps) {
+  const { currentUserRole, currentUser, currentMember } = useNexo();
+
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isArchiveOpen, setIsArchiveOpen] = useState(false);
+
+  const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+  const isAdmin = String(activeRole).toUpperCase() === "ADMIN";
+
   if (!isOpen) return null;
 
   const steps = getSteps(ipo);
 
   return (
     <div className="fixed inset-0 z-50 bg-surface flex flex-col font-sans">
+      <EditIPOModal ipo={ipo} isOpen={isEditOpen} onClose={() => setIsEditOpen(false)} />
+      <ArchiveIPOModal ipo={ipo} isOpen={isArchiveOpen} onClose={() => setIsArchiveOpen(false)} />
 
       {/* ── Top Nav Bar ── */}
       <div className="shrink-0 flex items-center justify-between px-4 sm:px-8 py-4 border-b border-line bg-surface">
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-ink transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-ink transition-colors cursor-pointer"
         >
           <ArrowLeft size={16} weight="bold" /> Back
         </button>
+
         <span className="text-sm font-semibold text-ink truncate mx-4">{ipo.name}</span>
-        <Button size="sm" variant="success" onClick={() => { onClose(); onApply(ipo); }}>
-          Apply Now <ArrowRight size={13} />
-        </Button>
+
+        <div className="flex items-center gap-2">
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => setIsEditOpen(true)}
+                className="px-3 py-1.5 rounded-xl border border-line text-xs font-semibold text-ink-secondary hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <PencilSimple size={15} /> Edit IPO
+              </button>
+              <button
+                onClick={() => setIsArchiveOpen(true)}
+                className="px-3 py-1.5 rounded-xl border border-line text-xs font-semibold text-caution hover:bg-caution-soft transition-colors cursor-pointer flex items-center gap-1.5"
+              >
+                <Archive size={15} /> Archive
+              </button>
+            </>
+          )}
+
+          <Button size="sm" variant="success" onClick={() => { onClose(); onApply(ipo); }}>
+            Apply Now <ArrowRight size={13} />
+          </Button>
+        </div>
       </div>
 
       {/* ── Scrollable Body ── */}

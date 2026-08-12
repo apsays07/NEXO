@@ -1,0 +1,133 @@
+import { NextResponse } from "next/server";
+import { getIposCollection } from "@/src/features/ipo/data";
+
+const SEED_DATA = [
+  {
+    name: "Dhoot Transmission",
+    company: "Dhoot Transmission Pvt Ltd",
+    type: "MAINBOARD",
+    priceMin: 245,
+    priceMax: 258,
+    lotSize: 58,
+    minimumInvestment: 14964,
+    issueSize: 500,
+    openDate: "2026-08-12",
+    closeDate: "2026-08-14",
+    allotmentDate: "2026-08-19",
+    listingDate: "2026-08-21",
+    status: "APPLYING",
+    decision: "APPLY",
+    stage: "APPLICATION",
+    thesis: "Market leader in specialty wiring harnesses with strong export order book.",
+    createdBy: "admin",
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    name: "Zenith Technologies",
+    company: "Zenith Tech Solutions Ltd",
+    type: "MAINBOARD",
+    priceMin: 520,
+    priceMax: 550,
+    lotSize: 27,
+    minimumInvestment: 14850,
+    issueSize: 1200,
+    openDate: "2026-08-15",
+    closeDate: "2026-08-18",
+    allotmentDate: "2026-08-22",
+    listingDate: "2026-08-25",
+    status: "WATCHLIST",
+    decision: "WATCH",
+    stage: "DECISION",
+    thesis: "High-growth enterprise AI SaaS provider with 45% CAGR.",
+    createdBy: "admin",
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    name: "Arclight Manufacturing",
+    company: "Arclight Heavy Engineering Ltd",
+    type: "MAINBOARD",
+    priceMin: 180,
+    priceMax: 195,
+    lotSize: 75,
+    minimumInvestment: 14625,
+    issueSize: 350,
+    openDate: "2026-08-08",
+    closeDate: "2026-08-10",
+    allotmentDate: "2026-08-14",
+    listingDate: "2026-08-17",
+    status: "ALLOTMENT_PENDING",
+    decision: "APPLY",
+    stage: "ALLOTMENT",
+    thesis: "Defense equipment supplier benefiting from domestic manufacturing mandates.",
+    createdBy: "admin",
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    name: "Nova Consumer",
+    company: "Nova Retail & FMCG Ltd",
+    type: "MAINBOARD",
+    priceMin: 310,
+    priceMax: 330,
+    lotSize: 45,
+    minimumInvestment: 14850,
+    issueSize: 750,
+    openDate: "2026-07-28",
+    closeDate: "2026-07-31",
+    allotmentDate: "2026-08-05",
+    listingDate: "2026-08-08",
+    status: "LISTED",
+    decision: "APPLY",
+    stage: "LISTING",
+    thesis: "Rapidly expanding D2C personal care brand with high gross margins.",
+    createdBy: "admin",
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+  {
+    name: "Vertex Finance",
+    company: "Vertex Microfinance Ltd",
+    type: "MAINBOARD",
+    priceMin: 140,
+    priceMax: 150,
+    lotSize: 100,
+    minimumInvestment: 15000,
+    issueSize: 400,
+    openDate: "2026-07-20",
+    closeDate: "2026-07-23",
+    allotmentDate: "2026-07-28",
+    listingDate: "2026-07-31",
+    status: "HOLDING",
+    decision: "APPLY",
+    stage: "HOLDING",
+    thesis: "Niche rural lender with industry-leading Net Interest Margins.",
+    createdBy: "admin",
+    isArchived: false,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+  },
+];
+
+export async function POST() {
+  try {
+    const collection = await getIposCollection();
+    await collection.deleteMany({});
+    const result = await collection.insertMany(SEED_DATA);
+    return NextResponse.json({
+      success: true,
+      message: `Successfully seeded ${result.insertedCount} IPO records into MongoDB nexo.ipos.`,
+    });
+  } catch (error: any) {
+    console.error("POST /api/seed-ipos error:", error);
+    return NextResponse.json(
+      { error: "Failed to seed IPO records into MongoDB" },
+      { status: 500 }
+    );
+  }
+}

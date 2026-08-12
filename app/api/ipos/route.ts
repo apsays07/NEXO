@@ -1,209 +1,187 @@
-import { NextRequest, NextResponse } from "next/server";
-import fs from "fs";
-import path from "path";
+import { NextResponse } from "next/server";
+import { getIposCollection, mapDocumentToIPO } from "@/src/features/ipo/data";
 
-const SHARED_DATA_PATH = path.join(process.cwd(), "..", "shared_ipos.json");
+const VALID_DECISIONS = ["WATCH", "APPLY", "SKIP"];
+const VALID_TYPES = ["MAINBOARD", "SME"];
+const VALID_STATUSES = [
+  "RESEARCHING",
+  "WATCHLIST",
+  "APPLYING",
+  "APPLIED",
+  "ALLOTMENT_PENDING",
+  "ALLOTTED",
+  "NOT_ALLOTTED",
+  "LISTED",
+  "HOLDING",
+  "SOLD",
+  "CLOSED",
+];
+const VALID_STAGES = [
+  "RESEARCH",
+  "DECISION",
+  "APPLICATION",
+  "ALLOTMENT",
+  "LISTING",
+  "HOLDING",
+  "SOLD",
+];
 
-const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "GET, POST, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization",
-};
-
-function readSharedIpos(): any[] {
+export async function GET() {
   try {
-    if (fs.existsSync(SHARED_DATA_PATH)) {
-      const data = fs.readFileSync(SHARED_DATA_PATH, "utf-8");
-      return JSON.parse(data);
-    }
-  } catch (err) {
-    console.error("Error reading shared IPO data:", err);
-  }
-  return [
-    {
-      id: "ipo_1",
-      name: "ABC Industries IPO",
-      company: "ABC Industries IPO",
-      logo: "AB",
-      category: "Mainboard",
-      status: "APPLICATION_OPEN",
-      recommendation: "APPLY",
-      thesis: "Leading automotive component manufacturer with strong domestic and export presence.",
-      metrics: {
-        issueSize: "₹2,400 Cr",
-        priceBand: { min: 250, max: 270 },
-        lotSize: 50,
-        minInvestment: 15000,
-        openDate: "18 Aug 2026",
-        closeDate: "28 Aug 2026",
-        allotmentDate: "01 Sep 2026",
-        listingDate: "04 Sep 2026",
-      },
-      createdBy: "Shivam Prasad",
-      participantsCount: 4,
-      combinedCapital: 60000,
-      applications: [],
-      isHidden: false,
-    },
-    {
-      id: "ipo_2",
-      name: "XYZ Technologies IPO",
-      company: "XYZ Technologies IPO",
-      logo: "XY",
-      category: "Mainboard",
-      status: "APPLICATION_OPEN",
-      recommendation: "APPLY",
-      thesis: "High-growth enterprise software provider specializing in cloud migration solutions.",
-      metrics: {
-        issueSize: "₹1,800 Cr",
-        priceBand: { min: 140, max: 150 },
-        lotSize: 80,
-        minInvestment: 12000,
-        openDate: "20 Aug 2026",
-        closeDate: "30 Aug 2026",
-        allotmentDate: "03 Sep 2026",
-        listingDate: "06 Sep 2026",
-      },
-      createdBy: "Shivam Prasad",
-      participantsCount: 3,
-      combinedCapital: 45000,
-      applications: [],
-      isHidden: false,
-    },
-  ];
-}
+    const collection = await getIposCollection();
+    const docs = await collection
+      .find({ isArchived: { $ne: true } })
+      .sort({ updatedAt: -1, _id: -1 })
+      .toArray();
 
-function writeSharedIpos(ipos: any[]) {
-  try {
-    fs.writeFileSync(SHARED_DATA_PATH, JSON.stringify(ipos, null, 2), "utf-8");
-  } catch (err) {
-    console.error("Error writing shared IPO data:", err);
+    const ipos = docs.map(mapDocumentToIPO);
+    return NextResponse.json({ ipos });
+  } catch (error: any) {
+    console.error("GET /api/ipos error:", error);
+    return NextResponse.json(
+      { error: "Failed to fetch IPOs from database" },
+      { status: 500 }
+    );
   }
 }
 
-export async function OPTIONS() {
-  return NextResponse.json({}, { headers: corsHeaders });
-}
-
-export async function GET(req: NextRequest) {
-  const { searchParams } = new URL(req.url);
-  const isAdmin = searchParams.get("admin") === "true";
-  const allIpos = readSharedIpos();
-
-  if (isAdmin) {
-    return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
-  }
-
-  // Filter non-hidden IPOs for members
-  const visibleIpos = allIpos.filter((ipo) => !ipo.isHidden);
-  return NextResponse.json({ success: true, ipos: visibleIpos }, { headers: corsHeaders });
-}
-
-function cleanDate(str: string | undefined, defaultVal: string): string {
-  if (!str || !str.trim()) return defaultVal;
-  let cleaned = str.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2");
-  return cleaned.replace(/\s+/g, " ");
-}
-
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const body = await req.json();
-
-    if (!body.name || !body.minInvestment || !body.issueSize || !body.description || !body.closeDate) {
+    const body = await req.json().catch(() => null);
+    if (!body || typeof body !== "object") {
       return NextResponse.json(
-        { success: false, message: "Missing required fields." },
-        { status: 400, headers: corsHeaders }
+        { error: "Invalid JSON request body" },
+        { status: 400 }
       );
     }
 
-    const allIpos = readSharedIpos();
-    const formattedIssueSize = `₹${Number(body.issueSize).toLocaleString("en-IN")} Cr`;
+    const {
+      name,
+      company,
+      type = "MAINBOARD",
+      priceMin,
+      priceMax,
+      lotSize,
+      minimumInvestment,
+      issueSize,
+      openDate,
+      closeDate,
+      allotmentDate,
+      listingDate,
+      status = "APPLYING",
+      decision = "APPLY",
+      stage = "APPLICATION",
+      thesis = "",
+      createdBy = "admin",
+    } = body;
 
-    const newIpo = {
-      id: `ipo_${Date.now()}`,
-      name: body.name.trim(),
-      company: body.name.trim(), // Direct company name without invented legal suffixes
-      logo: body.name.trim().substring(0, 2).toUpperCase(),
-      category: "Mainboard",
-      status: "APPLICATION_OPEN",
-      recommendation: "APPLY",
-      thesis: body.description.trim(),
-      isHidden: false,
-      metrics: {
-        issueSize: formattedIssueSize,
-        priceBand: { min: 0, max: 0 },
-        lotSize: 1,
-        minInvestment: Number(body.minInvestment) || 15000,
-        openDate: cleanDate(body.openDate, "18 Aug 2026"),
-        closeDate: cleanDate(body.closeDate, "28 Aug 2026"),
-        allotmentDate: cleanDate(body.allotmentDate, "01 Sep 2026"),
-        listingDate: cleanDate(body.listingDate, "04 Sep 2026"),
-        fundUnblockDate: cleanDate(body.fundUnblockDate, "02 Sep 2026"),
-      },
-      createdBy: "Shivam Prasad",
-      participantsCount: 0,
-      combinedCapital: 0,
-      applications: [],
+    // Server-side validation
+    if (!name || typeof name !== "string" || !name.trim()) {
+      return NextResponse.json(
+        { error: "IPO name is required." },
+        { status: 400 }
+      );
+    }
+    if (!company || typeof company !== "string" || !company.trim()) {
+      return NextResponse.json(
+        { error: "Company name is required." },
+        { status: 400 }
+      );
+    }
+    if (typeof priceMin !== "number" || isNaN(priceMin) || priceMin <= 0) {
+      return NextResponse.json(
+        { error: "Price minimum must be greater than zero." },
+        { status: 400 }
+      );
+    }
+    if (typeof priceMax !== "number" || isNaN(priceMax) || priceMax < priceMin) {
+      return NextResponse.json(
+        { error: "Price maximum must be greater than or equal to price minimum." },
+        { status: 400 }
+      );
+    }
+    if (typeof lotSize !== "number" || isNaN(lotSize) || lotSize <= 0) {
+      return NextResponse.json(
+        { error: "Lot size must be greater than zero." },
+        { status: 400 }
+      );
+    }
+    if (!closeDate || typeof closeDate !== "string" || !closeDate.trim()) {
+      return NextResponse.json(
+        { error: "Close date is required." },
+        { status: 400 }
+      );
+    }
+    if (!VALID_DECISIONS.includes(decision)) {
+      return NextResponse.json(
+        { error: `Decision must be one of: ${VALID_DECISIONS.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    if (!VALID_STATUSES.includes(status)) {
+      return NextResponse.json(
+        { error: `Status must be one of: ${VALID_STATUSES.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    if (type && !VALID_TYPES.includes(type)) {
+      return NextResponse.json(
+        { error: `Type must be one of: ${VALID_TYPES.join(", ")}` },
+        { status: 400 }
+      );
+    }
+    if (stage && !VALID_STAGES.includes(stage)) {
+      return NextResponse.json(
+        { error: `Stage must be one of: ${VALID_STAGES.join(", ")}` },
+        { status: 400 }
+      );
+    }
+
+    const calculatedMinInvestment =
+      typeof minimumInvestment === "number" && minimumInvestment > 0
+        ? minimumInvestment
+        : priceMax * lotSize;
+
+    const now = new Date().toISOString();
+
+    const docToInsert = {
+      name: name.trim(),
+      company: company.trim(),
+      type,
+      priceMin,
+      priceMax,
+      lotSize,
+      minimumInvestment: calculatedMinInvestment,
+      issueSize: typeof issueSize === "number" ? issueSize : undefined,
+      openDate: openDate || undefined,
+      closeDate: closeDate.trim(),
+      allotmentDate: allotmentDate || undefined,
+      listingDate: listingDate || undefined,
+      status,
+      decision,
+      stage,
+      thesis: typeof thesis === "string" ? thesis.trim() : "",
+      createdBy: String(createdBy || "admin"),
+      createdAt: now,
+      updatedAt: now,
+      isArchived: false,
     };
 
-    const updated = [newIpo, ...allIpos];
-    writeSharedIpos(updated);
+    const collection = await getIposCollection();
+    const result = await collection.insertOne(docToInsert);
 
+    const createdDoc = {
+      _id: result.insertedId,
+      ...docToInsert,
+    };
+
+    const ipo = mapDocumentToIPO(createdDoc);
+    return NextResponse.json({ success: true, ipo }, { status: 201 });
+  } catch (error: any) {
+    console.error("POST /api/ipos error:", error);
     return NextResponse.json(
-      {
-        success: true,
-        ipo: newIpo,
-        message: `✓ IPO added successfully. ${body.name} is now visible to members.`,
-      },
-      { headers: corsHeaders }
-    );
-  } catch (err) {
-    return NextResponse.json(
-      { success: false, message: "Failed to process request." },
-      { status: 500, headers: corsHeaders }
-    );
-  }
-}
-
-export async function DELETE(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
-    const id = searchParams.get("id");
-
-    if (!id) {
-      return NextResponse.json(
-        { success: false, message: "IPO ID is required." },
-        { status: 400, headers: corsHeaders }
-      );
-    }
-
-    const allIpos = readSharedIpos();
-    const target = allIpos.find((i) => i.id === id);
-
-    if (!target) {
-      return NextResponse.json(
-        { success: false, message: "IPO not found." },
-        { status: 404, headers: corsHeaders }
-      );
-    }
-
-    // Soft hide the IPO
-    const updated = allIpos.map((ipo) =>
-      ipo.id === id ? { ...ipo, isHidden: true } : ipo
-    );
-    writeSharedIpos(updated);
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: `✓ IPO removed. ${target.name} is no longer visible to members.`,
-      },
-      { headers: corsHeaders }
-    );
-  } catch (err) {
-    return NextResponse.json(
-      { success: false, message: "Failed to remove IPO." },
-      { status: 500, headers: corsHeaders }
+      { error: "Failed to create IPO opportunity" },
+      { status: 500 }
     );
   }
 }
