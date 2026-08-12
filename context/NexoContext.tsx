@@ -292,7 +292,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const createApplication = (
     ipoId: string,
     type: ParticipationType | ApplicationType,
-    participantContributions: { memberId: string; contribution: number }[],
+    participantContributions: { memberId: string; memberName?: string; contribution: number }[],
     proofUrl?: string,
     applicantMemberId?: string
   ) => {
@@ -310,7 +310,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       const percentage = total > 0 ? (p.contribution / total) * 100 : 0;
       return {
         memberId: p.memberId,
-        memberName: member?.name || "Member",
+        memberName: p.memberName || member?.name || "Member",
         avatar: member?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         contribution: p.contribution,
         percentage: Number(percentage.toFixed(1)),

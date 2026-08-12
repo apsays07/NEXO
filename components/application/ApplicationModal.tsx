@@ -11,7 +11,6 @@ import {
   ShieldCheck,
   CircleNotch,
   UsersThree,
-  Coins,
   Plus,
   Trash,
   Scales,
@@ -21,6 +20,7 @@ import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
 
 interface ContributorEntry {
   memberId: string;
+  memberName: string;
   amount: number | "";
 }
 
@@ -41,10 +41,10 @@ export function ApplicationModal() {
   const minInvest = activeApplicationIpo?.metrics?.minInvestment || 14964;
   const targetRequiredCapital = minInvest * effectiveIpos;
 
-  // Dynamic Contributors State
+  // Dynamic Contributors State (Clean input text for names and custom rupee amounts)
   const [contributors, setContributors] = useState<ContributorEntry[]>([
-    { memberId: members[0]?.id || "mem_1", amount: Math.floor(targetRequiredCapital / 2) },
-    { memberId: members[1]?.id || "mem_2", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
+    { memberId: members[0]?.id || "mem_1", memberName: "Ankit", amount: Math.floor(targetRequiredCapital / 2) },
+    { memberId: members[1]?.id || "mem_2", memberName: "Ashay", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
   ]);
 
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
@@ -100,12 +100,17 @@ export function ApplicationModal() {
   );
 
   const handleAddContributor = () => {
-    const existingIds = new Set(contributors.map((c) => c.memberId));
-    const unusedMember = members.find((m) => !existingIds.has(m.id)) || members[0];
     const remainingNeeded = Math.max(0, targetRequiredCapital - totalPooledCapital);
+    const nextIdx = contributors.length + 1;
+    const defaultFriendName = members[contributors.length]?.name || `Friend #${nextIdx}`;
+
     setContributors((prev) => [
       ...prev,
-      { memberId: unusedMember.id, amount: remainingNeeded > 0 ? remainingNeeded : 0 },
+      {
+        memberId: `mem_custom_${Date.now()}`,
+        memberName: defaultFriendName,
+        amount: remainingNeeded > 0 ? remainingNeeded : 0,
+      },
     ]);
   };
 
@@ -115,10 +120,10 @@ export function ApplicationModal() {
     }
   };
 
-  const handleContributorMemberChange = (index: number, memberId: string) => {
+  const handleContributorNameChange = (index: number, name: string) => {
     setContributors((prev) => {
       const updated = [...prev];
-      updated[index] = { ...updated[index], memberId };
+      updated[index] = { ...updated[index], memberName: name };
       return updated;
     });
   };
@@ -135,7 +140,6 @@ export function ApplicationModal() {
       return updated;
     });
   };
-
 
   const handlePanChange = (index: number, value: string) => {
     const updated = [...panNumbers];
@@ -157,11 +161,13 @@ export function ApplicationModal() {
       if (applicantMode === "JOINT") {
         participantContributions = contributors.map((c) => ({
           memberId: c.memberId,
+          memberName: c.memberName.trim() || "Friend",
           contribution: typeof c.amount === "number" ? c.amount : 0,
         }));
       } else {
         participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
           memberId: primaryMember.id,
+          memberName: primaryMember.name,
           contribution: minInvest,
         }));
       }
@@ -195,7 +201,7 @@ export function ApplicationModal() {
         ipoLogo={activeApplicationIpo.logo}
         applicantName={
           applicantMode === "JOINT"
-            ? `${contributors.length} Friends Split Pool`
+            ? contributors.map((c) => c.memberName).join(", ")
             : applicantName
         }
         panCount={panNumbers.length}
@@ -286,13 +292,13 @@ export function ApplicationModal() {
             />
           </div>
 
-          {/* FRIEND NAME | AMOUNT TABLE + SUM VALIDATION + ADD FRIEND BUTTON */}
+          {/* FRIEND NAME | AMOUNT TABLE WITH CLEAN INPUTS */}
           {applicantMode === "JOINT" && (
             <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3 animate-fade-in">
-              {/* Section Header */}
+              {/* Header Actions */}
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                  <Coins size={16} className="text-blue-600" /> Multi-Friend Capital Pool
+                <span className="text-xs font-bold text-slate-800">
+                  Capital Split
                 </span>
                 <button
                   type="button"
@@ -303,39 +309,36 @@ export function ApplicationModal() {
                 </button>
               </div>
 
-              {/* Table Header: Friend Name | Amount */}
+              {/* Table Header: FRIEND NAME | AMOUNT (₹) */}
               <div className="grid grid-cols-12 gap-2 px-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
                 <div className="col-span-6">Friend Name</div>
                 <div className="col-span-5 text-right">Amount (₹)</div>
                 <div className="col-span-1"></div>
               </div>
 
-              {/* Dynamic Friend Rows */}
+              {/* Dynamic Clean Input Rows */}
               <div className="space-y-2">
                 {contributors.map((c, idx) => (
                   <div
                     key={idx}
                     className="grid grid-cols-12 gap-2 items-center p-2 bg-white border border-slate-200 rounded-xl shadow-2xs"
                   >
-                    {/* Friend Name Select */}
+                    {/* Clean Friend Name Text Input */}
                     <div className="col-span-6 flex items-center gap-1.5">
                       <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] flex items-center justify-center shrink-0">
                         #{idx + 1}
                       </span>
-                      <select
-                        value={c.memberId}
-                        onChange={(e) => handleContributorMemberChange(idx, e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none"
-                      >
-                        {members.map((m) => (
-                          <option key={m.id} value={m.id}>
-                            {m.name}
-                          </option>
-                        ))}
-                      </select>
+                      <input
+                        type="text"
+                        required
+                        placeholder={`Friend #${idx + 1} Name`}
+                        value={c.memberName}
+                        onChange={(e) => handleContributorNameChange(idx, e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
+                      />
                     </div>
 
-                    {/* Custom Amount Input */}
+                    {/* Clean Custom Amount Input */}
                     <div className="col-span-5 flex items-center gap-1">
                       <span className="text-xs font-bold text-slate-400">₹</span>
                       <input
@@ -344,7 +347,7 @@ export function ApplicationModal() {
                         placeholder="0"
                         value={c.amount}
                         onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
-                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none"
+                        className="w-full bg-slate-50 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
                       />
                     </div>
 
