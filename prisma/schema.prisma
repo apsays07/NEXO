@@ -1,0 +1,158 @@
+// This is your Prisma schema file for NEXO PostgreSQL database
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum MemberRole {
+  ADMIN
+  MEMBER
+}
+
+enum IPOLifecycleStage {
+  WATCHLIST
+  UPCOMING
+  APPLICATION_OPEN
+  APPLICATION_CLOSED
+  ALLOTMENT_OUT
+  LISTED
+}
+
+enum RecommendationType {
+  APPLY
+  MAYBE
+  AVOID
+}
+
+enum ApplicationType {
+  INDIVIDUAL
+  COMBINED
+}
+
+enum AllotmentStatus {
+  AWAITING
+  ALLOTTED
+  NOT_ALLOTTED
+  REFUNDED
+}
+
+model Member {
+  id                  String   @id @default(uuid())
+  name                String
+  email               String   @unique
+  password            String   @default("user123")
+  avatar              String
+  role                MemberRole @default(MEMBER)
+  panMasked           String
+  panFull             String
+  defaultContribution Float    @default(50000)
+  joinedAt            String
+  phone               String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  applications        Application[]
+  participants        ApplicationParticipant[]
+}
+
+model Ipo {
+  id                String            @id @default(uuid())
+  name              String
+  company           String
+  logo              String            @default("IPO")
+  category          String            @default("Mainboard")
+  status            IPOLifecycleStage @default(APPLICATION_OPEN)
+  recommendation    RecommendationType @default(APPLY)
+  thesis            String
+  isFeatured        Boolean           @default(false)
+  createdBy         String            @default("Admin")
+  registrarUrl      String?
+  combinedCapital   Float             @default(0)
+  participantsCount Int               @default(0)
+  tags              String[]          @default([])
+
+  // Metrics
+  issueSize         String
+  priceMin          Float
+  priceMax          Float
+  lotSize           Int
+  minInvestment     Float
+  openDate          String
+  closeDate         String
+  allotmentDate     String
+  listingDate       String
+  gmp               Float             @default(0)
+  gmpPercent        Float             @default(0)
+
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  applications      Application[]
+}
+
+model Application {
+  id                   String                 @id @default(uuid())
+  ipoId                String
+  type                 ApplicationType        @default(INDIVIDUAL)
+  applicantName        String
+  memberId             String
+  panMasked            String
+  totalContribution    Float
+  lotCount             Int                    @default(1)
+  verified             Boolean                @default(true)
+  allotmentStatus      AllotmentStatus        @default(AWAITING)
+  status               String                 @default("AWAITING")
+  applicationNumber    String
+  applicationProofUrl String?
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
+
+  ipo                  Ipo                    @relation(fields: [ipoId], references: [id], onDelete: Cascade)
+  applicant            Member                 @relation(fields: [memberId], references: [id], onDelete: Cascade)
+  participants         ApplicationParticipant[]
+}
+
+model ApplicationParticipant {
+  id            String      @id @default(uuid())
+  applicationId String
+  memberId      String
+  memberName    String
+  avatar        String
+  contribution  Float
+  percentage    Float
+  panMasked     String
+  panFull       String?
+  status        String      @default("SUBMITTED")
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  member        Member      @relation(fields: [memberId], references: [id], onDelete: Cascade)
+}
+
+model Activity {
+  id           String   @id @default(uuid())
+  type         String
+  title        String
+  subtitle     String
+  timestamp    String
+  memberName   String
+  memberAvatar String
+  ipoId        String?
+  ipoName      String?
+  createdAt    DateTime @default(now())
+}
+
+model Transaction {
+  id                String   @id @default(uuid())
+  ipoId             String
+  ipoName           String
+  type              String
+  amount            Float
+  applicationNumber String
+  participants      String[]
+  status            String   @default("SUBMITTED")
+  createdAt         DateTime @default(now())
+}

@@ -8,10 +8,11 @@ import { FeaturedOpportunity } from "../dashboard/FeaturedOpportunity";
 export function DashboardView() {
   const { ipos, openIpoDetail, openApplicationModal } = useNexo();
 
-  // Show all open/active IPOs; featured one comes first
+  // Show all open/active non-hidden IPOs; featured one comes first
+  const visibleIpos = ipos.filter((i) => !i.isHidden);
   const activeIpos = [
-    ...ipos.filter((i) => i.isFeatured),
-    ...ipos.filter(
+    ...visibleIpos.filter((i) => i.isFeatured),
+    ...visibleIpos.filter(
       (i) =>
         !i.isFeatured &&
         ["APPLICATION_OPEN", "APPLYING", "RESEARCHING", "WATCHLIST"].includes(i.status)

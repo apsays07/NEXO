@@ -2,6 +2,7 @@
 
 import React from "react";
 import { useNexo } from "@/context/NexoContext";
+import { LoginForm } from "@/components/auth/LoginForm";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
 import { DashboardView } from "@/components/views/DashboardView";
@@ -14,7 +15,11 @@ import { ApplicationModal } from "@/components/application/ApplicationModal";
 import { AddIPOModal } from "@/components/ipo/AddIPOModal";
 
 export default function Home() {
-  const { activeTab } = useNexo();
+  const { activeTab, isAuthenticated, isAuthLoaded } = useNexo();
+
+  if (!isAuthLoaded || !isAuthenticated) {
+    return <LoginForm />;
+  }
 
   return (
     <div className="flex h-screen overflow-hidden bg-page text-ink font-sans antialiased">
@@ -41,3 +46,4 @@ export default function Home() {
     </div>
   );
 }
+

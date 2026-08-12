@@ -13,12 +13,14 @@ import {
   DotsThree,
   Lightning,
   Gear,
+  SignOut,
 } from "@phosphor-icons/react";
 import { MoreDrawer } from "./MoreDrawer";
 
 export function Sidebar() {
-  const { activeTab, setActiveTab, members, ipos } = useNexo();
+  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, logout } = useNexo();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const activeUser = sessionUser || members[0];
 
   const workspaceNav = [
     { id: "dashboard", label: "Home", icon: SquaresFour },
@@ -39,8 +41,7 @@ export function Sidebar() {
     { id: "more", label: "More", icon: DotsThree },
   ];
 
-  const adminMember = members[0];
-
+  const adminMember = activeUser || members[0];
   return (
     <>
       {/* DESKTOP SIDEBAR (Visible on lg screens >= 1024px) */}
@@ -173,13 +174,22 @@ export function Sidebar() {
               className="w-8 h-8 rounded-full object-cover shrink-0"
             />
             <div className="min-w-0 flex-1">
-              <p className="text-xs font-bold text-ink truncate">
+              <p className="text-small font-semibold text-ink truncate">
                 {adminMember?.name || "Ankit"}
               </p>
-              <p className="text-[10px] text-ink-secondary truncate">
-                Group Admin
+              <p className="text-caption text-ink-secondary truncate">
+                {adminMember?.role || "Group Admin"} {adminMember?.panMasked ? `• ${adminMember.panMasked}` : ""}
               </p>
             </div>
+            {logout && (
+              <button
+                onClick={logout}
+                title="Sign Out"
+                className="p-1 rounded-md text-negative hover:bg-negative-soft transition-colors cursor-pointer shrink-0"
+              >
+                <SignOut size={16} />
+              </button>
+            )}
           </div>
         </div>
       </aside>
@@ -229,6 +239,20 @@ export function Sidebar() {
           className="w-8 h-8 rounded-full object-cover ring-2 ring-accent/10"
           title={adminMember?.name || "Ankit"}
         />
+            className="w-8 h-8 rounded-full object-cover ring-2 ring-blue-100"
+            title={adminMember?.name || "Ankit"}
+          />
+          {logout && (
+            <button
+              onClick={logout}
+              title="Sign Out"
+              className="p-1 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <SignOut size={15} />
+            </button>
+          )}
+        </div>
+>>>>>>> origin/main
       </aside>
 
       {/* MOBILE BOTTOM NAVIGATION BAR (Visible on screens < 768px) */}
@@ -273,3 +297,4 @@ export function Sidebar() {
     </>
   );
 }
+

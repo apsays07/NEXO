@@ -80,6 +80,7 @@ export interface FinancialMetrics {
   closeDate: string;
   allotmentDate: string;
   listingDate: string;
+  fundUnblockDate?: string;
   rhpUrl?: string; // Link to RHP PDF document
   retailQuotaPercent?: number;
   gmp?: number; // Grey Market Premium in ₹
@@ -108,6 +109,7 @@ export interface IPOOpportunity {
   realizedProfit?: number;
   registrarUrl?: string;
   tags?: string[];
+  isHidden?: boolean;
   isFeatured?: boolean;
   closeCountdown?: string;
 }
@@ -178,4 +180,16 @@ export interface ActionItem {
   ctaLabel: string;
   memberName?: string;
   memberAvatar?: string;
+}
+
+export interface Transaction {
+  id: string;
+  ipoId: string;
+  ipoName: string;
+  type: "SOLO" | "COMBO";
+  amount: number;
+  applicationNumber: string;
+  participants: string[]; // member names
+  createdAt: string; // ISO string
+  status: "SUBMITTED" | "ALLOTTED" | "REFUNDED" | "REJECTED";
 }
