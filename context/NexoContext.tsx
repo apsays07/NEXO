@@ -151,6 +151,19 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
     } catch {}
 
+    // Sync with shared storage key "nexo_ipos_v1"
+    const loadSharedIpos = () => {
+      try {
+        const saved = localStorage.getItem("nexo_ipos_v1");
+        if (saved) {
+          setIpos(JSON.parse(saved));
+        }
+      } catch {}
+    };
+    loadSharedIpos();
+
+    window.addEventListener("storage", loadSharedIpos);
+
     setIsAuthLoaded(true);
 
     async function syncDb() {
@@ -163,6 +176,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       } catch {}
     }
     syncDb();
+
+    return () => window.removeEventListener("storage", loadSharedIpos);
   }, []);
 
   const login = (userId: string, pass: string): { success: boolean; message?: string } => {
