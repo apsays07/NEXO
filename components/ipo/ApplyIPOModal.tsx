@@ -139,12 +139,28 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const handleContributorAmountChange = (index: number, valStr: string) => {
     setContributors((prev) => {
       const updated = [...prev];
-      if (valStr === "") {
-        updated[index] = { ...updated[index], amount: "" };
-      } else {
-        const parsed = parseInt(valStr, 10);
-        updated[index] = { ...updated[index], amount: isNaN(parsed) ? "" : parsed };
+      let parsed: number | "" = "";
+      if (valStr !== "") {
+        const num = parseInt(valStr, 10);
+        parsed = isNaN(num) ? "" : Math.max(0, num);
       }
+
+      updated[index] = { ...updated[index], amount: parsed };
+
+      // Smart Auto-Balancing: Auto-fetch remaining amount into next/other box
+      const count = updated.length;
+      if (count >= 2) {
+        const targetAdjustIdx = index < count - 1 ? index + 1 : count - 2;
+
+        const sumOthers = updated.reduce((sum, c, idx) => {
+          if (idx === targetAdjustIdx) return sum;
+          return sum + (typeof c.amount === "number" ? c.amount : 0);
+        }, 0);
+
+        const remainingNeeded = Math.max(0, targetRequiredCapital - sumOthers);
+        updated[targetAdjustIdx] = { ...updated[targetAdjustIdx], amount: remainingNeeded };
+      }
+
       return updated;
     });
   };
