@@ -82,6 +82,22 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     });
   }, [effectiveIpos, members]);
 
+  // Auto-fetch friend names into Primary Applicant Name when in Multi-Friend mode
+  useEffect(() => {
+    if (applicantMode === "JOINT") {
+      const validNames = contributors
+        .map((c) => c.memberName.trim())
+        .filter((n) => n.length > 0);
+      if (validNames.length > 0) {
+        setApplicantName(validNames.join(", "));
+      }
+    } else {
+      if (!applicantName || applicantName.includes(",")) {
+        setApplicantName(members[0]?.name || "Ankit");
+      }
+    }
+  }, [applicantMode, contributors, members]);
+
   const handleEqualSplit = () => {
     const count = contributors.length || 1;
     const equalShare = Math.floor(targetRequiredCapital / count);
