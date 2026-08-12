@@ -16,10 +16,10 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
   const [showReplaceUpload, setShowReplaceUpload] = useState(false);
 
   return (
-    <Card id="application" className="p-6 bg-white border-[#E2E8F0] shadow-sm space-y-5">
+    <Card id="application" className="p-6 bg-surface border-line shadow-sm space-y-5">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <CheckCircle size={20} className="text-[#2563EB]" />
+          <CheckCircle size={20} className="text-accent" />
           <div>
             <h3 className="text-base font-extrabold text-[#0F172A] tracking-tight uppercase">
               APPLICATION PROOF & PAN VAULT
@@ -30,19 +30,19 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
           </div>
         </div>
 
-        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#F8FAFC] border border-[#E2E8F0] text-xs text-[#64748B] font-medium">
-          <LockKey size={14} className="text-[#059669]" /> Private Document
+        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-page border border-line text-xs text-[#64748B] font-medium">
+          <LockKey size={14} className="text-positive" /> Private Document
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Screenshot Document Vault */}
-        <div className="space-y-3 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0]">
+        <div className="space-y-3 p-4 rounded-2xl bg-page border border-line">
           <div className="flex items-center justify-between text-xs">
             <span className="font-extrabold text-[#0F172A]">
               Application Screenshot
             </span>
-            <span className="text-[#059669] font-bold flex items-center gap-1">
+            <span className="text-positive font-bold flex items-center gap-1">
               <CheckCircle size={14} /> Uploaded 12 Aug, 4:38 PM
             </span>
           </div>
@@ -63,9 +63,9 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
               </button>
             </div>
           ) : (
-            <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#E2E8F0] shadow-2xs">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-surface border border-line shadow-2xs">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold text-xs border border-[#BFDBFE]">
+                <div className="w-10 h-10 rounded-lg bg-accent-soft text-accent flex items-center justify-center font-bold text-xs border border-[#BFDBFE]">
                   PNG
                 </div>
                 <div>
@@ -82,7 +82,7 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
                 <button
                   type="button"
                   onClick={() => setShowReplaceUpload(true)}
-                  className="px-2.5 py-1 rounded-lg bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#0F172A] text-xs font-bold transition-colors"
+                  className="px-2.5 py-1 rounded-lg bg-surface-alt hover:bg-[#E2E8F0] text-[#0F172A] text-xs font-bold transition-colors"
                 >
                   Replace
                 </button>
@@ -92,7 +92,7 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
         </div>
 
         {/* Masked PAN Security Vault */}
-        <div className="space-y-3 p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] flex flex-col justify-between">
+        <div className="space-y-3 p-4 rounded-2xl bg-page border border-line flex flex-col justify-between">
           <div>
             <div className="text-xs font-extrabold text-[#0F172A] mb-1">
               Applicant PAN Security
@@ -102,7 +102,7 @@ export function ApplicationProof({ ipo }: ApplicationProofProps) {
             </p>
           </div>
 
-          <div className="p-3 rounded-xl bg-white border border-[#E2E8F0]">
+          <div className="p-3 rounded-xl bg-surface border border-line">
             <MaskedPAN panMasked="XXXXX2741D" panFull="ABCDE2741D" />
           </div>
         </div>

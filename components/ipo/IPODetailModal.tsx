@@ -66,17 +66,17 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
   const steps = getSteps(ipo);
 
   return (
-    <div className="fixed inset-0 z-50 bg-white flex flex-col font-sans">
+    <div className="fixed inset-0 z-50 bg-surface flex flex-col font-sans">
 
       {/* ── Top Nav Bar ── */}
-      <div className="shrink-0 flex items-center justify-between px-4 sm:px-8 py-4 border-b border-[#E2E8F0] bg-white">
+      <div className="shrink-0 flex items-center justify-between px-4 sm:px-8 py-4 border-b border-line bg-surface">
         <button
           onClick={onClose}
-          className="flex items-center gap-2 text-sm font-medium text-[#5F6673] hover:text-[#111318] transition-colors"
+          className="flex items-center gap-2 text-sm font-medium text-ink-secondary hover:text-ink transition-colors"
         >
           <ArrowLeft size={16} weight="bold" /> Back
         </button>
-        <span className="text-sm font-semibold text-[#111318] truncate mx-4">{ipo.name}</span>
+        <span className="text-sm font-semibold text-ink truncate mx-4">{ipo.name}</span>
         <Button size="sm" variant="success" onClick={() => { onClose(); onApply(ipo); }}>
           Apply Now <ArrowRight size={13} />
         </Button>
@@ -87,72 +87,72 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
         <div className="max-w-3xl mx-auto px-4 sm:px-8 py-8 space-y-0">
 
           {/* SECTION 1: Company Header */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-7 border-b border-[#E2E8F0]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-7 border-b border-line">
             <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold text-xl shadow-sm shrink-0">
+              <div className="w-14 h-14 rounded-2xl bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold text-xl shadow-xs shrink-0">
                 {ipo.logo}
               </div>
               <div>
-                <h1 className="text-[20px] font-bold text-[#111318] leading-tight tracking-tight">
+                <h1 className="text-h3 font-semibold text-ink leading-tight tracking-tight">
                   {ipo.name}
                 </h1>
-                <p className="text-sm text-[#5F6673] font-normal mt-0.5">{ipo.company}</p>
+                <p className="text-small text-ink-secondary font-normal mt-0.5">{ipo.company}</p>
               </div>
             </div>
             <div className="sm:text-right shrink-0">
-              <p className="text-[24px] font-bold text-[#111318] num-tabular leading-tight">
+              <p className="text-h2 font-semibold text-ink num-tabular leading-tight">
                 {formatINR(ipo.metrics.minInvestment)}
-                <span className="text-sm font-normal text-[#5F6673] ml-1.5">
+                <span className="text-small font-normal text-ink-secondary ml-1.5">
                   /{ipo.metrics.lotSize} shares
                 </span>
               </p>
-              <p className="text-xs text-[#5F6673] font-medium mt-0.5">Minimum investment</p>
+              <p className="text-caption text-ink-tertiary font-medium mt-0.5">Minimum investment</p>
             </div>
           </div>
 
           {/* SECTION 2: IPO Details */}
-          <div className="py-7 border-b border-[#E2E8F0] space-y-5">
-            <h2 className="text-[16px] font-semibold text-[#111318]">IPO details</h2>
+          <div className="py-7 border-b border-line space-y-5">
+            <h2 className="text-[16px] font-semibold text-ink">IPO details</h2>
 
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-x-8 gap-y-6">
               <div>
-                <p className="text-xs text-[#5F6673] font-normal mb-1.5">Minimum investment</p>
-                <p className="text-[15px] font-semibold text-[#111318] num-tabular">
+                <p className="text-xs text-ink-secondary font-normal mb-1.5">Minimum investment</p>
+                <p className="text-[15px] font-semibold text-ink num-tabular">
                   {formatINR(ipo.metrics.minInvestment)}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[#5F6673] font-normal mb-1.5">Price range</p>
-                <p className="text-[15px] font-semibold text-[#111318] num-tabular">
+                <p className="text-xs text-ink-secondary font-normal mb-1.5">Price range</p>
+                <p className="text-[15px] font-semibold text-ink num-tabular">
                   ₹{ipo.metrics.priceBand.min} – ₹{ipo.metrics.priceBand.max}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[#5F6673] font-normal mb-1.5">Lot size</p>
-                <p className="text-[15px] font-semibold text-[#111318] num-tabular">
+                <p className="text-xs text-ink-secondary font-normal mb-1.5">Lot size</p>
+                <p className="text-[15px] font-semibold text-ink num-tabular">
                   {ipo.metrics.lotSize}
                 </p>
               </div>
               <div>
-                <p className="text-xs text-[#5F6673] font-normal mb-1.5">Issue size</p>
-                <p className="text-[15px] font-semibold text-[#111318] num-tabular">
+                <p className="text-xs text-ink-secondary font-normal mb-1.5">Issue size</p>
+                <p className="text-[15px] font-semibold text-ink num-tabular">
                   {ipo.metrics.issueSize || "—"}
                 </p>
               </div>
               {ipo.metrics.faceValue !== undefined && (
                 <div>
-                  <p className="text-xs text-[#5F6673] font-normal mb-1.5">Face value</p>
-                  <p className="text-[15px] font-semibold text-[#111318] num-tabular">₹{ipo.metrics.faceValue}</p>
+                  <p className="text-xs text-ink-secondary font-normal mb-1.5">Face value</p>
+                  <p className="text-[15px] font-semibold text-ink num-tabular">₹{ipo.metrics.faceValue}</p>
                 </div>
               )}
               {ipo.metrics.rhpUrl && (
                 <div>
-                  <p className="text-xs text-[#5F6673] font-normal mb-1.5">IPO document</p>
+                  <p className="text-xs text-ink-secondary font-normal mb-1.5">IPO document</p>
                   <a
                     href={ipo.metrics.rhpUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-[#12B76A] hover:underline"
+                    className="inline-flex items-center gap-1.5 text-[15px] font-semibold text-positive hover:underline"
                     onClick={(e) => e.stopPropagation()}
                   >
                     RHP PDF <ArrowSquareOut size={14} />
@@ -164,7 +164,7 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
 
           {/* SECTION 3: Schedule Timeline */}
           <div className="py-7 space-y-7">
-            <h2 className="text-[16px] font-semibold text-[#111318]">Schedule</h2>
+            <h2 className="text-[16px] font-semibold text-ink">Schedule</h2>
 
             <div className="relative">
               {/* Connector line (desktop) */}
@@ -178,24 +178,24 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
                   >
                     <div className="shrink-0">
                       {step.status === "done" ? (
-                        <div className="w-9 h-9 rounded-full bg-[#ECFDF3] border-2 border-[#12B76A] flex items-center justify-center">
-                          <CheckCircle size={18} weight="fill" className="text-[#12B76A]" />
+                        <div className="w-9 h-9 rounded-full bg-positive-soft border-2 border-[#12B76A] flex items-center justify-center">
+                          <CheckCircle size={18} weight="fill" className="text-positive" />
                         </div>
                       ) : step.status === "active" ? (
-                        <div className="w-9 h-9 rounded-full bg-white border-2 border-[#D97706] flex items-center justify-center">
-                          <div className="w-3 h-3 rounded-full bg-[#D97706]" />
+                        <div className="w-9 h-9 rounded-full bg-surface border-2 border-[#D97706] flex items-center justify-center">
+                          <div className="w-3 h-3 rounded-full bg-caution" />
                         </div>
                       ) : (
-                        <div className="w-9 h-9 rounded-full bg-white border-2 border-[#CBD5E1] flex items-center justify-center">
+                        <div className="w-9 h-9 rounded-full bg-surface border-2 border-[#CBD5E1] flex items-center justify-center">
                           <Circle size={18} className="text-[#CBD5E1]" />
                         </div>
                       )}
                     </div>
 
                     <div className="space-y-0.5 text-left sm:text-center">
-                      <p className="text-xs text-[#5F6673] font-medium">{step.date}</p>
+                      <p className="text-xs text-ink-secondary font-medium">{step.date}</p>
                       <p className={`text-[13px] font-semibold leading-snug flex items-center sm:justify-center gap-1 flex-wrap ${
-                        step.status === "active" ? "text-[#D97706]" : "text-[#111318]"
+                        step.status === "active" ? "text-caution" : "text-ink"
                       }`}>
                         {step.label}
                         {step.info && (

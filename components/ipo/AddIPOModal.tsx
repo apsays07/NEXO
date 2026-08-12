@@ -60,11 +60,11 @@ export function AddIPOModal() {
 
   if (isSuccess) {
     return (
-      <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-        <div className="w-full max-w-md bg-white border border-slate-200/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center space-y-4 animate-modal-pop-in">
+      <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in">
+        <div className="w-full max-w-md bg-surface border border-line/80 rounded-3xl p-6 shadow-2xl flex flex-col items-center text-center space-y-4 animate-modal-pop-in">
           {/* Success Check Ring */}
           <div className="relative">
-            <div className="w-16 h-16 rounded-full bg-emerald-50 border border-emerald-100 flex items-center justify-center text-emerald-600 animate-pulse-glow shadow-md">
+            <div className="w-16 h-16 rounded-full bg-positive-soft border border-emerald-100 flex items-center justify-center text-positive animate-pulse-glow shadow-md">
               <svg className="w-8 h-8 animate-check-bounce" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="3">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
               </svg>
@@ -72,10 +72,10 @@ export function AddIPOModal() {
           </div>
 
           <div className="space-y-1.5">
-            <h3 className="text-lg font-extrabold text-slate-900 tracking-tight">
+            <h3 className="text-lg font-extrabold text-ink tracking-tight">
               IPO Opportunity Created
             </h3>
-            <p className="text-xs text-slate-500 font-medium px-4 leading-relaxed">
+            <p className="text-xs text-ink-tertiary font-medium px-4 leading-relaxed">
               The new IPO opportunity has been successfully published to the group's active watchlist.
             </p>
           </div>
@@ -92,12 +92,12 @@ export function AddIPOModal() {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-      <div className="w-full max-w-lg bg-[#FFFFFF] border border-[#E2E8F0] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[90vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in">
+      <div className="w-full max-w-lg bg-surface border border-line rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[90vh]">
         {/* Header */}
-        <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
+        <div className="p-5 border-b border-line flex items-center justify-between bg-page">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-accent-soft text-accent flex items-center justify-center font-bold">
               <Plus size={18} />
             </div>
             <div>
@@ -130,7 +130,7 @@ export function AddIPOModal() {
               placeholder="e.g. Dhoot Transmission"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold"
+              className="w-full bg-page border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold"
             />
           </div>
 
@@ -146,7 +146,7 @@ export function AddIPOModal() {
                 placeholder="258"
                 value={priceMax}
                 onChange={(e) => setPriceMax(Number(e.target.value))}
-                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold num-tabular"
+                className="w-full bg-page border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold num-tabular"
               />
             </div>
             <div>
@@ -159,7 +159,7 @@ export function AddIPOModal() {
                 placeholder="58"
                 value={lotSize}
                 onChange={(e) => setLotSize(Number(e.target.value))}
-                className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold num-tabular"
+                className="w-full bg-page border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold num-tabular"
               />
             </div>
           </div>
@@ -175,7 +175,7 @@ export function AddIPOModal() {
               placeholder="e.g. 20 Aug 2026"
               value={closeDate}
               onChange={(e) => setCloseDate(e.target.value)}
-              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold"
+              className="w-full bg-page border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-bold"
             />
           </div>
 
@@ -189,16 +189,16 @@ export function AddIPOModal() {
               placeholder="Add analysis, notes, valuation rationale, or comments..."
               value={thesis}
               onChange={(e) => setThesis(e.target.value)}
-              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-3 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-medium leading-relaxed"
+              className="w-full bg-page border border-[#CBD5E1] rounded-xl p-3 text-xs text-[#0F172A] focus:border-[#2563EB] focus:outline-none font-medium leading-relaxed"
             />
           </div>
 
           {/* Footer Controls */}
-          <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-line flex items-center justify-end gap-3">
             <button 
               type="button" 
               onClick={closeAddIpoModal}
-              className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl border border-line text-xs font-semibold text-ink-secondary hover:bg-surface-alt transition-colors cursor-pointer"
             >
               Cancel
             </button>

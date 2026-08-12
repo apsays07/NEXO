@@ -24,7 +24,7 @@ export function PortfolioView() {
           change="+82.0% Avg Return"
           changeType="positive"
           subtitle="Closed positions"
-          icon={<Coins size={20} className="text-[#059669]" />}
+          icon={<Coins size={20} className="text-positive" />}
         />
         <MetricCard
           label="Unrealized Value"
@@ -32,30 +32,30 @@ export function PortfolioView() {
           change="+83.5% Current"
           changeType="positive"
           subtitle="Active holding positions"
-          icon={<TrendUp size={20} className="text-[#059669]" />}
+          icon={<TrendUp size={20} className="text-positive" />}
         />
         <MetricCard
           label="Allotment Success Rate"
           value={`${portfolioSummary.allotmentSuccessRatePercent}%`}
           subtitle="4 Allotted / 6 Applied"
-          icon={<Percent size={20} className="text-[#2563EB]" />}
+          icon={<Percent size={20} className="text-accent" />}
         />
         <MetricCard
           label="Total Capital Deployed"
           value={formatINR(portfolioSummary.capitalDeployed)}
           subtitle="Across 5 group members"
-          icon={<Vault size={20} className="text-[#D97706]" />}
+          icon={<Vault size={20} className="text-caution" />}
         />
       </div>
 
       {/* Detailed Holdings & History */}
-      <Card className="border-[#E2E8F0]">
+      <Card className="border-line">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h3 className="nexo-h3 text-[#111318]">
+            <h3 className="nexo-h3 text-ink">
               Group Portfolio Performance & Holdings
             </h3>
-            <p className="text-xs text-[#5F6673] font-normal mt-0.5">
+            <p className="text-xs text-ink-secondary font-normal mt-0.5">
               Track individual member shares and proportional returns
             </p>
           </div>
@@ -64,7 +64,7 @@ export function PortfolioView() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E2E8F0] nexo-table-header">
+              <tr className="border-b border-line nexo-table-header">
                 <th className="py-3 px-4">IPO / Asset</th>
                 <th className="py-3 px-4">Status</th>
                 <th className="py-3 px-4">Total Pooled</th>
@@ -76,15 +76,15 @@ export function PortfolioView() {
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] nexo-table-body">
               {activeHoldings.map((item) => (
-                <tr key={item.id} className="hover:bg-[#F8FAFC] transition-colors">
+                <tr key={item.id} className="hover:bg-page transition-colors">
                   <td className="py-3.5 px-4">
-                    <div className="font-semibold text-[#111318] text-sm">{item.name}</div>
-                    <div className="text-[12px] text-[#5F6673] font-normal">{item.company}</div>
+                    <div className="font-semibold text-ink text-sm">{item.name}</div>
+                    <div className="text-[12px] text-ink-secondary font-normal">{item.company}</div>
                   </td>
                   <td className="py-3.5 px-4">
                     <StatusBadge status={item.status} size="sm" />
                   </td>
-                  <td className="py-3.5 px-4 nexo-table-num text-[#111318]">
+                  <td className="py-3.5 px-4 nexo-table-num text-ink">
                     {formatINR(item.combinedCapital)}
                   </td>
                   <td className="py-3.5 px-4">
@@ -102,31 +102,31 @@ export function PortfolioView() {
                         ))}
                     </div>
                   </td>
-                  <td className="py-3.5 px-4 nexo-table-num text-[#5F6673]">
+                  <td className="py-3.5 px-4 nexo-table-num text-ink-secondary">
                     ₹{item.issuePrice || item.metrics.priceBand.max}
                   </td>
-                  <td className="py-3.5 px-4 nexo-table-num text-[#111318]">
+                  <td className="py-3.5 px-4 nexo-table-num text-ink">
                     ₹{item.currentPrice || "-"}
                   </td>
                   <td className="py-3.5 px-4 text-right">
                     {item.realizedProfit ? (
                       <div>
-                        <div className="text-[#059669] font-semibold nexo-table-num">
+                        <div className="text-positive font-semibold nexo-table-num">
                           {formatINR(item.realizedProfit, true)}
                         </div>
-                        <div className="text-[11px] text-[#059669] font-medium">
+                        <div className="text-[11px] text-positive font-medium">
                           +{item.listingGainPercent}% Realized
                         </div>
                       </div>
                     ) : item.listingGainPercent ? (
                       <div>
-                        <div className="text-[#059669] font-semibold nexo-table-num">
+                        <div className="text-positive font-semibold nexo-table-num">
                           +{item.listingGainPercent}%
                         </div>
-                        <div className="text-[11px] text-[#5F6673] font-normal">Unrealized</div>
+                        <div className="text-[11px] text-ink-secondary font-normal">Unrealized</div>
                       </div>
                     ) : (
-                      <span className="text-[#7B8491] font-normal">Pending</span>
+                      <span className="text-ink-tertiary font-normal">Pending</span>
                     )}
                   </td>
                 </tr>

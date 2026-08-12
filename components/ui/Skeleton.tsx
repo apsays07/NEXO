@@ -3,14 +3,14 @@ import React from "react";
 export function Skeleton({ className = "" }: { className?: string }) {
   return (
     <div
-      className={`bg-[#E2E8F0] animate-pulse rounded-xl ${className}`}
+      className={`bg-line/60 animate-pulse rounded-xl ${className}`}
     />
   );
 }
 
 export function PortfolioSkeleton() {
   return (
-    <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-4">
+    <div className="p-6 rounded-2xl bg-surface border border-line space-y-4">
       <Skeleton className="h-4 w-32" />
       <Skeleton className="h-10 w-48" />
       <div className="grid grid-cols-4 gap-4 pt-2">
@@ -25,7 +25,7 @@ export function PortfolioSkeleton() {
 
 export function IPOCardSkeleton() {
   return (
-    <div className="p-5 rounded-2xl bg-white border border-[#E2E8F0] space-y-4">
+    <div className="p-5 rounded-2xl bg-surface border border-line space-y-4">
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-3">
           <Skeleton className="w-10 h-10 rounded-xl" />

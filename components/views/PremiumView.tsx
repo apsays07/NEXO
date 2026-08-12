@@ -70,37 +70,37 @@ export function PremiumView() {
       {isPremiumUser && (
         <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-yellow-500/15 to-emerald-500/15 border border-amber-500/40 flex items-center justify-between text-xs">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-xl bg-caution-soft0 text-slate-950 flex items-center justify-center font-bold">
               <Crown size={20} weight="fill" />
             </div>
             <div>
-              <span className="font-semibold text-[#111318] block text-sm">
+              <span className="font-semibold text-ink block text-sm">
                 Nexo VIP Pro Active ({activePlan || "Pro Tier"})
               </span>
-              <span className="text-[#5F6673] font-normal">
+              <span className="text-ink-secondary font-normal">
                 Your account has full Multi-PAN routing & institutional GMP telemetry unlocked.
               </span>
             </div>
           </div>
-          <span className="px-3 py-1 rounded-full bg-amber-500/20 text-amber-700 font-semibold text-[11px] border border-amber-500/40">
+          <span className="px-3 py-1 rounded-full bg-caution-soft0/20 text-caution font-semibold text-[11px] border border-amber-500/40">
             ● VIP Active
           </span>
         </div>
       )}
 
       {activatedNotice && (
-        <div className="p-4 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-fade-in">
+        <div className="p-4 rounded-2xl bg-positive-soft border border-emerald-300 text-emerald-800 text-xs font-semibold flex items-center justify-between animate-fade-in">
           <div className="flex items-center gap-2">
-            <CheckCircle size={18} className="text-emerald-600" />
+            <CheckCircle size={18} className="text-positive" />
             <span>Success! Nexo Pro VIP Plan activated. All IPO applications will now be fast-tracked.</span>
           </div>
         </div>
       )}
 
       {/* HERO SECTION */}
-      <div className="relative rounded-3xl bg-[#090D16] border border-amber-500/30 p-8 sm:p-12 overflow-hidden shadow-2xl text-white">
+      <div className="relative rounded-3xl bg-[#090D16] border border-caution/30 p-8 sm:p-12 overflow-hidden shadow-2xl text-white">
         {/* Glow ambient background elements */}
-        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-500/15 rounded-full blur-3xl pointer-events-none" />
+        <div className="absolute top-0 right-0 w-96 h-96 bg-caution-soft0/15 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute bottom-0 left-0 w-80 h-80 bg-blue-600/15 rounded-full blur-3xl pointer-events-none" />
 
         <div className="relative z-10 space-y-6 max-w-3xl">
@@ -112,7 +112,7 @@ export function PremiumView() {
             Stop Losing IPO Allotments to Random Lotteries.
           </h1>
 
-          <p className="text-sm sm:text-base text-slate-300 leading-relaxed font-normal">
+          <p className="text-sm sm:text-base text-ink-muted leading-relaxed font-normal">
             Nexo VIP Pro combines Multi-PAN automated bidding, real-time institutional GMP telemetry, and instant UPI mandate synchronization to guarantee maximum allotment probability.
           </p>
 
@@ -141,71 +141,71 @@ export function PremiumView() {
 
       {/* STATS HIGHLIGHT CLUSTER */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
+        <div className="p-6 rounded-2xl bg-surface border border-line space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
+            <span className="text-xs font-medium text-ink-secondary uppercase tracking-wider">
               Group Capital Deployed
             </span>
-            <div className="p-2 rounded-xl bg-[#EFF6FF] text-[#2563EB]">
+            <div className="p-2 rounded-xl bg-accent-soft text-accent">
               <ChartLineUp size={20} />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-semibold text-[#111318] num-tabular">
+          <div className="text-2xl sm:text-3xl font-semibold text-ink num-tabular">
             ₹42.8 Cr+
           </div>
-          <p className="text-xs text-[#059669] font-medium flex items-center gap-1">
+          <p className="text-xs text-positive font-medium flex items-center gap-1">
             <TrendUp size={14} /> +34.2% Growth in Q3 2026
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
+        <div className="p-6 rounded-2xl bg-surface border border-line space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
+            <span className="text-xs font-medium text-ink-secondary uppercase tracking-wider">
               Average Allotment Success Rate
             </span>
-            <div className="p-2 rounded-xl bg-[#ECFDF3] text-[#12B76A]">
+            <div className="p-2 rounded-xl bg-positive-soft text-positive">
               <Lightning size={20} weight="fill" />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-semibold text-[#111318] num-tabular">
+          <div className="text-2xl sm:text-3xl font-semibold text-ink num-tabular">
             84.2%
           </div>
-          <p className="text-xs text-[#5F6673] font-normal">
+          <p className="text-xs text-ink-secondary font-normal">
             vs 14.8% standard retail single-PAN odds
           </p>
         </div>
 
-        <div className="p-6 rounded-2xl bg-white border border-[#E2E8F0] space-y-2 shadow-2xs">
+        <div className="p-6 rounded-2xl bg-surface border border-line space-y-2 shadow-2xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
+            <span className="text-xs font-medium text-ink-secondary uppercase tracking-wider">
               Active Group Members
             </span>
             <div className="p-2 rounded-xl bg-[#FFF5F5] text-[#E11D48]">
               <UsersThree size={20} />
             </div>
           </div>
-          <div className="text-2xl sm:text-3xl font-semibold text-[#111318] num-tabular">
+          <div className="text-2xl sm:text-3xl font-semibold text-ink num-tabular">
             12,480+
           </div>
-          <p className="text-xs text-[#5F6673] font-normal">
+          <p className="text-xs text-ink-secondary font-normal">
             Verified Indian Investor Accounts
           </p>
         </div>
       </div>
 
       {/* INTERACTIVE ALLOTMENT ODDS CALCULATOR */}
-      <div className="p-8 rounded-3xl bg-white border border-[#E2E8F0] shadow-2xs space-y-6">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#E2E8F0]">
+      <div className="p-8 rounded-3xl bg-surface border border-line shadow-2xs space-y-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-line">
           <div>
-            <h3 className="nexo-h3 text-[#111318] flex items-center gap-2">
+            <h3 className="nexo-h3 text-ink flex items-center gap-2">
               <Lightning size={22} className="text-amber-500" weight="fill" /> Allotment Probability Calculator
             </h3>
-            <p className="text-xs text-[#5F6673] font-normal mt-0.5">
+            <p className="text-xs text-ink-secondary font-normal mt-0.5">
               Simulate your allotment probability boost by configuring family PANs and lot investments.
             </p>
           </div>
 
-          <span className="px-3 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] font-semibold text-xs border border-[#BFDBFE]">
+          <span className="px-3 py-1 rounded-full bg-accent-soft text-accent font-semibold text-xs border border-[#BFDBFE]">
             SEBI Lot Math Engine
           </span>
         </div>
@@ -216,10 +216,10 @@ export function PremiumView() {
             {/* Slider 1: Family PAN Cards */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-semibold text-[#111318]">
+                <label className="font-semibold text-ink">
                   Number of Friend / Family PAN Cards:
                 </label>
-                <span className="font-semibold text-[#2563EB] font-mono text-sm bg-[#EFF6FF] px-2.5 py-0.5 rounded-lg border border-[#BFDBFE]">
+                <span className="font-semibold text-accent font-mono text-sm bg-accent-soft px-2.5 py-0.5 rounded-lg border border-[#BFDBFE]">
                   {selectedPanCount} PAN Cards
                 </span>
               </div>
@@ -231,7 +231,7 @@ export function PremiumView() {
                 onChange={(e) => setSelectedPanCount(Number(e.target.value))}
                 className="w-full h-2.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#2563EB]"
               />
-              <div className="flex justify-between text-[11px] text-[#5F6673] font-mono">
+              <div className="flex justify-between text-[11px] text-ink-secondary font-mono">
                 <span>1 Single PAN (15% odds)</span>
                 <span>5 PANs (68% odds)</span>
                 <span>10 PANs (96% odds)</span>
@@ -241,10 +241,10 @@ export function PremiumView() {
             {/* Slider 2: Investment Lots */}
             <div className="space-y-3">
               <div className="flex items-center justify-between text-xs">
-                <label className="font-semibold text-[#111318]">
+                <label className="font-semibold text-ink">
                   Number of Lots per Application:
                 </label>
-                <span className="font-semibold text-[#059669] font-mono text-sm bg-[#ECFDF3] px-2.5 py-0.5 rounded-lg border border-[#A6F4C5]">
+                <span className="font-semibold text-positive font-mono text-sm bg-positive-soft px-2.5 py-0.5 rounded-lg border border-positive/30">
                   {lotCount} Lots ({formatINR(lotCount * 14964)})
                 </span>
               </div>
@@ -256,7 +256,7 @@ export function PremiumView() {
                 onChange={(e) => setLotCount(Number(e.target.value))}
                 className="w-full h-2.5 bg-[#E2E8F0] rounded-lg appearance-none cursor-pointer accent-[#059669]"
               />
-              <div className="flex justify-between text-[11px] text-[#5F6673] font-mono">
+              <div className="flex justify-between text-[11px] text-ink-secondary font-mono">
                 <span>1 Lot</span>
                 <span>3 Lots</span>
                 <span>5 Lots (HNI Bidding)</span>
@@ -271,7 +271,7 @@ export function PremiumView() {
             </div>
 
             <div>
-              <span className="text-xs text-slate-400 block font-normal">Estimated Allotment Chance</span>
+              <span className="text-xs text-ink-muted block font-normal">Estimated Allotment Chance</span>
               <div className="text-4xl font-bold text-amber-400 num-tabular tracking-tight">
                 {computedOdds}%
               </div>
@@ -281,7 +281,7 @@ export function PremiumView() {
             </div>
 
             <div className="pt-3 border-t border-slate-700 flex items-center justify-between text-xs">
-              <span className="text-slate-300">Est. Listing Day Gains:</span>
+              <span className="text-ink-muted">Est. Listing Day Gains:</span>
               <span className="font-semibold text-emerald-400 num-tabular text-sm">
                 {formatINR(estimatedListingGain)}
               </span>
@@ -302,26 +302,26 @@ export function PremiumView() {
       {/* PRICING MATRIX SECTION */}
       <div id="pricing-matrix" className="space-y-6">
         <div className="text-center space-y-2 max-w-2xl mx-auto">
-          <span className="px-3 py-1 rounded-full bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] text-xs font-semibold uppercase">
+          <span className="px-3 py-1 rounded-full bg-accent-soft text-accent border border-[#BFDBFE] text-xs font-semibold uppercase">
             PRO PRICING TIERS
           </span>
-          <h2 className="nexo-h2 text-[#111318]">
+          <h2 className="nexo-h2 text-ink">
             Choose the Right Vault Level for Your Capital
           </h2>
-          <p className="text-xs sm:text-sm text-[#5F6673] font-normal">
+          <p className="text-xs sm:text-sm text-ink-secondary font-normal">
             All plans include SEBI compliant bank account linkage and encrypted PAN vaulting.
           </p>
 
           {/* Billing Switcher */}
           <div className="pt-2 flex items-center justify-center">
-            <div className="p-1 rounded-2xl bg-[#F1F5F9] border border-[#E2E8F0] inline-flex items-center gap-1">
+            <div className="p-1 rounded-2xl bg-surface-alt border border-line inline-flex items-center gap-1">
               <button
                 type="button"
                 onClick={() => setBillingCycle("monthly")}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
                   billingCycle === "monthly"
-                    ? "bg-white text-[#111318] shadow-2xs"
-                    : "text-[#5F6673] hover:text-[#111318]"
+                    ? "bg-surface text-ink shadow-2xs"
+                    : "text-ink-secondary hover:text-ink"
                 }`}
               >
                 Monthly Billing
@@ -331,8 +331,8 @@ export function PremiumView() {
                 onClick={() => setBillingCycle("annual")}
                 className={`px-4 py-2 rounded-xl text-xs font-semibold transition-all flex items-center gap-1.5 cursor-pointer ${
                   billingCycle === "annual"
-                    ? "bg-[#2563EB] text-white font-semibold shadow-md shadow-[#2563EB]/20"
-                    : "text-[#5F6673] hover:text-[#111318]"
+                    ? "bg-accent text-white font-semibold shadow-md shadow-[#2563EB]/20"
+                    : "text-ink-secondary hover:text-ink"
                 }`}
               >
                 Annual Billed
@@ -347,28 +347,28 @@ export function PremiumView() {
         {/* Pricing Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Card 1: Standard Free */}
-          <Card className="p-6 flex flex-col justify-between space-y-6 border-[#E2E8F0]">
+          <Card className="p-6 flex flex-col justify-between space-y-6 border-line">
             <div className="space-y-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#5F6673]">
+              <div className="text-xs font-semibold uppercase tracking-wider text-ink-secondary">
                 Starter Plan
               </div>
               <div>
-                <h3 className="nexo-h3 text-[#111318]">Standard Free</h3>
+                <h3 className="nexo-h3 text-ink">Standard Free</h3>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-[#111318] num-tabular">₹0</span>
-                  <span className="text-xs text-[#5F6673]">/month</span>
+                  <span className="text-3xl font-bold text-ink num-tabular">₹0</span>
+                  <span className="text-xs text-ink-secondary">/month</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 text-xs text-[#111318] pt-3 border-t border-[#E2E8F0]">
+              <ul className="space-y-3 text-xs text-ink pt-3 border-t border-line">
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Single PAN Bidding
+                  <Check size={16} className="text-positive" /> Single PAN Bidding
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Standard Retail Queue
+                  <Check size={16} className="text-positive" /> Standard Retail Queue
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Delayed GMP Data (12h)
+                  <Check size={16} className="text-positive" /> Delayed GMP Data (12h)
                 </li>
               </ul>
             </div>
@@ -380,42 +380,42 @@ export function PremiumView() {
 
           {/* Card 2: Nexo VIP Pro (FEATURED) */}
           <Card className="p-6 border-2 border-[#2563EB] bg-gradient-to-b from-[#F8FAFC] to-[#EFF6FF] flex flex-col justify-between space-y-6 relative shadow-lg">
-            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-[#2563EB] text-white font-semibold text-[11px] uppercase tracking-wider shadow-md">
+            <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3 py-0.5 rounded-full bg-accent text-white font-semibold text-[11px] uppercase tracking-wider shadow-md">
               🔥 MOST RECOMMENDED
             </div>
 
             <div className="space-y-4 pt-1">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#2563EB] flex items-center gap-1">
+              <div className="text-xs font-semibold uppercase tracking-wider text-accent flex items-center gap-1">
                 <Crown size={16} weight="fill" /> VIP Pro
               </div>
               <div>
-                <h3 className="nexo-h3 text-[#111318]">Nexo VIP Pro</h3>
+                <h3 className="nexo-h3 text-ink">Nexo VIP Pro</h3>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-[#2563EB] num-tabular">
+                  <span className="text-3xl font-bold text-accent num-tabular">
                     {billingCycle === "annual" ? "₹999" : "₹1,499"}
                   </span>
-                  <span className="text-xs text-[#5F6673]">/month</span>
+                  <span className="text-xs text-ink-secondary">/month</span>
                 </div>
-                <span className="text-[11px] text-[#5F6673] block mt-1 font-mono">
+                <span className="text-[11px] text-ink-secondary block mt-1 font-mono">
                   {billingCycle === "annual" ? "Billed annually ₹11,988/yr" : "Billed monthly"}
                 </span>
               </div>
 
-              <ul className="space-y-3 text-xs text-[#111318] pt-3 border-t border-[#BFDBFE]">
-                <li className="flex items-center gap-2 font-semibold text-[#2563EB]">
-                  <Check size={16} className="text-[#2563EB]" /> Up to 10 Family PAN Cards
+              <ul className="space-y-3 text-xs text-ink pt-3 border-t border-[#BFDBFE]">
+                <li className="flex items-center gap-2 font-semibold text-accent">
+                  <Check size={16} className="text-accent" /> Up to 10 Family PAN Cards
                 </li>
-                <li className="flex items-center gap-2 font-semibold text-[#059669]">
-                  <Check size={16} className="text-[#059669]" /> 4.8x Priority Allotment Routing
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#2563EB]" /> Real-time Institutional GMP Tracker
+                <li className="flex items-center gap-2 font-semibold text-positive">
+                  <Check size={16} className="text-positive" /> 4.8x Priority Allotment Routing
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#2563EB]" /> Instant Zerodha / Groww / Angel Sync
+                  <Check size={16} className="text-accent" /> Real-time Institutional GMP Tracker
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#2563EB]" /> Tax & P&L Auto-Optimizer
+                  <Check size={16} className="text-accent" /> Instant Zerodha / Groww / Angel Sync
+                </li>
+                <li className="flex items-center gap-2">
+                  <Check size={16} className="text-accent" /> Tax & P&L Auto-Optimizer
                 </li>
               </ul>
             </div>
@@ -423,7 +423,7 @@ export function PremiumView() {
             <Button
               variant="primary"
               size="md"
-              className="w-full bg-[#2563EB] hover:bg-[#1D4ED8] font-semibold shadow-md shadow-[#2563EB]/20"
+              className="w-full bg-accent hover:bg-[#1D4ED8] font-semibold shadow-md shadow-[#2563EB]/20"
               onClick={() => handleUpgrade("Nexo VIP Pro")}
             >
               <Crown size={16} weight="fill" /> Upgrade to Pro VIP
@@ -431,33 +431,33 @@ export function PremiumView() {
           </Card>
 
           {/* Card 3: Institutional HNI */}
-          <Card className="p-6 flex flex-col justify-between space-y-6 border-[#E2E8F0]">
+          <Card className="p-6 flex flex-col justify-between space-y-6 border-line">
             <div className="space-y-4">
-              <div className="text-xs font-semibold uppercase tracking-wider text-[#111318]">
+              <div className="text-xs font-semibold uppercase tracking-wider text-ink">
                 Institutional
               </div>
               <div>
-                <h3 className="nexo-h3 text-[#111318]">HNI Vault Pass</h3>
+                <h3 className="nexo-h3 text-ink">HNI Vault Pass</h3>
                 <div className="mt-2 flex items-baseline gap-1">
-                  <span className="text-3xl font-bold text-[#111318] num-tabular">
+                  <span className="text-3xl font-bold text-ink num-tabular">
                     {billingCycle === "annual" ? "₹3,999" : "₹4,999"}
                   </span>
-                  <span className="text-xs text-[#5F6673]">/month</span>
+                  <span className="text-xs text-ink-secondary">/month</span>
                 </div>
               </div>
 
-              <ul className="space-y-3 text-xs text-[#111318] pt-3 border-t border-[#E2E8F0]">
+              <ul className="space-y-3 text-xs text-ink pt-3 border-t border-line">
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Unlimited Family Member PANs
+                  <Check size={16} className="text-positive" /> Unlimited Family Member PANs
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Dedicated Institutional Desk & RM
+                  <Check size={16} className="text-positive" /> Dedicated Institutional Desk & RM
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> HNI Anchor Book Telemetry
+                  <Check size={16} className="text-positive" /> HNI Anchor Book Telemetry
                 </li>
                 <li className="flex items-center gap-2">
-                  <Check size={16} className="text-[#059669]" /> Custom API & Webhook Access
+                  <Check size={16} className="text-positive" /> Custom API & Webhook Access
                 </li>
               </ul>
             </div>
@@ -475,18 +475,18 @@ export function PremiumView() {
       </div>
 
       {/* REAL-TIME GMP TELEMETRY TABLE */}
-      <Card className="p-6 space-y-4 border-[#E2E8F0]">
-        <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-4">
+      <Card className="p-6 space-y-4 border-line">
+        <div className="flex items-center justify-between border-b border-line pb-4">
           <div>
-            <h3 className="nexo-h4 text-[#111318] flex items-center gap-2">
+            <h3 className="nexo-h4 text-ink flex items-center gap-2">
               <Fire size={18} className="text-[#E11D48]" weight="fill" /> Institutional GMP & Subscription Telemetry
             </h3>
-            <p className="text-xs text-[#5F6673] font-normal mt-0.5">
+            <p className="text-xs text-ink-secondary font-normal mt-0.5">
               Live updates direct from HNI trading desks. Unlocked for Nexo Pro VIP members.
             </p>
           </div>
 
-          <span className="text-[11px] font-semibold text-[#12B76A] bg-[#ECFDF3] px-2.5 py-1 rounded-full border border-[#A6F4C5]">
+          <span className="text-[11px] font-semibold text-positive bg-positive-soft px-2.5 py-1 rounded-full border border-positive/30">
             ● Live Desk Feeds
           </span>
         </div>
@@ -494,7 +494,7 @@ export function PremiumView() {
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs">
             <thead>
-              <tr className="border-b border-[#E2E8F0] nexo-table-header">
+              <tr className="border-b border-line nexo-table-header">
                 <th className="py-2.5 px-3">IPO Name</th>
                 <th className="py-2.5 px-3">Issue Price</th>
                 <th className="py-2.5 px-3">Current GMP (₹)</th>
@@ -506,40 +506,40 @@ export function PremiumView() {
             </thead>
             <tbody className="divide-y divide-[#F1F5F9] nexo-table-body">
               <tr>
-                <td className="py-3 px-3 font-semibold text-[#111318]">Ather Energy Ltd</td>
-                <td className="py-3 px-3 nexo-table-num text-[#111318]">₹324</td>
-                <td className="py-3 px-3 font-semibold text-[#059669] nexo-table-num">₹142 (+43.8%)</td>
-                <td className="py-3 px-3 font-medium text-[#059669] nexo-table-num">₹466 / share</td>
+                <td className="py-3 px-3 font-semibold text-ink">Ather Energy Ltd</td>
+                <td className="py-3 px-3 nexo-table-num text-ink">₹324</td>
+                <td className="py-3 px-3 font-semibold text-positive nexo-table-num">₹142 (+43.8%)</td>
+                <td className="py-3 px-3 font-medium text-positive nexo-table-num">₹466 / share</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">64.2x</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">112.8x</td>
                 <td className="py-3 px-3 text-right">
-                  <span className="px-2 py-0.5 rounded bg-[#ECFDF3] text-[#027A48] text-[11px] font-semibold">
+                  <span className="px-2 py-0.5 rounded bg-positive-soft text-positive text-[11px] font-semibold">
                     HIGH ALLOTMENT DEMAND
                   </span>
                 </td>
               </tr>
               <tr>
-                <td className="py-3 px-3 font-semibold text-[#111318]">Swiggy Limited</td>
-                <td className="py-3 px-3 nexo-table-num text-[#111318]">₹390</td>
-                <td className="py-3 px-3 font-semibold text-[#059669] nexo-table-num">₹88 (+22.5%)</td>
-                <td className="py-3 px-3 font-medium text-[#059669] nexo-table-num">₹478 / share</td>
+                <td className="py-3 px-3 font-semibold text-ink">Swiggy Limited</td>
+                <td className="py-3 px-3 nexo-table-num text-ink">₹390</td>
+                <td className="py-3 px-3 font-semibold text-positive nexo-table-num">₹88 (+22.5%)</td>
+                <td className="py-3 px-3 font-medium text-positive nexo-table-num">₹478 / share</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">38.4x</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">45.1x</td>
                 <td className="py-3 px-3 text-right">
-                  <span className="px-2 py-0.5 rounded bg-[#EFF6FF] text-[#2563EB] text-[11px] font-semibold">
+                  <span className="px-2 py-0.5 rounded bg-accent-soft text-accent text-[11px] font-semibold">
                     RECOMMENDED
                   </span>
                 </td>
               </tr>
               <tr>
-                <td className="py-3 px-3 font-semibold text-[#111318]">Hyundai Motor India</td>
-                <td className="py-3 px-3 nexo-table-num text-[#111318]">₹1,960</td>
-                <td className="py-3 px-3 font-semibold text-[#059669] nexo-table-num">₹310 (+15.8%)</td>
-                <td className="py-3 px-3 font-medium text-[#059669] nexo-table-num">₹2,270 / share</td>
+                <td className="py-3 px-3 font-semibold text-ink">Hyundai Motor India</td>
+                <td className="py-3 px-3 nexo-table-num text-ink">₹1,960</td>
+                <td className="py-3 px-3 font-semibold text-positive nexo-table-num">₹310 (+15.8%)</td>
+                <td className="py-3 px-3 font-medium text-positive nexo-table-num">₹2,270 / share</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">14.6x</td>
                 <td className="py-3 px-3 nexo-table-num font-medium">22.4x</td>
                 <td className="py-3 px-3 text-right">
-                  <span className="px-2 py-0.5 rounded bg-[#FEF3C7] text-[#D97706] text-[11px] font-semibold">
+                  <span className="px-2 py-0.5 rounded bg-[#FEF3C7] text-caution text-[11px] font-semibold">
                     WATCHING
                   </span>
                 </td>
@@ -551,7 +551,7 @@ export function PremiumView() {
 
       {/* FAQ SECTION */}
       <div className="space-y-4">
-        <h3 className="nexo-h3 text-[#111318]">
+        <h3 className="nexo-h3 text-ink">
           Frequently Asked Questions
         </h3>
 
@@ -561,18 +561,18 @@ export function PremiumView() {
             return (
               <div
                 key={idx}
-                className="rounded-2xl bg-white border border-[#E2E8F0] overflow-hidden transition-all"
+                className="rounded-2xl bg-surface border border-line overflow-hidden transition-all"
               >
                 <button
                   onClick={() => setExpandedFaq(isOpen ? null : idx)}
-                  className="w-full p-4 text-left flex items-center justify-between font-semibold text-xs text-[#111318] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                  className="w-full p-4 text-left flex items-center justify-between font-semibold text-xs text-ink hover:bg-page transition-colors cursor-pointer"
                 >
                   <span>{faq.q}</span>
                   {isOpen ? <CaretUp size={16} /> : <CaretDown size={16} />}
                 </button>
 
                 {isOpen && (
-                  <div className="px-4 pb-4 text-xs text-[#5F6673] leading-relaxed border-t border-[#F1F5F9] pt-3 font-normal">
+                  <div className="px-4 pb-4 text-xs text-ink-secondary leading-relaxed border-t border-[#F1F5F9] pt-3 font-normal">
                     {faq.a}
                   </div>
                 )}

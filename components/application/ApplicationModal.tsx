@@ -15,9 +15,6 @@ import {
   Trash,
   Scales,
   Coins,
-  UploadSimple,
-  Camera,
-  FileText,
 } from "@phosphor-icons/react";
 
 
@@ -30,11 +27,11 @@ interface ContributorEntry {
 
 // Color palette for friend progress bar segments
 const BAR_COLORS = [
-  "bg-blue-600",
-  "bg-emerald-500",
-  "bg-amber-500",
+  "bg-accent",
+  "bg-positive-soft0",
+  "bg-caution-soft0",
   "bg-indigo-600",
-  "bg-rose-500",
+  "bg-negative-soft0",
   "bg-violet-600",
 ];
 
@@ -49,7 +46,7 @@ export function ApplicationModal() {
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState<string>("");
-  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+
 
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
@@ -66,20 +63,19 @@ export function ApplicationModal() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Clear error msg and file upload when modal status changes
+  // Clear error msg when modal status changes
   useEffect(() => {
     if (isApplicationModalOpen) {
       setErrorMsg(null);
-      setUploadedFile(null);
     }
   }, [isApplicationModalOpen]);
 
-  // Initialize default applicant name
+  // Set default applicant name only when modal opens
   useEffect(() => {
-    if (members.length > 0 && !applicantName) {
+    if (isApplicationModalOpen && members.length > 0) {
       setApplicantName(members[0].name);
     }
-  }, [members, applicantName]);
+  }, [isApplicationModalOpen, members]);
 
   // Synchronize array length: 1 PAN per IPO
   useEffect(() => {
@@ -252,24 +248,24 @@ export function ApplicationModal() {
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-md p-4 animate-fade-in font-sans">
-      <div className="w-full max-w-[560px] bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-md p-4 animate-fade-in font-sans">
+      <div className="w-full max-w-[560px] bg-surface border border-line/90 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
         {/* Header */}
-        <div className="px-6 py-5 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-slate-50 via-white to-slate-50">
+        <div className="px-6 py-5 border-b border-line flex items-center justify-between bg-surface">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-100 text-blue-600 flex items-center justify-center font-bold text-lg shadow-2xs shrink-0">
+            <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-blue-50 to-indigo-50 border border-accent/30 text-accent flex items-center justify-center font-bold text-lg shadow-2xs shrink-0">
               {activeApplicationIpo.logo}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                <h3 className="text-base font-bold text-ink tracking-tight">
                   Apply for {activeApplicationIpo.name}
                 </h3>
-                <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200/60 rounded-full">
+                <span className="px-2 py-0.5 text-[10px] font-semibold text-positive bg-positive-soft border border-emerald-200/60 rounded-full">
                   Open
                 </span>
               </div>
-              <p className="text-xs text-slate-500 font-medium">
+              <p className="text-xs text-ink-tertiary font-medium">
                 Official IPO Application Form
               </p>
             </div>
@@ -277,7 +273,7 @@ export function ApplicationModal() {
 
           <button
             onClick={closeApplicationModal}
-            className="w-8 h-8 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-full text-ink-muted hover:text-ink-secondary hover:bg-surface-alt flex items-center justify-center transition-colors cursor-pointer"
           >
             <X size={18} />
           </button>
@@ -286,8 +282,8 @@ export function ApplicationModal() {
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
           {errorMsg && (
-            <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-modal-pop-in">
-              <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <div className="p-3.5 bg-negative-soft border border-negative/30 text-negative rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-modal-pop-in">
+              <svg className="w-4 h-4 text-negative shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
               </svg>
               <span>{errorMsg}</span>
@@ -295,20 +291,20 @@ export function ApplicationModal() {
           )}
           {/* CAPITAL FUNDING STRUCTURE SWITCHER */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800">
+            <label className="block text-xs font-bold text-ink">
               Capital Funding Structure
             </label>
-            <div className="grid grid-cols-2 gap-2 bg-slate-100/80 p-1 rounded-2xl border border-slate-200/80">
+            <div className="grid grid-cols-2 gap-2 bg-surface-alt/80 p-1 rounded-2xl border border-line/80">
               <button
                 type="button"
                 onClick={() => setApplicantMode("SOLO")}
                 className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   applicantMode === "SOLO"
-                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-surface text-ink shadow-xs border border-line/80"
+                    : "text-ink-secondary hover:text-ink"
                 }`}
               >
-                <User size={15} className={applicantMode === "SOLO" ? "text-blue-600" : ""} />
+                <User size={15} className={applicantMode === "SOLO" ? "text-accent" : ""} />
                 <span>Solo</span>
               </button>
 
@@ -317,8 +313,8 @@ export function ApplicationModal() {
                 onClick={() => setApplicantMode("JOINT")}
                 className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
                   applicantMode === "JOINT"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
+                    ? "bg-accent text-white shadow-xs"
+                    : "text-ink-secondary hover:text-ink"
                 }`}
               >
                 <UsersThree size={16} />
@@ -329,8 +325,8 @@ export function ApplicationModal() {
 
           {/* 1. Primary Applicant Name */}
           <div className="space-y-1.5">
-            <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-              <User size={15} className="text-blue-600" /> Primary Applicant Name <span className="text-rose-500">*</span>
+            <label className="block text-xs font-bold text-ink flex items-center gap-1.5">
+              <User size={15} className="text-accent" /> Primary Applicant Name <span className="text-rose-500">*</span>
             </label>
             <input
               type="text"
@@ -338,22 +334,22 @@ export function ApplicationModal() {
               placeholder="e.g. Ankit"
               value={applicantName}
               onChange={(e) => setApplicantName(e.target.value)}
-              className="w-full bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+              className="w-full bg-surface-alt/80 border border-line hover:border-line-strong rounded-xl px-4 py-2.5 text-sm font-semibold text-ink tracking-tight focus:bg-surface focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all placeholder:text-ink-muted"
             />
           </div>
 
           {/* FRIEND NAME | AMOUNT TABLE WITH VISUAL PROGRESS BAR & SUM MATCHING */}
           {applicantMode === "JOINT" && (
-            <div className="p-4 rounded-2xl bg-gradient-to-b from-blue-50/70 to-slate-50/70 border border-blue-200/80 space-y-3.5 animate-fade-in shadow-2xs">
+            <div className="p-4 rounded-2xl bg-accent-soft/70 border border-accent/30 space-y-3.5 animate-fade-in shadow-2xs">
               {/* Header Actions */}
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-900 flex items-center gap-1.5">
-                  <Coins size={16} className="text-blue-600" /> Capital Allocation Pool
+                <span className="text-xs font-bold text-ink flex items-center gap-1.5">
+                  <Coins size={16} className="text-accent" /> Capital Allocation Pool
                 </span>
               </div>
 
               {/* Table Header: FRIEND NAME | AMOUNT (₹) */}
-              <div className="grid grid-cols-12 gap-2 px-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+              <div className="grid grid-cols-12 gap-2 px-3 text-[11px] font-extrabold text-ink-tertiary uppercase tracking-wider">
                 <div className="col-span-6">Friend Name</div>
                 <div className="col-span-5 text-right">Amount (₹)</div>
                 <div className="col-span-1"></div>
@@ -371,7 +367,7 @@ export function ApplicationModal() {
                   return (
                     <div
                       key={idx}
-                      className="flex items-center gap-2 p-2 bg-white border border-slate-200 rounded-xl shadow-2xs hover:border-slate-300 transition-all"
+                      className="flex items-center gap-2 p-2 bg-surface border border-line rounded-xl shadow-2xs hover:border-line-strong transition-all"
                     >
                       {/* # Badge */}
                       <span
@@ -389,24 +385,24 @@ export function ApplicationModal() {
                         placeholder={`Friend #${idx + 1} Name`}
                         value={c.memberName}
                         onChange={(e) => handleContributorNameChange(idx, e.target.value)}
-                        className="flex-1 min-w-0 bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-bold text-slate-900 outline-none transition-all placeholder:text-slate-400 placeholder:font-normal"
+                        className="flex-1 min-w-0 bg-surface-alt/80 border border-line focus:bg-surface focus:border-accent rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink outline-none transition-all placeholder:text-ink-muted placeholder:font-normal"
                       />
 
                       {/* Clean Custom Amount Input */}
                       <div className="flex items-center gap-1 w-28 shrink-0">
-                        <span className="text-xs font-bold text-slate-400">₹</span>
+                        <span className="text-xs font-bold text-ink-muted">₹</span>
                         <input
                           type="number"
                           min={0}
                           placeholder="0"
                           value={c.amount}
                           onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
-                          className="w-full bg-slate-50/80 border border-slate-200 focus:bg-white focus:border-blue-600 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none transition-all"
+                          className="w-full bg-surface-alt/80 border border-line focus:bg-surface focus:border-accent rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-ink text-right outline-none transition-all"
                         />
                       </div>
 
                       {/* Investment Percentage Badge */}
-                      <span className="text-[11px] font-mono font-bold text-blue-600 bg-blue-50 px-2 py-1 rounded-md border border-blue-100/80 shrink-0 w-14 text-center">
+                      <span className="text-[11px] font-mono font-bold text-accent bg-accent-soft px-2 py-1 rounded-md border border-blue-100/80 shrink-0 w-14 text-center">
                         {pctStr}
                       </span>
 
@@ -416,7 +412,7 @@ export function ApplicationModal() {
                           <button
                             type="button"
                             onClick={() => handleRemoveContributor(idx)}
-                            className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                            className="p-1 rounded text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors cursor-pointer"
                             title="Remove Friend"
                           >
                             <Trash size={15} />
@@ -431,7 +427,7 @@ export function ApplicationModal() {
               {/* VISUAL MULTI-COLOR CAPITAL SHARE PROGRESS BAR */}
               {totalPooledCapital > 0 && (
                 <div className="space-y-1 pt-1">
-                  <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden flex border border-slate-200/60 shadow-inner">
+                  <div className="h-2 w-full bg-surface-alt rounded-full overflow-hidden flex border border-line/60 shadow-inner">
                     {contributors.map((c, idx) => {
                       const amt = typeof c.amount === "number" ? c.amount : 0;
                       const pct = Math.min(100, Math.max(0, (amt / totalPooledCapital) * 100));
@@ -454,19 +450,19 @@ export function ApplicationModal() {
                 <button
                   type="button"
                   onClick={handleAddContributor}
-                  className="px-3.5 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
+                  className="px-3.5 py-1.5 rounded-xl bg-surface border border-blue-300 text-accent hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer active:scale-95"
                 >
                   <Plus size={14} weight="bold" /> Add Friend
                 </button>
 
                 <div className="text-right text-xs">
-                  <div className="font-mono font-bold text-slate-900">
+                  <div className="font-mono font-bold text-ink">
                     Total:{" "}
                     <span
                       className={
                         totalPooledCapital === targetRequiredCapital
-                          ? "text-emerald-600"
-                          : "text-amber-600"
+                          ? "text-positive"
+                          : "text-caution"
                       }
                     >
                       {formatINR(totalPooledCapital)}
@@ -474,11 +470,11 @@ export function ApplicationModal() {
                     / {formatINR(targetRequiredCapital)}
                   </div>
                   {totalPooledCapital === targetRequiredCapital ? (
-                    <span className="text-[10px] font-semibold text-emerald-600 flex items-center justify-end gap-1">
+                    <span className="text-[10px] font-semibold text-positive flex items-center justify-end gap-1">
                       <CheckCircle size={12} weight="fill" /> Matches Required Capital
                     </span>
                   ) : (
-                    <span className="text-[10px] font-semibold text-amber-600">
+                    <span className="text-[10px] font-semibold text-caution">
                       {totalPooledCapital < targetRequiredCapital
                         ? `Need ${formatINR(targetRequiredCapital - totalPooledCapital)} more`
                         : `Exceeds by ${formatINR(totalPooledCapital - targetRequiredCapital)}`}
@@ -492,10 +488,10 @@ export function ApplicationModal() {
           {/* 2. Number of PAN Cards */}
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-ink flex items-center gap-1.5">
+                <CheckCircle size={15} className="text-accent" /> Number of PAN Cards <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[11px] text-slate-500 font-mono">
+              <span className="text-[11px] text-ink-tertiary font-mono">
                 1 PAN per Application
               </span>
             </div>
@@ -519,7 +515,7 @@ export function ApplicationModal() {
                   setNumberOfIpos(1);
                 }
               }}
-              className="w-full bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+              className="w-full bg-surface-alt/80 border border-line hover:border-line-strong rounded-xl px-4 py-2.5 text-sm font-semibold text-ink tracking-tight focus:bg-surface focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all placeholder:text-ink-muted"
               placeholder="Enter number of PAN cards (e.g. 5)"
             />
           </div>
@@ -527,10 +523,10 @@ export function ApplicationModal() {
           {/* 3. Dynamic PAN Card Inputs */}
           <div className="space-y-2.5">
             <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <IdentificationCard size={15} className="text-blue-600" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
+              <label className="block text-xs font-bold text-ink flex items-center gap-1.5">
+                <IdentificationCard size={15} className="text-accent" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
               </label>
-              <span className="text-[11px] text-slate-400 font-medium">
+              <span className="text-[11px] text-ink-muted font-medium">
                 Auto-formatted Uppercase
               </span>
             </div>
@@ -541,9 +537,9 @@ export function ApplicationModal() {
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
+                    className="flex items-center gap-2.5 p-2 bg-surface-alt/80 border border-line/80 hover:border-line-strong rounded-2xl transition-all"
                   >
-                    <span className="text-[11px] font-bold text-slate-500 w-16 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
+                    <span className="text-[11px] font-bold text-ink-tertiary w-16 shrink-0 font-mono text-center bg-surface py-1.5 px-2 rounded-xl border border-line shadow-2xs">
                       PAN #{idx + 1}
                     </span>
                     <div className="relative flex-1">
@@ -554,10 +550,10 @@ export function ApplicationModal() {
                         placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
                         value={pan}
                         onChange={(e) => handlePanChange(idx, e.target.value)}
-                        className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
+                        className="w-full bg-surface border border-line hover:border-line-strong rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-ink tracking-widest uppercase focus:border-accent focus:ring-3 focus:ring-accent/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-muted"
                       />
                       {valid && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600 animate-fade-in">
+                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-positive animate-fade-in">
                           <CheckCircle size={16} weight="fill" />
                         </div>
                       )}
@@ -568,72 +564,13 @@ export function ApplicationModal() {
             </div>
           </div>
 
-          {/* 4. Application Screenshot Proof Upload */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                <UploadSimple size={15} className="text-blue-600" /> Application Screenshot Proof <span className="text-slate-400 font-normal">(Optional)</span>
-              </label>
-              <span className="text-[11px] text-slate-400 font-medium">PNG, JPG, PDF (Max 5MB)</span>
-            </div>
-
-            {uploadedFile ? (
-              <div className="p-3.5 rounded-2xl bg-blue-50/70 border border-blue-200/80 flex items-center justify-between gap-3 animate-fade-in">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-blue-600 text-white flex items-center justify-center font-bold shrink-0 shadow-2xs">
-                    <FileText size={20} />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-slate-900 truncate">{uploadedFile.name}</p>
-                    <p className="text-[10px] text-blue-600 font-semibold flex items-center gap-1">
-                      <CheckCircle size={12} weight="fill" /> Ready for verification ({(uploadedFile.size / 1024).toFixed(0)} KB)
-                    </p>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-1 shrink-0">
-                  <button
-                    type="button"
-                    onClick={() => setUploadedFile(null)}
-                    className="px-2.5 py-1.5 rounded-lg bg-white border border-slate-200 text-rose-600 hover:bg-rose-50 font-bold text-xs transition-colors cursor-pointer"
-                  >
-                    Remove
-                  </button>
-                </div>
-              </div>
-            ) : (
-              <label className="w-full min-h-[140px] rounded-2xl border-2 border-dashed border-slate-200 hover:border-blue-500 bg-slate-50/50 hover:bg-blue-50/30 flex flex-col items-center justify-center p-4 cursor-pointer transition-all text-center group">
-                <input
-                  type="file"
-                  accept="image/*,.pdf"
-                  onChange={(e) => {
-                    if (e.target.files && e.target.files[0]) {
-                      setUploadedFile(e.target.files[0]);
-                    }
-                  }}
-                  className="hidden"
-                />
-                <div className="w-12 h-12 rounded-2xl bg-white border border-slate-200 group-hover:border-blue-300 flex items-center justify-center text-slate-500 group-hover:text-blue-600 shadow-2xs transition-all mb-2">
-                  <Camera size={24} />
-                </div>
-                <span className="text-xs font-bold text-slate-800 group-hover:text-blue-600 transition-colors">
-                  Tap to upload application screenshot
-                </span>
-                <span className="text-[11px] text-slate-400 mt-0.5">
-                  Choose from photo gallery or take a picture
-                </span>
-              </label>
-            )}
-          </div>
-
-
 
           {/* Footer Buttons */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-line flex items-center justify-end gap-3">
             <button
               type="button"
               onClick={closeApplicationModal}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer touch-target"
+              className="px-4 py-2.5 rounded-xl border border-line text-xs font-semibold text-ink-secondary hover:bg-surface-alt hover:text-ink transition-all cursor-pointer touch-target"
             >
               Cancel
             </button>

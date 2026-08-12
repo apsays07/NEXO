@@ -106,12 +106,12 @@ export function ApplicationsView() {
 
     return (
       <span
-        className={`inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold border ${
+        className={`inline-flex items-center px-2.5 py-1 rounded-full text-caption font-semibold border ${
           status === "ALLOTTED"
-            ? "bg-emerald-50 border-emerald-200/80 text-emerald-700"
+            ? "bg-positive-soft border-positive/30 text-positive"
             : status === "NOT_ALLOTTED"
-            ? "bg-rose-50 border-rose-200/80 text-rose-700"
-            : "bg-amber-50 border-amber-200/80 text-amber-700"
+            ? "bg-negative-soft border-negative/30 text-negative"
+            : "bg-caution-soft border-caution/30 text-caution"
         }`}
       >
         {status === "ALLOTTED"
@@ -164,15 +164,15 @@ export function ApplicationsView() {
   return (
     <div className="space-y-5 pb-12 animate-fade-in max-w-6xl mx-auto font-sans">
       {/* TOP BAR: SELECT IPO, SCOPE TOGGLE (ALL VS MY), METRICS */}
-      <div className="flex flex-wrap items-center justify-between gap-5 p-4 bg-white rounded-2xl border border-slate-200/80 shadow-2xs">
-        <div className="flex flex-wrap items-center gap-5">
+      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-surface rounded-2xl border border-line shadow-xs">
+        <div className="flex flex-wrap items-center gap-4">
           {/* Left: Select IPO / Company */}
-          <div className="flex items-center gap-3 shrink-0">
-            <span className="text-xs font-bold text-slate-700">Select IPO:</span>
+          <div className="flex items-center gap-2.5 shrink-0">
+            <span className="text-small font-semibold text-ink-secondary">Select IPO:</span>
             <select
               value={ipoFilter}
               onChange={(e) => setIpoFilter(e.target.value)}
-              className="bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-900 focus:border-blue-600 focus:bg-white outline-none cursor-pointer min-w-[190px] shadow-2xs transition-all"
+              className="bg-surface-alt border border-line-strong rounded-xl px-3.5 py-1.5 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer min-w-[190px] shadow-2xs transition-all"
             >
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
@@ -183,47 +183,47 @@ export function ApplicationsView() {
           </div>
 
           {/* Divider */}
-          <div className="hidden sm:block w-px h-8 bg-slate-200" />
+          <div className="hidden sm:block w-px h-6 bg-line-subtle" />
 
           {/* SCOPE FILTER: ALL FRIENDS VS MY APPLICATIONS */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200/80 shrink-0">
+          <div className="flex items-center gap-1 bg-surface-alt p-1 rounded-xl border border-line shrink-0">
             <button
               onClick={() => setViewScope("ALL")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-small font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewScope === "ALL"
-                  ? "bg-white text-blue-600 shadow-2xs border border-slate-200/80"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-accent shadow-2xs border border-line"
+                  : "text-ink-secondary hover:text-ink"
               }`}
             >
-              <Users size={14} weight="bold" />
+              <Users size={15} weight="bold" />
               <span>All Friends&apos; Applications</span>
             </button>
 
             <button
               onClick={() => setViewScope("MY")}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`px-3 py-1.5 rounded-lg text-small font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 viewScope === "MY"
-                  ? "bg-blue-600 text-white shadow-2xs"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-accent text-white shadow-2xs"
+                  : "text-ink-secondary hover:text-ink"
               }`}
             >
-              <User size={14} weight="bold" />
+              <User size={15} weight="bold" />
               <span>My Applications</span>
             </button>
           </div>
 
           {/* Inline Summary Metrics */}
           {activeIpoMetrics && (
-            <div className="flex flex-wrap items-center gap-5 text-xs">
-              <div className="w-px h-6 bg-slate-200 hidden md:block" />
+            <div className="flex flex-wrap items-center gap-4 text-small">
+              <div className="w-px h-6 bg-line-subtle hidden md:block" />
 
               <div>
-                <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">Total Apps</span>
-                <span className="text-sm font-extrabold text-slate-900 num-tabular">{activeIpoMetrics.totalApps}</span>
+                <span className="text-caption font-medium text-ink-tertiary block">Total Apps</span>
+                <span className="text-body-md font-semibold text-ink num-tabular">{activeIpoMetrics.totalApps}</span>
               </div>
               <div>
-                <span className="text-[11px] font-semibold text-slate-400 block mb-0.5">Total Amount</span>
-                <span className="text-sm font-extrabold text-slate-900 num-tabular">{formatINR(activeIpoMetrics.totalAmount)}</span>
+                <span className="text-caption font-medium text-ink-tertiary block">Total Amount</span>
+                <span className="text-body-md font-semibold text-ink num-tabular">{formatINR(activeIpoMetrics.totalAmount)}</span>
               </div>
             </div>
           )}
@@ -235,7 +235,7 @@ export function ApplicationsView() {
             href={activeIpo.registrarUrl || "https://ipostatus.kfintech.com"}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white font-bold text-xs shadow-xs transition-all cursor-pointer shrink-0"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-small shadow-xs transition-all cursor-pointer shrink-0"
           >
             <span>Check Allotment</span>
             <ArrowSquareOut size={14} weight="bold" />
@@ -245,26 +245,26 @@ export function ApplicationsView() {
 
       {/* EDIT APPLICATION MODAL */}
       {editingApp && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-white rounded-3xl p-6 max-w-md w-full border border-slate-200/80 shadow-2xl space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+        <div className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-surface rounded-2xl p-6 max-w-md w-full border border-line shadow-2xl space-y-4 animate-modal-pop-in">
+            <div className="flex items-center justify-between border-b border-line pb-3">
               <div className="flex items-center gap-2">
-                <ShieldCheck size={20} className="text-blue-600" />
-                <h3 className="text-base font-bold text-slate-900 tracking-tight">
+                <ShieldCheck size={20} className="text-accent" />
+                <h3 className="text-h4 font-semibold text-ink tracking-tight">
                   Edit Application
                 </h3>
               </div>
               <button
                 onClick={() => setEditingApp(null)}
-                className="w-7 h-7 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 flex items-center justify-center transition-colors"
+                className="w-7 h-7 rounded-full text-ink-muted hover:text-ink-secondary hover:bg-surface-alt flex items-center justify-center transition-colors"
               >
                 <X size={16} />
               </button>
             </div>
 
-            <form onSubmit={handleSaveEditApp} className="space-y-4 text-xs">
+            <form onSubmit={handleSaveEditApp} className="space-y-4 text-small">
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-800">
+                <label className="block text-caption font-semibold text-ink">
                   Applicant Name
                 </label>
                 <input
@@ -274,12 +274,12 @@ export function ApplicationsView() {
                   onChange={(e) =>
                     setEditingApp({ ...editingApp, applicantName: e.target.value })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 outline-none"
+                  className="w-full bg-surface-alt border border-line rounded-xl px-3.5 py-2.5 text-body font-normal text-ink focus:bg-surface focus:border-accent outline-none"
                 />
               </div>
 
               <div className="space-y-1">
-                <label className="block font-semibold text-slate-800">
+                <label className="block text-caption font-semibold text-ink">
                   Number of PAN Cards / Lots
                 </label>
                 <input
@@ -294,21 +294,21 @@ export function ApplicationsView() {
                       lotCount: parseInt(e.target.value, 10) || 1,
                     })
                   }
-                  className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium text-slate-900 focus:bg-white focus:border-blue-600 outline-none"
+                  className="w-full bg-surface-alt border border-line rounded-xl px-3.5 py-2.5 text-body font-normal text-ink num-tabular focus:bg-surface focus:border-accent outline-none"
                 />
               </div>
 
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
+              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-line">
                 <button
                   type="button"
                   onClick={() => setEditingApp(null)}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                  className="px-4 py-2 rounded-xl border border-line text-small font-medium text-ink-secondary hover:bg-surface-alt cursor-pointer transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-xs flex items-center gap-1.5"
+                  className="px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-small shadow-xs flex items-center gap-1.5 cursor-pointer transition-colors"
                 >
                   <FloppyDisk size={15} weight="bold" /> Save Changes
                 </button>
@@ -320,19 +320,19 @@ export function ApplicationsView() {
 
       {/* ADMIN REGISTRAR URL EDIT MODAL */}
       {isUrlModalOpen && (
-        <div className="fixed inset-0 z-50 bg-slate-950/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-slate-200 shadow-xl space-y-4 animate-fade-in">
+        <div className="fixed inset-0 z-50 bg-overlay backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface rounded-2xl p-6 max-w-md w-full border border-line shadow-xl space-y-4 animate-fade-in">
             <div>
-              <h3 className="text-base font-bold text-slate-900">
+              <h3 className="text-h4 font-semibold text-ink">
                 Configure Registrar URL ({activeIpo?.name})
               </h3>
-              <p className="text-xs text-slate-500 mt-1">
+              <p className="text-small text-ink-tertiary mt-1">
                 Enter the official IPO allotment status URL for this company&apos;s registrar.
               </p>
             </div>
 
             <div>
-              <label className="block text-xs font-semibold text-slate-700 mb-1">
+              <label className="block text-caption font-semibold text-ink-secondary mb-1">
                 Registrar Webpage URL
               </label>
               <input
@@ -340,20 +340,20 @@ export function ApplicationsView() {
                 value={customRegistrarUrl}
                 onChange={(e) => setCustomRegistrarUrl(e.target.value)}
                 placeholder="https://linkintime.co.in/initial_offer/public-issues.html"
-                className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm font-medium tracking-tight text-slate-900 focus:border-blue-600 focus:bg-white outline-none"
+                className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-body font-normal text-ink focus:border-accent focus:bg-surface outline-none"
               />
             </div>
 
             <div className="flex items-center justify-end gap-2 pt-2">
               <button
                 onClick={() => setIsUrlModalOpen(false)}
-                className="px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
+                className="px-3 py-1.5 rounded-lg border border-line text-small font-medium text-ink-secondary hover:bg-surface-alt cursor-pointer transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleSaveRegistrarUrl}
-                className="px-4 py-1.5 rounded-lg bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 shadow-xs"
+                className="px-4 py-1.5 rounded-lg bg-accent text-white text-small font-semibold hover:bg-accent-hover shadow-xs cursor-pointer transition-colors"
               >
                 Save URL
               </button>
@@ -388,67 +388,67 @@ export function ApplicationsView() {
         return (
           <div
             key={ipo.id}
-            className="bg-white rounded-2xl border border-slate-200/80 shadow-2xs overflow-hidden"
+            className="bg-surface rounded-2xl border border-line shadow-xs overflow-hidden"
           >
             {/* IPO HEADER WITH STATUS FILTER BUTTONS */}
-            <div className="p-5 bg-white border-b border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="p-5 bg-surface border-b border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-slate-900 text-white font-bold text-xs flex items-center justify-center shrink-0 shadow-2xs">
+                <div className="w-10 h-10 rounded-xl bg-surface-alt border border-line text-ink font-bold text-small flex items-center justify-center shrink-0 shadow-2xs">
                   {ipo.logo || ipo.name.substring(0, 2).toUpperCase()}
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
-                    <h2 className="text-base font-bold text-slate-900 tracking-tight">
+                    <h2 className="text-h4 font-semibold text-ink tracking-tight">
                       {ipo.name} IPO
                     </h2>
-                    <span className="text-[11px] font-semibold text-blue-600 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded-md">
+                    <span className="text-caption font-semibold text-accent bg-accent-soft border border-accent/20 px-2 py-0.5 rounded-md">
                       {viewScope === "MY" ? "My Submissions" : "Group Ledger"}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-500 font-medium mt-0.5">
+                  <div className="text-small text-ink-tertiary font-medium mt-0.5">
                     Lot Price: {formatINR(ipo.metrics.minInvestment)} • {ipo.category || "Mainboard"}
                   </div>
                 </div>
               </div>
 
               {/* Status Filter Buttons */}
-              <div className="flex items-center gap-1.5 bg-slate-100/80 p-1 rounded-xl border border-slate-200/60 shrink-0">
+              <div className="flex items-center gap-1 bg-surface-alt p-1 rounded-xl border border-line shrink-0">
                 <button
                   onClick={() => setStatusFilter("ALL")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-small font-semibold transition-all cursor-pointer ${
                     statusFilter === "ALL"
-                      ? "bg-white text-slate-900 shadow-2xs border border-slate-200/80"
-                      : "text-slate-500 hover:text-slate-900"
+                      ? "bg-surface text-ink shadow-2xs border border-line"
+                      : "text-ink-tertiary hover:text-ink"
                   }`}
                 >
                   All ({filteredApps.length})
                 </button>
                 <button
                   onClick={() => setStatusFilter("ALLOTTED")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-small font-semibold transition-all cursor-pointer ${
                     statusFilter === "ALLOTTED"
-                      ? "bg-emerald-600 text-white shadow-2xs"
-                      : "text-slate-600 hover:text-emerald-600"
+                      ? "bg-positive-soft text-positive border border-positive/30 shadow-2xs"
+                      : "text-ink-secondary hover:text-positive"
                   }`}
                 >
                   Allotted
                 </button>
                 <button
                   onClick={() => setStatusFilter("AWAITING")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-small font-semibold transition-all cursor-pointer ${
                     statusFilter === "AWAITING"
-                      ? "bg-amber-600 text-white shadow-2xs"
-                      : "text-slate-600 hover:text-amber-600"
+                      ? "bg-caution-soft text-caution border border-caution/30 shadow-2xs"
+                      : "text-ink-secondary hover:text-caution"
                   }`}
                 >
                   Awaiting
                 </button>
                 <button
                   onClick={() => setStatusFilter("NOT_ALLOTTED")}
-                  className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                  className={`px-3 py-1 rounded-lg text-small font-semibold transition-all cursor-pointer ${
                     statusFilter === "NOT_ALLOTTED"
-                      ? "bg-rose-600 text-white shadow-2xs"
-                      : "text-slate-600 hover:text-rose-600"
+                      ? "bg-negative-soft text-negative border border-negative/30 shadow-2xs"
+                      : "text-ink-secondary hover:text-negative"
                   }`}
                 >
                   Not Allotted
@@ -457,7 +457,7 @@ export function ApplicationsView() {
             </div>
 
             {/* TABLE HEADER */}
-            <div className="hidden md:grid grid-cols-12 px-6 py-3 bg-slate-50/60 border-b border-slate-100 text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            <div className="hidden md:grid grid-cols-12 px-6 py-3 bg-surface-alt/60 border-b border-line text-caption font-semibold text-ink-tertiary uppercase tracking-wider">
               <div className="col-span-1">#</div>
               <div className="col-span-3">Applicant / Contributors</div>
               <div className="col-span-2">PAN Card</div>
@@ -467,10 +467,10 @@ export function ApplicationsView() {
             </div>
 
             {/* APPLICATION LEDGER ROWS */}
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-line-subtle">
               {filteredApps.length === 0 ? (
-                <div className="p-12 text-center text-xs text-slate-400 font-medium space-y-1">
-                  <div className="text-sm font-bold text-slate-700">No applications found</div>
+                <div className="p-12 text-center text-small text-ink-tertiary font-medium space-y-1">
+                  <div className="text-body-md font-semibold text-ink">No applications found</div>
                   <div>No applications match your scope or filter criteria.</div>
                 </div>
               ) : (
@@ -499,28 +499,28 @@ export function ApplicationsView() {
                   return (
                     <React.Fragment key={app.id}>
                       {/* DESKTOP ROW (md and larger) */}
-                      <div className="hidden md:grid md:grid-cols-12 px-6 py-4 items-center hover:bg-slate-50/60 transition-colors">
+                      <div className="hidden md:grid md:grid-cols-12 px-6 py-4 items-center hover:bg-surface-alt/60 transition-colors text-small">
                         {/* # SR No */}
-                        <div className="col-span-1 font-mono text-xs font-bold text-slate-800">
+                        <div className="col-span-1 num-tabular font-semibold text-ink">
                           {formattedSeq}
                         </div>
 
                         {/* Contributors List as name1, name2 */}
                         <div className="col-span-3">
-                          <div className="text-sm font-bold text-slate-900 tracking-tight">
+                          <div className="text-body-md font-semibold text-ink tracking-tight">
                             {displayNames}
                           </div>
                         </div>
 
                         {/* PAN Card Column */}
                         <div className="col-span-2 self-center">
-                          <div className="text-xs font-semibold text-slate-700 font-mono">
+                          <div className="text-small font-normal text-ink-secondary font-mono">
                             {app.panMasked || "ABCDE2741D"}
                           </div>
                         </div>
 
                         {/* Amount */}
-                        <div className="col-span-2 text-right self-center font-mono text-sm font-bold text-slate-900 num-tabular">
+                        <div className="col-span-2 text-right self-center num-table text-ink font-semibold">
                           {formatINR(app.totalContribution)}
                         </div>
 
@@ -542,21 +542,22 @@ export function ApplicationsView() {
                                     lotCount: lotCount,
                                   })
                                 }
-                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors cursor-pointer"
                                 title="Edit Application"
                               >
                                 <PencilSimple size={16} weight="bold" />
                               </button>
                               <button
                                 onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors cursor-pointer"
                                 title="Delete Application"
                               >
                                 <Trash size={16} weight="bold" />
                               </button>
                             </>
                           ) : (
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/50">
+                            <span className="text-caption font-medium text-ink-muted flex items-center gap-1">
+                              <LockKey size={13} />
                               View Only
                             </span>
                           )}
@@ -564,14 +565,14 @@ export function ApplicationsView() {
                       </div>
 
                       {/* MOBILE CARD VIEW (< md screens) */}
-                      <div className="md:hidden p-4 border-b border-slate-100/80 flex flex-col gap-3 hover:bg-slate-50/50 transition-colors">
+                      <div className="md:hidden p-4 border-b border-line-subtle flex flex-col gap-3 hover:bg-surface-alt/50 transition-colors">
                         {/* Top: # SR + Names + Edit/Delete */}
                         <div className="flex items-start justify-between gap-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            <span className="font-mono text-[11px] font-bold text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md shrink-0">
+                            <span className="num-tabular text-caption font-semibold text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md shrink-0 border border-line-subtle">
                               #{formattedSeq}
                             </span>
-                            <span className="text-sm font-bold text-slate-900 tracking-tight truncate">
+                            <span className="text-body-md font-semibold text-ink tracking-tight truncate">
                               {displayNames}
                             </span>
                           </div>
@@ -588,21 +589,22 @@ export function ApplicationsView() {
                                       lotCount: lotCount,
                                     })
                                   }
-                                  className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors"
                                   title="Edit Application"
                                 >
                                   <PencilSimple size={16} weight="bold" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                  className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors"
                                   title="Delete Application"
                                 >
                                   <Trash size={16} weight="bold" />
                                 </button>
                               </>
                             ) : (
-                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/50">
+                              <span className="text-caption font-medium text-ink-muted flex items-center gap-1">
+                                <LockKey size={13} />
                                 View Only
                               </span>
                             )}
@@ -610,20 +612,20 @@ export function ApplicationsView() {
                         </div>
 
                         {/* Middle: PAN + Amount */}
-                        <div className="flex items-center justify-between bg-slate-50/80 p-2.5 rounded-xl border border-slate-200/60 text-xs">
+                        <div className="flex items-center justify-between bg-surface-alt/70 p-2.5 rounded-xl border border-line-subtle text-small">
                           <div>
-                            <span className="text-[10px] text-slate-400 block uppercase font-medium">PAN</span>
-                            <span className="font-mono font-bold text-slate-800">{app.panMasked || "ABCDE2741D"}</span>
+                            <span className="text-caption text-ink-tertiary block uppercase font-medium">PAN</span>
+                            <span className="font-mono font-medium text-ink">{app.panMasked || "ABCDE2741D"}</span>
                           </div>
                           <div className="text-right">
-                            <span className="text-[10px] text-slate-400 block uppercase font-medium">Total Amount</span>
-                            <span className="font-mono font-bold text-slate-900 text-sm">{formatINR(app.totalContribution)}</span>
+                            <span className="text-caption text-ink-tertiary block uppercase font-medium">Total Amount</span>
+                            <span className="num-table font-semibold text-ink">{formatINR(app.totalContribution)}</span>
                           </div>
                         </div>
 
                         {/* Bottom: Status */}
                         <div className="flex items-center justify-between pt-1">
-                          <span className="text-xs font-semibold text-slate-500">Status</span>
+                          <span className="text-small font-medium text-ink-tertiary">Status</span>
                           <div>{renderStatusControl(currentStatus)}</div>
                         </div>
                       </div>
@@ -634,13 +636,13 @@ export function ApplicationsView() {
             </div>
 
             {/* FOOTER NOTE */}
-            <div className="px-6 py-3 bg-slate-50/40 border-t border-slate-100 flex items-center justify-between text-[11px] font-medium text-slate-500">
+            <div className="px-6 py-3 bg-surface-alt/40 border-t border-line-subtle flex items-center justify-between text-caption font-medium text-ink-tertiary">
               <div className="flex items-center gap-1.5">
-                <CheckCircle size={14} className="text-emerald-600" />
+                <CheckCircle size={14} className="text-positive" />
                 <span>Showing {filteredApps.length} application(s) for {ipo.name}</span>
               </div>
-              <div className="flex items-center gap-1 text-slate-400">
-                <LockKey size={12} />
+              <div className="flex items-center gap-1 text-ink-muted">
+                <LockKey size={13} />
                 <span>Encrypted Group Ledger</span>
               </div>
             </div>
@@ -649,34 +651,34 @@ export function ApplicationsView() {
       })}
       {/* DELETE CONFIRMATION MODAL */}
       {deleteConfirmApp && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="w-full max-w-sm bg-white border border-slate-200/80 rounded-3xl p-5 shadow-2xl space-y-4 animate-modal-pop-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in">
+          <div className="w-full max-w-sm bg-surface border border-line rounded-2xl p-5 shadow-2xl space-y-4 animate-modal-pop-in">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-50 border border-rose-100 flex items-center justify-center text-rose-600 shrink-0">
+              <div className="w-10 h-10 rounded-xl bg-negative-soft border border-negative/30 flex items-center justify-center text-negative shrink-0">
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                 </svg>
               </div>
               <div>
-                <h3 className="text-sm font-extrabold text-slate-900 tracking-tight">Delete Application</h3>
-                <p className="text-[11px] text-slate-500 font-medium">This action cannot be undone.</p>
+                <h3 className="text-h4 font-semibold text-ink tracking-tight">Delete Application</h3>
+                <p className="text-caption text-ink-tertiary font-medium">This action cannot be undone.</p>
               </div>
             </div>
 
-            <p className="text-xs text-slate-600 font-medium leading-relaxed">
-              Are you sure you want to delete the IPO application for <strong className="text-slate-900">{deleteConfirmApp.name}</strong>?
+            <p className="text-small text-ink-secondary font-medium leading-relaxed">
+              Are you sure you want to delete the IPO application for <strong className="text-ink font-semibold">{deleteConfirmApp.name}</strong>?
             </p>
 
             <div className="flex items-center justify-end gap-2.5 pt-2">
               <button
                 onClick={cancelDelete}
-                className="px-3.5 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer select-none"
+                className="px-3.5 py-2 rounded-xl border border-line text-small font-medium text-ink-secondary hover:bg-surface-alt transition-colors cursor-pointer select-none"
               >
                 Cancel
               </button>
               <button
                 onClick={confirmDelete}
-                className="px-4 py-2 rounded-xl bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs shadow-md shadow-rose-900/10 transition-all active:scale-[0.98] cursor-pointer select-none"
+                className="px-4 py-2 rounded-xl bg-negative hover:bg-rose-700 text-white font-semibold text-small shadow-xs transition-all active:scale-[0.98] cursor-pointer select-none"
               >
                 Delete
               </button>

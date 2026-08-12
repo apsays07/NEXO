@@ -65,8 +65,8 @@ export function Lifecycle({ ipo }: LifecycleProps) {
   const steps = getSteps(ipo);
 
   return (
-    <Card id="schedule" className="p-6 md:p-8 bg-white border-[#E2E8F0] shadow-2xs space-y-6 font-sans">
-      <h3 className="text-base font-semibold text-[#111318] tracking-tight">Schedule</h3>
+    <Card id="schedule" className="p-6 md:p-8 bg-surface border-line shadow-2xs space-y-6 font-sans">
+      <h3 className="text-base font-semibold text-ink tracking-tight">Schedule</h3>
 
       {/* Timeline — horizontal on md+, vertical on mobile */}
       <div className="relative">
@@ -79,15 +79,15 @@ export function Lifecycle({ ipo }: LifecycleProps) {
               {/* Icon */}
               <div className="shrink-0">
                 {step.status === "done" ? (
-                  <div className="w-9 h-9 rounded-full bg-[#ECFDF3] border-2 border-[#12B76A] flex items-center justify-center shadow-sm">
-                    <CheckCircle size={18} weight="fill" className="text-[#12B76A]" />
+                  <div className="w-9 h-9 rounded-full bg-positive-soft border-2 border-[#12B76A] flex items-center justify-center shadow-sm">
+                    <CheckCircle size={18} weight="fill" className="text-positive" />
                   </div>
                 ) : step.status === "active" ? (
-                  <div className="w-9 h-9 rounded-full bg-white border-2 border-[#D97706] flex items-center justify-center shadow-sm">
-                    <div className="w-3 h-3 rounded-full bg-[#D97706]" />
+                  <div className="w-9 h-9 rounded-full bg-surface border-2 border-[#D97706] flex items-center justify-center shadow-sm">
+                    <div className="w-3 h-3 rounded-full bg-caution" />
                   </div>
                 ) : (
-                  <div className="w-9 h-9 rounded-full bg-white border-2 border-[#CBD5E1] flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-full bg-surface border-2 border-[#CBD5E1] flex items-center justify-center">
                     <Circle size={18} className="text-[#CBD5E1]" />
                   </div>
                 )}
@@ -96,14 +96,14 @@ export function Lifecycle({ ipo }: LifecycleProps) {
               {/* Text */}
               <div className="md:text-center text-left space-y-0.5 min-w-0">
                 <p className={`text-xs font-medium leading-tight ${
-                  step.status === "done" ? "text-[#5F6673]" :
-                  step.status === "active" ? "text-[#D97706]" :
-                  "text-[#5F6673]"
+                  step.status === "done" ? "text-ink-secondary" :
+                  step.status === "active" ? "text-caution" :
+                  "text-ink-secondary"
                 }`}>
                   {step.date}
                 </p>
                 <p className={`text-[13px] leading-snug font-semibold ${
-                  step.status === "active" ? "text-[#D97706]" : "text-[#111318]"
+                  step.status === "active" ? "text-caution" : "text-ink"
                 } flex items-center md:justify-center gap-1 flex-wrap`}>
                   {step.label}
                   {step.info && (

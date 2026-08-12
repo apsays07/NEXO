@@ -23,34 +23,34 @@ export function IPOHeader({
   );
 
   return (
-    <div className="space-y-3 pb-4 border-b border-[#E2E8F0] font-sans">
+    <div className="space-y-3 pb-4 border-b border-line font-sans">
       {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-xs text-[#5F6673] font-normal">
+      <div className="flex items-center gap-2 text-xs text-ink-secondary font-normal">
         <Link
           href="/"
-          className="hover:text-[#111318] flex items-center gap-1 transition-colors font-medium"
+          className="hover:text-ink flex items-center gap-1 transition-colors font-medium"
         >
           <ArrowLeft size={14} /> Back to IPOs
         </Link>
         <span>/</span>
-        <span className="text-[#111318] font-semibold">{ipo.name}</span>
+        <span className="text-ink font-semibold">{ipo.name}</span>
       </div>
 
       {/* Main Title Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3.5">
-          <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] text-[#2563EB] flex items-center justify-center font-bold text-base shadow-2xs">
+          <div className="w-12 h-12 rounded-2xl bg-accent-soft border border-[#BFDBFE] text-accent flex items-center justify-center font-bold text-base shadow-2xs">
             {ipo.logo}
           </div>
           <div>
             <div className="flex items-center gap-2 mb-0.5">
-              <span className="text-xs text-[#5F6673] font-medium">
+              <span className="text-xs text-ink-secondary font-medium">
                 {ipo.category || "Mainboard IPO"}
               </span>
-              <span className="text-[#7B8491]">•</span>
+              <span className="text-ink-tertiary">•</span>
               <StatusBadge status={ipo.status} size="sm" />
             </div>
-            <h1 className="nexo-h1 text-[#111318]">
+            <h1 className="nexo-h1 text-ink">
               {ipo.name}
             </h1>
           </div>

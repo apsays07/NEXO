@@ -19,10 +19,10 @@ export function ParticipationSummary({
   const participants = ipo.applications.flatMap((a) => a.participants);
 
   return (
-    <Card id="participation" className="p-6 bg-white border-[#E2E8F0] shadow-sm space-y-5">
+    <Card id="participation" className="p-6 bg-surface border-line shadow-sm space-y-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div className="flex items-center gap-2">
-          <Users size={20} className="text-[#2563EB]" />
+          <Users size={20} className="text-accent" />
           <div>
             <h3 className="text-base font-extrabold text-[#0F172A] tracking-tight uppercase">
               OUR PARTICIPATION
@@ -43,7 +43,7 @@ export function ParticipationSummary({
         {participants.map((p, idx) => (
           <div
             key={idx}
-            className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 hover:border-[#CBD5E1] transition-all"
+            className="p-4 rounded-2xl bg-page border border-line space-y-3 hover:border-[#CBD5E1] transition-all"
           >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2.5">
@@ -56,18 +56,18 @@ export function ParticipationSummary({
                   <div className="text-sm font-extrabold text-[#0F172A]">
                     {p.memberName}
                   </div>
-                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-[#EFF6FF] text-[#2563EB]">
+                  <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent-soft text-accent">
                     COMBO
                   </span>
                 </div>
               </div>
 
-              <span className="text-xs font-bold text-[#059669] bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">
+              <span className="text-xs font-bold text-positive bg-[#ECFDF5] px-2 py-0.5 rounded-md border border-[#A7F3D0]">
                 {p.status}
               </span>
             </div>
 
-            <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
+            <div className="pt-2 border-t border-line flex items-center justify-between text-xs">
               <div>
                 <span className="text-[#64748B] text-[11px] block font-medium">
                   Contribution
@@ -80,7 +80,7 @@ export function ParticipationSummary({
                 <span className="text-[#64748B] text-[11px] block font-medium">
                   Share %
                 </span>
-                <span className="font-black text-[#2563EB] num-tabular">
+                <span className="font-black text-accent num-tabular">
                   {(p.percentage ?? 0).toFixed(2)}%
                 </span>
               </div>

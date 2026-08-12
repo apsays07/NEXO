@@ -22,7 +22,7 @@ export function AllotmentPanel({ ipo }: AllotmentPanelProps) {
   ];
 
   return (
-    <Card id="allotment" className="p-6 bg-white border-[#E2E8F0] shadow-sm space-y-5">
+    <Card id="allotment" className="p-6 bg-surface border-line shadow-sm space-y-5">
       <div className="flex items-center justify-between">
         <h3 className="text-base font-extrabold text-[#0F172A] tracking-tight uppercase">
           ALLOTMENT STATUS
@@ -33,7 +33,7 @@ export function AllotmentPanel({ ipo }: AllotmentPanelProps) {
       {isAllotmentPending ? (
         <div className="p-4 rounded-2xl bg-[#FFFBEB] border border-[#FDE68A] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#D97706] text-white">
+            <div className="p-2 rounded-xl bg-caution text-white">
               <Clock size={20} />
             </div>
             <div>
@@ -45,14 +45,14 @@ export function AllotmentPanel({ ipo }: AllotmentPanelProps) {
               </div>
             </div>
           </div>
-          <span className="text-xs font-bold px-3 py-1 rounded-full bg-white text-[#D97706] border border-[#FDE68A]">
+          <span className="text-xs font-bold px-3 py-1 rounded-full bg-surface text-caution border border-[#FDE68A]">
             Pending Audit
           </span>
         </div>
       ) : isAllotted ? (
         <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-[#059669] text-white">
+            <div className="p-2 rounded-xl bg-positive text-white">
               <CheckCircle size={20} />
             </div>
             <div>
@@ -96,8 +96,8 @@ export function AllotmentPanel({ ipo }: AllotmentPanelProps) {
                 step.status === "completed"
                   ? "bg-[#ECFDF5] border-[#A7F3D0] text-[#047857]"
                   : step.status === "current"
-                  ? "bg-[#EFF6FF] border-[#BFDBFE] text-[#2563EB]"
-                  : "bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B]"
+                  ? "bg-accent-soft border-[#BFDBFE] text-accent"
+                  : "bg-page border-line text-[#64748B]"
               }`}
             >
               <span className="font-extrabold block">{step.title}</span>

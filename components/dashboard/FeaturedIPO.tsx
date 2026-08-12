@@ -20,25 +20,25 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
     <Card
       hoverable
       onClick={() => onInspect(ipo)}
-      className="p-6 md:p-7 bg-gradient-to-br from-[#FFFFFF] to-[#F8FAFC] border-2 border-[#BFDBFE] shadow-md flex flex-col justify-between group"
+      className="p-6 md:p-7 bg-surface border border-accent/40 shadow-xs flex flex-col justify-between group"
     >
       <div>
         {/* TOP */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-[#E2E8F0]">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-5 border-b border-line">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-[#2563EB] text-white flex items-center justify-center font-black text-lg shadow-sm shadow-[#2563EB]/20">
+            <div className="w-11 h-11 rounded-xl bg-accent text-white flex items-center justify-center font-bold text-base shadow-xs">
               {ipo.logo}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-[#2563EB] text-white tracking-wide uppercase">
+                <span className="text-caption font-semibold px-2 py-0.5 rounded bg-accent-soft text-accent border border-accent/20 tracking-wide uppercase">
                   OUR CURRENT OPPORTUNITY
                 </span>
-                <span className="text-xs text-[#64748B] font-bold">
+                <span className="text-caption text-ink-tertiary font-medium">
                   {ipo.category || "Mainboard IPO"}
                 </span>
               </div>
-              <h3 className="text-2xl font-black text-[#0F172A] group-hover:text-[#2563EB] transition-colors mt-0.5">
+              <h3 className="text-h2 font-semibold text-ink group-hover:text-accent transition-colors mt-1">
                 {ipo.name}
               </h3>
             </div>
@@ -51,43 +51,43 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
         <div className="py-5 grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2 space-y-3">
             <div>
-              <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider block mb-1">
+              <span className="text-caption font-medium text-ink-tertiary uppercase tracking-wider block mb-1">
                 Offer Price Band
               </span>
-              <div className="text-3xl font-black text-[#0F172A] num-tabular">
+              <div className="text-h1 font-bold text-ink num-tabular">
                 ₹{ipo.metrics.priceBand.min} — ₹{ipo.metrics.priceBand.max}
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4 pt-2">
               <div>
-                <span className="text-xs text-[#64748B] font-medium block">Lot Size</span>
-                <span className="text-sm font-extrabold text-[#0F172A] num-tabular">
+                <span className="text-caption text-ink-secondary font-medium block">Lot Size</span>
+                <span className="text-body-md font-semibold text-ink num-tabular">
                   {ipo.metrics.lotSize} shares / lot
                 </span>
               </div>
               <div>
-                <span className="text-xs text-[#64748B] font-medium block">Minimum Investment</span>
-                <span className="text-sm font-extrabold text-[#0F172A] num-tabular">
+                <span className="text-caption text-ink-secondary font-medium block">Minimum Investment</span>
+                <span className="text-body-md font-semibold text-ink num-tabular">
                   {formatINR(ipo.metrics.minInvestment)}
                 </span>
               </div>
             </div>
           </div>
 
-          <div className="p-4 rounded-2xl bg-white border border-[#E2E8F0] shadow-2xs flex flex-col justify-between space-y-3">
+          <div className="p-4 rounded-2xl bg-surface-alt border border-line flex flex-col justify-between space-y-3">
             <div>
-              <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider block">
+              <span className="text-caption font-medium text-ink-tertiary uppercase tracking-wider block">
                 Application Deadline
               </span>
-              <div className="text-sm font-extrabold text-[#D97706] flex items-center gap-1.5 mt-1">
+              <div className="text-body-md font-semibold text-caution flex items-center gap-1.5 mt-1">
                 <Clock size={16} />
                 <span>{ipo.metrics.closeDate}</span>
               </div>
             </div>
 
-            <div className="pt-2 border-t border-[#E2E8F0] flex items-center justify-between">
-              <span className="text-xs text-[#64748B] font-medium">Group Decision</span>
+            <div className="pt-2 border-t border-line flex items-center justify-between">
+              <span className="text-caption text-ink-secondary font-medium">Group Decision</span>
               <RecommendationBadge type={ipo.recommendation} size="sm" />
             </div>
           </div>
@@ -95,7 +95,7 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
       </div>
 
       {/* SUBTLE SEPARATOR & BOTTOM */}
-      <div className="pt-4 border-t border-[#E2E8F0] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="pt-4 border-t border-line flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex -space-x-2">
             {participants.slice(0, 4).map((p, idx) => (
@@ -104,16 +104,16 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
                 src={p.avatar}
                 alt={p.memberName}
                 title={`${p.memberName} (${formatINR(p.contribution)})`}
-                className="w-7 h-7 rounded-full border-2 border-white object-cover shadow-xs"
+                className="w-7 h-7 rounded-full border-2 border-surface object-cover shadow-xs"
               />
             ))}
           </div>
 
-          <div className="text-xs">
-            <span className="font-bold text-[#0F172A]">
+          <div className="text-small">
+            <span className="font-semibold text-ink">
               {ipo.participantsCount} participants
             </span>
-            <span className="text-[#64748B] font-medium ml-1.5">
+            <span className="text-ink-tertiary font-medium ml-1.5">
               ({formatINR(ipo.combinedCapital)} committed)
             </span>
           </div>

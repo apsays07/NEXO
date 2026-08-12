@@ -19,9 +19,9 @@ export function Card({
     <div
       id={id}
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-[#E2E8F0] p-5 transition-all duration-200 shadow-2xs font-sans ${
+      className={`bg-surface rounded-2xl border border-line p-5 transition-all duration-200 shadow-2xs font-sans ${
         hoverable
-          ? "hover:bg-white hover:border-[#CBD5E1] hover:shadow-md hover:shadow-slate-200/50 cursor-pointer active:scale-[0.99]"
+          ? "hover:bg-surface hover:border-line-strong hover:shadow-md hover:shadow-line/20 cursor-pointer active:scale-[0.99]"
           : ""
       } ${className}`}
     >
@@ -50,18 +50,18 @@ export function MetricCard({
   return (
     <Card className="flex flex-col justify-between">
       <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
+        <span className="text-xs font-medium text-ink-secondary uppercase tracking-wider">
           {label}
         </span>
         {icon && (
-          <div className="p-2 rounded-xl bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]">
+          <div className="p-2 rounded-xl bg-surface-alt text-ink-secondary border border-line">
             {icon}
           </div>
         )}
       </div>
 
       <div>
-        <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#111318] num-tabular">
+        <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-ink num-tabular">
           {value}
         </div>
 
@@ -70,17 +70,17 @@ export function MetricCard({
             <span
               className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
                 changeType === "positive"
-                  ? "bg-[#ECFDF3] text-[#059669] border border-[#A6F4C5]"
+                  ? "bg-positive-soft text-positive border border-positive/30"
                   : changeType === "negative"
-                  ? "bg-[#FEF3F2] text-[#D92D20] border border-[#FECDCA]"
-                  : "bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]"
+                  ? "bg-negative-soft text-negative border border-negative/30"
+                  : "bg-surface-alt text-ink-secondary border border-line"
               }`}
             >
               {change}
             </span>
           )}
           {subtitle && (
-            <span className="text-xs text-[#5F6673] font-normal">
+            <span className="text-xs text-ink-secondary font-normal">
               {subtitle}
             </span>
           )}

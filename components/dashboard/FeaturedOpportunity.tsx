@@ -20,26 +20,26 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
 
   return (
     <>
-      <Card className="p-6 md:p-8 bg-white border-[#E2E8F0] shadow-none rounded-2xl flex flex-col justify-between h-full space-y-6 font-sans">
+      <Card className="p-6 md:p-8 bg-surface border border-line hover:border-line-strong shadow-xs hover:shadow-md transition-all rounded-2xl flex flex-col justify-between h-full space-y-6 font-sans">
         <div>
           {/* Header Row */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-[#E2E8F0]">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-5 border-b border-line">
             <div className="flex items-center gap-3.5">
-              <div className="w-12 h-12 rounded-xl bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold text-lg border border-[#BFDBFE] shadow-2xs shrink-0">
+              <div className="w-12 h-12 rounded-xl bg-accent-soft text-accent flex items-center justify-center font-bold text-base border border-accent/20 shadow-2xs shrink-0">
                 {ipo.logo}
               </div>
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-[12px] font-medium text-[#5F6673] uppercase tracking-wider bg-[#F8FAFC] px-2 py-0.5 rounded border border-[#E2E8F0]">
+                  <span className="text-caption font-medium text-ink-secondary uppercase tracking-wider bg-surface-alt px-2.5 py-0.5 rounded-md border border-line-subtle">
                     {ipo.category || "Mainboard IPO"}
                   </span>
-                  <span className="text-[#7B8491]">•</span>
-                  <span className="text-xs font-medium text-[#5F6673]">{ipo.company}</span>
+                  <span className="text-ink-tertiary">•</span>
+                  <span className="text-small font-medium text-ink-secondary">{ipo.company}</span>
                 </div>
                 {/* Clickable IPO name → opens detail modal */}
                 <button
                   onClick={() => setShowDetail(true)}
-                  className="text-left text-[22px] leading-[30px] font-semibold text-[#111318] hover:text-[#2563EB] hover:underline underline-offset-2 transition-colors tracking-tight cursor-pointer"
+                  className="text-left text-h3 font-semibold text-ink hover:text-accent hover:underline underline-offset-2 transition-colors tracking-tight cursor-pointer"
                 >
                   {ipo.name}
                 </button>
@@ -51,54 +51,54 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
 
           {/* Financial Metrics Cluster */}
           <div className="py-5 grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-              <span className="text-[12px] font-medium text-[#5F6673] uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-surface-alt/70 border border-line-subtle space-y-1">
+              <span className="text-caption font-medium text-ink-tertiary uppercase tracking-wider block">
                 Min Investment
               </span>
-              <div className="text-[18px] leading-[26px] font-semibold text-[#111318] num-tabular">
+              <div className="text-h3 font-semibold text-ink num-tabular">
                 {formatINR(ipo.metrics.minInvestment)}
               </div>
             </div>
 
-            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1">
-              <span className="text-[12px] font-medium text-[#5F6673] uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-surface-alt/70 border border-line-subtle space-y-1">
+              <span className="text-caption font-medium text-ink-tertiary uppercase tracking-wider block">
                 Issue Size
               </span>
-              <div className="text-[18px] leading-[26px] font-semibold text-[#111318] num-tabular">
+              <div className="text-h3 font-semibold text-ink num-tabular">
                 {ipo.metrics.issueSize || "—"}
               </div>
             </div>
           </div>
 
           {/* Group Decision Box */}
-          <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] space-y-2">
+          <div className="p-4 rounded-xl bg-positive-soft/70 border border-positive/30 space-y-2.5">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-xs font-semibold text-[#027A48]">
+              <div className="flex items-center gap-1.5 text-caption font-semibold text-positive">
                 <ShieldCheck size={16} />
                 <span>Group Decision</span>
               </div>
               <RecommendationBadge type={ipo.recommendation} size="sm" />
             </div>
 
-            <p className="text-sm text-[#027A48] font-medium leading-relaxed">
+            <p className="text-body text-ink font-normal leading-relaxed">
               {ipo.thesis}
             </p>
 
-            <div className="flex items-center gap-3 pt-2 text-[12px] text-[#059669] border-t border-[#A6F4C5]/60 font-medium">
+            <div className="flex items-center gap-3 pt-2 text-caption text-ink-tertiary border-t border-positive/20 font-medium">
               {ipo.decisionBy && (
-                <span>Authored by: <strong className="font-semibold text-[#027A48]">{ipo.decisionBy}</strong></span>
+                <span>Authored by: <strong className="font-semibold text-ink">{ipo.decisionBy}</strong></span>
               )}
               {ipo.decisionBy && ipo.decisionDate && <span>•</span>}
               {ipo.decisionDate && (
-                <span>Decision date: <strong className="font-semibold text-[#027A48]">{ipo.decisionDate}</strong></span>
+                <span>Decision date: <strong className="font-semibold text-ink">{ipo.decisionDate}</strong></span>
               )}
             </div>
           </div>
         </div>
 
         {/* Footer */}
-        <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-between gap-3">
-          <span className="text-xs text-[#D97706] font-semibold flex items-center gap-1.5 bg-[#FFFAEB] px-2.5 py-1.5 rounded-lg border border-[#FEF0C7]">
+        <div className="pt-4 border-t border-line flex items-center justify-between gap-3">
+          <span className="text-caption text-caution font-semibold flex items-center gap-1.5 bg-caution-soft px-3 py-1.5 rounded-xl border border-caution/30 shadow-2xs">
             <Clock size={14} /> Closes {ipo.metrics.closeDate}
           </span>
           <Button

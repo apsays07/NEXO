@@ -27,15 +27,15 @@ export function LocalNavigation() {
   };
 
   return (
-    <div className="sticky top-16 z-10 bg-white/90 backdrop-blur-md border-b border-[#E2E8F0] py-2 px-1 flex items-center gap-1 overflow-x-auto">
+    <div className="sticky top-16 z-10 bg-surface/90 backdrop-blur-md border-b border-line py-2 px-1 flex items-center gap-1 overflow-x-auto">
       {navItems.map((item) => (
         <button
           key={item.id}
           onClick={() => scrollToSection(item.id)}
           className={`px-3 py-1.5 rounded-lg text-xs font-bold whitespace-nowrap transition-all ${
             activeId === item.id
-              ? "bg-[#EFF6FF] text-[#2563EB]"
-              : "text-[#64748B] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
+              ? "bg-accent-soft text-accent"
+              : "text-ink-tertiary hover:text-ink hover:bg-surface-hover"
           }`}
         >
           {item.label}

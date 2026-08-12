@@ -16,13 +16,13 @@ export function PortfolioHoldings({ ipos, onViewPortfolio }: PortfolioHoldingsPr
   );
 
   return (
-    <Card className="p-5 bg-white border-[#E4E7EC] shadow-none rounded-xl space-y-3">
+    <Card className="p-5 bg-surface border-line shadow-none rounded-xl space-y-3">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-extrabold text-[#111827] tracking-tight">
+          <h3 className="text-base font-extrabold text-ink tracking-tight">
             PORTFOLIO
           </h3>
-          <p className="text-xs text-[#667085] font-medium">
+          <p className="text-xs text-ink-secondary font-medium">
             Active holdings & performance
           </p>
         </div>
@@ -45,11 +45,11 @@ export function PortfolioHoldings({ ipos, onViewPortfolio }: PortfolioHoldingsPr
           return (
             <div
               key={item.id}
-              className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC] flex items-center justify-between text-xs hover:border-[#D0D5DD] transition-colors"
+              className="p-3 rounded-lg bg-page border border-line flex items-center justify-between text-xs hover:border-line-strong transition-colors"
             >
               <div>
-                <div className="font-bold text-[#111827]">{item.name}</div>
-                <div className="text-[11px] text-[#667085] num-tabular">
+                <div className="font-bold text-ink">{item.name}</div>
+                <div className="text-[11px] text-ink-secondary num-tabular">
                   {formatINR(invested)} → {formatINR(currentVal)}
                 </div>
               </div>
@@ -58,8 +58,8 @@ export function PortfolioHoldings({ ipos, onViewPortfolio }: PortfolioHoldingsPr
                 <span
                   className={`font-extrabold num-tabular px-2 py-0.5 rounded text-[11px] ${
                     isPositive
-                      ? "bg-[#ECFDF3] text-[#12B76A] border border-[#A6F4C5]"
-                      : "bg-[#FEF3F2] text-[#F04438] border border-[#FECDCA]"
+                      ? "bg-positive-soft text-positive border border-positive/30"
+                      : "bg-negative-soft text-negative border border-[#FECDCA]"
                   }`}
                 >
                   {isPositive ? "+" : ""}

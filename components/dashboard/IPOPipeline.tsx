@@ -29,7 +29,7 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
         <button
           type="button"
           onClick={onViewAll}
-          className="text-xs text-[#2563EB] hover:underline font-extrabold flex items-center gap-1"
+          className="text-xs text-accent hover:underline font-extrabold flex items-center gap-1"
         >
           View all pipeline →
         </button>
@@ -47,7 +47,7 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
               {/* TOP */}
               <div className="flex items-start justify-between gap-2 mb-2">
                 <div>
-                  <h4 className="text-base font-extrabold text-[#0F172A] group-hover:text-[#2563EB] transition-colors">
+                  <h4 className="text-base font-extrabold text-[#0F172A] group-hover:text-accent transition-colors">
                     {ipo.name}
                   </h4>
                   <div className="text-[11px] text-[#64748B] font-medium truncate">
@@ -62,7 +62,7 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
               </div>
 
               {/* MIDDLE */}
-              <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs space-y-1.5 my-3">
+              <div className="p-3 rounded-xl bg-page border border-line text-xs space-y-1.5 my-3">
                 <div className="flex justify-between">
                   <span className="text-[#64748B]">Price Band</span>
                   <span className="font-bold text-[#0F172A] num-tabular">
@@ -79,9 +79,9 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
             </div>
 
             {/* BOTTOM */}
-            <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-between text-xs">
+            <div className="pt-3 border-t border-line flex items-center justify-between text-xs">
               <div>
-                <div className="text-[#D97706] font-bold text-[11px]">
+                <div className="text-caution font-bold text-[11px]">
                   Closes {ipo.metrics.closeDate}
                 </div>
                 <div className="text-[11px] text-[#64748B] font-medium mt-0.5">
@@ -89,7 +89,7 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
                 </div>
               </div>
 
-              <span className="text-xs font-bold text-[#2563EB] group-hover:translate-x-1 transition-transform">
+              <span className="text-xs font-bold text-accent group-hover:translate-x-1 transition-transform">
                 →
               </span>
             </div>

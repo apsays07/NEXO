@@ -17,10 +17,10 @@ export function PortfolioPreview({ ipos, onViewPortfolio }: PortfolioPreviewProp
   );
 
   return (
-    <Card className="p-6 bg-white border-[#E2E8F0] shadow-sm">
+    <Card className="p-6 bg-surface border-line shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <ChartPie size={18} className="text-[#2563EB]" />
+          <ChartPie size={18} className="text-accent" />
           <div>
             <h3 className="text-base font-extrabold text-[#0F172A]">PORTFOLIO</h3>
             <p className="text-xs text-[#64748B] font-medium">
@@ -32,7 +32,7 @@ export function PortfolioPreview({ ipos, onViewPortfolio }: PortfolioPreviewProp
         <button
           type="button"
           onClick={onViewPortfolio}
-          className="text-xs text-[#2563EB] hover:underline font-extrabold"
+          className="text-xs text-accent hover:underline font-extrabold"
         >
           View portfolio →
         </button>
@@ -50,7 +50,7 @@ export function PortfolioPreview({ ipos, onViewPortfolio }: PortfolioPreviewProp
           return (
             <div
               key={item.id}
-              className="p-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between text-xs hover:border-[#CBD5E1] transition-colors"
+              className="p-4 rounded-xl bg-page border border-line flex items-center justify-between text-xs hover:border-[#CBD5E1] transition-colors"
             >
               <div>
                 <div className="font-extrabold text-[#0F172A] text-sm">{item.name}</div>
@@ -63,7 +63,7 @@ export function PortfolioPreview({ ipos, onViewPortfolio }: PortfolioPreviewProp
                 <div className="font-extrabold text-[#0F172A] num-tabular">
                   {formatINR(currentVal)} current
                 </div>
-                <div className="text-[#059669] font-extrabold num-tabular mt-0.5">
+                <div className="text-positive font-extrabold num-tabular mt-0.5">
                   +{returnPercent}%
                 </div>
               </div>

@@ -18,54 +18,54 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
 
   return (
     <div className="sticky top-28 space-y-4 font-sans">
-      <Card className="p-6 bg-white border-[#E2E8F0] shadow-2xs space-y-5">
-        <div className="space-y-1.5 pb-4 border-b border-[#E2E8F0]">
-          <h3 className="text-sm font-semibold text-[#111318]">
+      <Card className="p-6 bg-surface border-line shadow-2xs space-y-5">
+        <div className="space-y-1.5 pb-4 border-b border-line">
+          <h3 className="text-sm font-semibold text-ink">
             Group Overview
           </h3>
-          <p className="text-xs text-[#5F6673] font-normal leading-relaxed">
+          <p className="text-xs text-ink-secondary font-normal leading-relaxed">
             NEXO simplifies multi-friend IPO capital pooling.
           </p>
         </div>
 
-        <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
-          <div className="text-[11px] font-semibold text-[#5F6673] uppercase tracking-wider">
+        <div className="p-3.5 rounded-xl bg-page border border-line space-y-1.5">
+          <div className="text-[11px] font-semibold text-ink-secondary uppercase tracking-wider">
             Pooled Capital Vault
           </div>
-          <div className="text-xl font-bold text-[#111318] num-tabular">
+          <div className="text-xl font-bold text-ink num-tabular">
             {formatINR(ipo.combinedCapital)}
           </div>
         </div>
 
-        <div className="space-y-3 pb-4 border-b border-[#E2E8F0] text-xs">
+        <div className="space-y-3 pb-4 border-b border-line text-xs">
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5F6673] font-medium">Our Decision</span>
+            <span className="text-xs text-ink-secondary font-medium">Our Decision</span>
             <RecommendationBadge type={ipo.recommendation} size="sm" />
           </div>
           <div className="flex items-center justify-between">
-            <span className="text-xs text-[#5F6673] font-medium">Current Stage</span>
+            <span className="text-xs text-ink-secondary font-medium">Current Stage</span>
             <StatusBadge status={ipo.status} size="sm" />
           </div>
         </div>
 
-        <div className="space-y-3 pb-4 border-b border-[#E2E8F0] text-xs">
+        <div className="space-y-3 pb-4 border-b border-line text-xs">
           <div className="flex justify-between">
-            <span className="text-[#5F6673] font-medium">Committed Capital</span>
-            <span className="font-semibold text-[#059669] num-tabular">
+            <span className="text-ink-secondary font-medium">Committed Capital</span>
+            <span className="font-semibold text-positive num-tabular">
               {formatINR(ipo.combinedCapital)}
             </span>
           </div>
 
           <div className="flex justify-between">
-            <span className="text-[#5F6673] font-medium">Participants</span>
-            <span className="font-semibold text-[#111318] num-tabular">
+            <span className="text-ink-secondary font-medium">Participants</span>
+            <span className="font-semibold text-ink num-tabular">
               {ipo.participantsCount} Members
             </span>
           </div>
 
           <div className="flex justify-between">
-            <span className="text-[#5F6673] font-medium">Applications Filed</span>
-            <span className="font-semibold text-[#111318] num-tabular">
+            <span className="text-ink-secondary font-medium">Applications Filed</span>
+            <span className="font-semibold text-ink num-tabular">
               {participants.length} / {ipo.participantsCount} Verified
             </span>
           </div>
@@ -73,7 +73,7 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
 
         {/* Member Avatar Stack */}
         <div className="space-y-2 pb-2">
-          <span className="text-[12px] font-semibold text-[#5F6673] uppercase tracking-wider block">
+          <span className="text-[12px] font-semibold text-ink-secondary uppercase tracking-wider block">
             Active Members
           </span>
           <div className="flex items-center gap-2">
@@ -87,7 +87,7 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
                 />
               ))}
             </div>
-            <span className="text-xs text-[#5F6673] font-medium">
+            <span className="text-xs text-ink-secondary font-medium">
               Pooled Vault
             </span>
           </div>
@@ -97,8 +97,8 @@ export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
           Manage Application <ArrowRight size={14} />
         </Button>
 
-        <div className="flex items-center justify-center gap-1.5 text-[12px] text-[#5F6673]">
-          <ShieldCheck size={14} className="text-[#059669]" /> Private Encrypted Memo
+        <div className="flex items-center justify-center gap-1.5 text-[12px] text-ink-secondary">
+          <ShieldCheck size={14} className="text-positive" /> Private Encrypted Memo
         </div>
       </Card>
     </div>

@@ -35,11 +35,11 @@ export function JoinApplicationModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
-      <div className="w-full max-w-md bg-white border border-[#E2E8F0] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
-        <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in">
+      <div className="w-full max-w-md bg-surface border border-line rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between">
+        <div className="p-5 border-b border-line flex items-center justify-between bg-page">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-[#EFF6FF] text-[#2563EB] flex items-center justify-center font-bold">
+            <div className="w-8 h-8 rounded-lg bg-accent-soft text-accent flex items-center justify-center font-bold">
               <UserPlus size={18} />
             </div>
             <div>
@@ -70,8 +70,8 @@ export function JoinApplicationModal({
                 onClick={() => setType("COMBO")}
                 className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   type === "COMBO"
-                    ? "bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]"
-                    : "bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B]"
+                    ? "bg-accent-soft border-[#2563EB] text-accent"
+                    : "bg-page border-line text-[#64748B]"
                 }`}
               >
                 {type === "COMBO" && <Check size={14} />} Combo Pool
@@ -81,8 +81,8 @@ export function JoinApplicationModal({
                 onClick={() => setType("SOLO")}
                 className={`py-2.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
                   type === "SOLO"
-                    ? "bg-[#EFF6FF] border-[#2563EB] text-[#2563EB]"
-                    : "bg-[#F8FAFC] border-[#E2E8F0] text-[#64748B]"
+                    ? "bg-accent-soft border-[#2563EB] text-accent"
+                    : "bg-page border-line text-[#64748B]"
                 }`}
               >
                 {type === "SOLO" && <Check size={14} />} Solo Application
@@ -101,7 +101,7 @@ export function JoinApplicationModal({
               step={1000}
               value={contribution}
               onChange={(e) => setContribution(Number(e.target.value))}
-              className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-sm font-extrabold text-[#0F172A] focus:border-[#2563EB] focus:outline-none num-tabular"
+              className="w-full bg-page border border-[#CBD5E1] rounded-xl px-3 py-2.5 text-sm font-extrabold text-[#0F172A] focus:border-[#2563EB] focus:outline-none num-tabular"
             />
             <span className="text-[11px] text-[#64748B] mt-1 block">
               Minimum lot investment: {formatINR(ipo.metrics.minInvestment)}
@@ -109,7 +109,7 @@ export function JoinApplicationModal({
           </div>
 
           {type === "COMBO" && (
-            <div className="p-3.5 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-1.5">
+            <div className="p-3.5 rounded-xl bg-page border border-line space-y-1.5">
               <div className="flex justify-between text-xs">
                 <span className="text-[#64748B] font-medium">New Total Pooled Capital:</span>
                 <span className="font-extrabold text-[#0F172A] num-tabular">
@@ -118,14 +118,14 @@ export function JoinApplicationModal({
               </div>
               <div className="flex justify-between text-xs">
                 <span className="text-[#64748B] font-medium">Auto-Calculated Share:</span>
-                <span className="font-extrabold text-[#059669] num-tabular">
+                <span className="font-extrabold text-positive num-tabular">
                   {calculatedShare.toFixed(2)}%
                 </span>
               </div>
             </div>
           )}
 
-          <div className="pt-4 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
+          <div className="pt-4 border-t border-line flex items-center justify-end gap-3">
             <Button variant="ghost" size="sm" type="button" onClick={onClose}>
               Cancel
             </Button>

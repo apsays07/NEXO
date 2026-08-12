@@ -28,9 +28,9 @@ export function DashboardView() {
         <div className="space-y-4">
           {activeIpos.length > 1 && (
             <div className="flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-[#111318]">
+              <h2 className="text-[15px] font-semibold text-ink">
                 Open Opportunities
-                <span className="ml-2 text-[12px] font-medium text-[#5F6673] bg-[#F1F5F9] px-2 py-0.5 rounded-full">
+                <span className="ml-2 text-[12px] font-medium text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-full">
                   {activeIpos.length}
                 </span>
               </h2>

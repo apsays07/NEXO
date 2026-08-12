@@ -17,7 +17,7 @@ export default function Home() {
   const { activeTab } = useNexo();
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F8FAFC] text-[#111318] font-sans antialiased">
+    <div className="flex h-screen overflow-hidden bg-page text-ink font-sans antialiased">
       {/* LEFT SIDEBAR NAVIGATION & MOBILE BOTTOM BAR */}
       <Sidebar />
 

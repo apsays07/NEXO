@@ -46,14 +46,14 @@ export function LifecycleBar({ currentStage }: LifecycleBarProps) {
   const currentIndex = getStageIndex(currentStage);
 
   return (
-    <div className="w-full py-3 px-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
+    <div className="w-full py-3 px-4 rounded-xl bg-page border border-line">
       <div className="flex items-center justify-between relative">
         {/* Background track line */}
-        <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-[#E2E8F0] -translate-y-1/2 z-0" />
+        <div className="absolute top-1/2 left-4 right-4 h-0.5 bg-line -translate-y-1/2 z-0" />
 
         {/* Progress track line */}
         <div
-          className="absolute top-1/2 left-4 h-0.5 bg-[#2563EB] -translate-y-1/2 z-0 transition-all duration-300"
+          className="absolute top-1/2 left-4 h-0.5 bg-accent -translate-y-1/2 z-0 transition-all duration-300"
           style={{
             width: `${(currentIndex / (STAGES.length - 1)) * 100}%`,
           }}
@@ -71,10 +71,10 @@ export function LifecycleBar({ currentStage }: LifecycleBarProps) {
               <div
                 className={`w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-bold transition-all duration-200 ${
                   isCompleted
-                    ? "bg-[#2563EB] text-white shadow-xs"
+                    ? "bg-accent text-white shadow-xs"
                     : isCurrent
-                    ? "bg-[#2563EB] text-white ring-4 ring-[#2563EB]/20 animate-pulse"
-                    : "bg-[#FFFFFF] text-[#94A3B8] border border-[#CBD5E1]"
+                    ? "bg-accent text-white ring-4 ring-accent/20 animate-pulse"
+                    : "bg-surface text-ink-tertiary border border-line-strong"
                 }`}
               >
                 {isCompleted ? <Check size={12} weight="bold" /> : idx + 1}
@@ -83,10 +83,10 @@ export function LifecycleBar({ currentStage }: LifecycleBarProps) {
               <span
                 className={`text-[11px] font-bold hidden sm:block ${
                   isCurrent
-                    ? "text-[#2563EB]"
+                    ? "text-accent"
                     : isCompleted
-                    ? "text-[#334155]"
-                    : "text-[#94A3B8]"
+                    ? "text-ink"
+                    : "text-ink-tertiary"
                 }`}
               >
                 {s.label}

@@ -14,28 +14,28 @@ export function PortfolioPerformanceChart({ summary }: PortfolioPerformanceChart
   const [timeframe, setTimeframe] = useState<"1M" | "3M" | "6M" | "1Y">("3M");
 
   return (
-    <Card className="p-5 bg-white border-[#E4E7EC] shadow-none rounded-xl space-y-4 flex flex-col justify-between h-full">
+    <Card className="p-5 bg-surface border-line shadow-none rounded-xl space-y-4 flex flex-col justify-between h-full">
       <div>
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-base font-extrabold text-[#111827] tracking-tight">
+            <h3 className="text-base font-extrabold text-ink tracking-tight">
               PORTFOLIO PERFORMANCE
             </h3>
-            <p className="text-xs text-[#667085] font-medium">
+            <p className="text-xs text-ink-secondary font-medium">
               Tracked capital growth & valuation trend
             </p>
           </div>
 
           {/* Timeframe Toggles */}
-          <div className="flex items-center p-0.5 rounded-lg bg-[#F4F6F8] border border-[#E4E7EC] text-xs">
+          <div className="flex items-center p-0.5 rounded-lg bg-surface-alt border border-line text-xs">
             {(["1M", "3M", "6M", "1Y"] as const).map((t) => (
               <button
                 key={t}
                 onClick={() => setTimeframe(t)}
                 className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
                   timeframe === t
-                    ? "bg-white text-[#2F6BFF] shadow-2xs"
-                    : "text-[#667085] hover:text-[#111827]"
+                    ? "bg-surface text-[#2F6BFF] shadow-2xs"
+                    : "text-ink-secondary hover:text-ink"
                 }`}
               >
                 {t}
@@ -46,10 +46,10 @@ export function PortfolioPerformanceChart({ summary }: PortfolioPerformanceChart
 
         {/* Current Valuation Display */}
         <div className="flex items-baseline gap-3 mt-3">
-          <div className="text-2xl font-extrabold text-[#111827] num-tabular">
+          <div className="text-2xl font-extrabold text-ink num-tabular">
             {formatINR(summary.totalCapital)}
           </div>
-          <span className="text-xs font-bold text-[#12B76A] num-tabular flex items-center gap-0.5">
+          <span className="text-xs font-bold text-positive num-tabular flex items-center gap-0.5">
             <TrendUp size={14} /> +{summary.totalReturnPercent}% (+{formatINR(summary.totalReturn, true)})
           </span>
         </div>
@@ -89,7 +89,7 @@ export function PortfolioPerformanceChart({ summary }: PortfolioPerformanceChart
         </div>
       </div>
 
-      <div className="pt-2 border-t border-[#E4E7EC] flex items-center justify-between text-[11px] text-[#667085]">
+      <div className="pt-2 border-t border-line flex items-center justify-between text-[11px] text-ink-secondary">
         <span>Net asset valuation based on verified ledger</span>
         <span className="font-mono">{timeframe} Trend</span>
       </div>

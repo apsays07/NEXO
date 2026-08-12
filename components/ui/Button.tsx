@@ -14,21 +14,21 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center transition-all duration-150 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#F8FAFC] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer tracking-tight";
+    "inline-flex items-center justify-center transition-all duration-150 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-page disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer tracking-tight";
 
   const variantStyles = {
     primary:
-      "bg-[#2563EB] hover:bg-[#1D4ED8] text-white font-semibold focus:ring-[#2563EB] shadow-2xs",
+      "bg-accent hover:opacity-90 text-white font-semibold focus:ring-accent/15 shadow-2xs",
     secondary:
-      "bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#111318] font-medium border border-[#E2E8F0] focus:ring-[#CBD5E1]",
+      "bg-surface-alt hover:bg-surface-hover text-ink font-medium border border-line focus:ring-line-strong",
     ghost:
-      "bg-transparent hover:bg-[#F1F5F9] text-[#5F6673] hover:text-[#111318] font-medium focus:ring-[#E2E8F0]",
+      "bg-transparent hover:bg-surface-hover text-ink-secondary hover:text-ink font-medium focus:ring-line",
     outline:
-      "bg-transparent hover:bg-[#F8FAFC] text-[#111318] font-medium border border-[#CBD5E1] focus:ring-[#94A3B8]",
+      "bg-transparent hover:bg-surface-hover text-ink font-medium border border-line-strong focus:ring-line-strong",
     success:
-      "bg-[#12B76A] hover:bg-[#027A48] text-white font-semibold focus:ring-[#12B76A] shadow-2xs",
+      "bg-positive hover:opacity-90 text-white font-semibold focus:ring-positive/15 shadow-2xs",
     danger:
-      "bg-[#FEF3F2] text-[#B42318] hover:bg-[#FEE4E2] font-medium border border-[#FECDCA] focus:ring-[#F04438]",
+      "bg-negative-soft text-negative hover:bg-negative-soft/90 font-medium border border-negative/30 focus:ring-negative/15",
   };
 
   const sizeStyles = {

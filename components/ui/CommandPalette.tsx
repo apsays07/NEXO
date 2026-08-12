@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { MagnifyingGlass, TrendUp, X } from "@phosphor-icons/react";
+import { MagnifyingGlass, TrendUp, X, Moon, Sun } from "@phosphor-icons/react";
+import { useTheme } from "@/components/providers/ThemeProvider";
 
 interface CommandPaletteProps {
   isOpen: boolean;
@@ -11,6 +12,7 @@ interface CommandPaletteProps {
 
 export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   const { ipos, members, setActiveTab, openIpoDetail } = useNexo();
+  const { theme, toggleTheme } = useTheme();
   const [query, setQuery] = useState("");
 
   useEffect(() => {
@@ -42,71 +44,84 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center pt-0 sm:pt-20 bg-slate-900/40 backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-start justify-center pt-0 sm:pt-20 bg-overlay backdrop-blur-xs p-0 sm:p-4 animate-fade-in font-sans">
       {/* Backdrop click to close */}
       <div className="absolute inset-0" onClick={onClose} />
 
       {/* Container Card */}
-      <div className="relative z-10 w-full sm:max-w-[560px] max-h-[85vh] sm:max-h-[500px] bg-white border-t sm:border border-[#E2E8F0] rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+      <div className="relative z-10 w-full sm:max-w-[560px] max-h-[85vh] sm:max-h-[500px] bg-surface border-t sm:border border-line rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col">
         {/* Search input header */}
-        <div className="p-3.5 sm:p-4 border-b border-[#E2E8F0] flex items-center gap-3 bg-slate-50/50">
-          <MagnifyingGlass size={20} className="text-[#5F6673] shrink-0" />
+        <div className="p-3.5 sm:p-4 border-b border-line flex items-center gap-3 bg-surface-alt/50">
+          <MagnifyingGlass size={20} className="text-ink-secondary shrink-0" />
           <input
             type="text"
             autoFocus
             placeholder="Search IPOs, members, PAN, applications..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            className="flex-1 bg-transparent text-sm sm:text-base font-semibold tracking-tight text-[#111318] placeholder-[#7B8491] focus:outline-none"
+            className="flex-1 bg-transparent text-[15px] leading-6 font-normal tracking-tight text-ink placeholder:text-ink-muted focus:outline-none"
           />
           <button
             onClick={onClose}
-            className="sm:hidden p-1.5 text-slate-400 hover:text-slate-700"
+            className="sm:hidden p-1.5 text-ink-muted hover:text-ink"
           >
             <X size={20} />
           </button>
-          <kbd className="hidden sm:inline-block px-2 py-0.5 text-[11px] font-mono font-bold rounded bg-white text-[#5F6673] border border-[#E2E8F0]">
+          <kbd className="hidden sm:inline-block px-2 py-0.5 text-caption font-medium rounded bg-surface text-ink-secondary border border-line">
             ESC
           </kbd>
         </div>
 
         {/* Results List */}
-        <div className="p-3 max-h-[380px] overflow-y-auto space-y-3 text-xs">
+        <div className="p-3 max-h-[380px] overflow-y-auto space-y-3">
           {/* Quick Nav Section */}
           {!query && (
             <div className="space-y-1">
-              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
+              <div className="px-3 py-1 text-caption text-ink-tertiary uppercase tracking-wider">
                 Quick Navigation
               </div>
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  onClose();
+                }}
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-hover text-ink font-semibold text-body transition-colors cursor-pointer touch-target"
+              >
+                <div className="flex items-center gap-2">
+                  {theme === 'dark' ? <Sun size={16} weight="bold" /> : <Moon size={16} weight="bold" />}
+                  <span>{theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}</span>
+                </div>
+                <kbd className="hidden sm:inline-block text-caption font-medium text-ink-secondary">Ctrl+Shift+D</kbd>
+              </button>
               <button
                 onClick={() => {
                   setActiveTab("dashboard");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-hover text-ink font-semibold text-body transition-colors cursor-pointer touch-target"
               >
                 <span>Go to Dashboard</span>
-                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘1</kbd>
+                <kbd className="hidden sm:inline-block text-caption font-medium text-ink-secondary">⌘1</kbd>
               </button>
               <button
                 onClick={() => {
                   setActiveTab("ipos");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-hover text-ink font-semibold text-body transition-colors cursor-pointer touch-target"
               >
                 <span>Open IPO Workspace</span>
-                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘2</kbd>
+                <kbd className="hidden sm:inline-block text-caption font-medium text-ink-secondary">⌘2</kbd>
               </button>
               <button
                 onClick={() => {
                   setActiveTab("portfolio");
                   onClose();
                 }}
-                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] text-[#111318] font-bold text-sm transition-colors cursor-pointer touch-target"
+                className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-hover text-ink font-semibold text-body transition-colors cursor-pointer touch-target"
               >
                 <span>Open Portfolio</span>
-                <kbd className="hidden sm:inline-block text-[11px] font-mono font-medium text-[#5F6673]">⌘3</kbd>
+                <kbd className="hidden sm:inline-block text-caption font-medium text-ink-secondary">⌘3</kbd>
               </button>
             </div>
           )}
@@ -114,7 +129,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           {/* IPO Matches */}
           {filteredIpos.length > 0 && (
             <div className="space-y-1">
-              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
+              <div className="px-3 py-1 text-caption text-ink-tertiary uppercase tracking-wider">
                 IPOs ({filteredIpos.length})
               </div>
               {filteredIpos.map((ipo) => (
@@ -124,22 +139,22 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     openIpoDetail(ipo);
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F4F6F8] transition-colors cursor-pointer text-left touch-target"
+                  className="w-full flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-surface-hover transition-colors cursor-pointer text-left touch-target"
                 >
                   <div className="flex items-center gap-2.5 min-w-0">
-                    <div className="w-6 h-6 rounded-lg bg-blue-50 text-blue-600 font-bold text-xs flex items-center justify-center shrink-0">
+                    <div className="w-6 h-6 rounded-lg bg-accent-soft text-accent font-semibold text-xs flex items-center justify-center shrink-0">
                       {ipo.logo}
                     </div>
                     <div className="min-w-0">
-                      <div className="font-bold text-slate-900 text-xs truncate">
+                      <div className="font-semibold text-ink text-body truncate">
                         {ipo.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 truncate">
+                      <div className="text-small text-ink-tertiary truncate">
                         {ipo.company}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[11px] font-mono font-bold text-blue-600 shrink-0">
+                  <span className="text-caption num-tabular font-semibold text-accent shrink-0">
                     {ipo.status}
                   </span>
                 </button>
@@ -150,7 +165,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
           {/* Member Matches */}
           {filteredMembers.length > 0 && (
             <div className="space-y-1 pt-1">
-              <div className="px-3 py-1 text-[11px] font-bold text-[#7B8491] uppercase tracking-wider">
+              <div className="px-3 py-1 text-caption text-ink-tertiary uppercase tracking-wider">
                 Members ({filteredMembers.length})
               </div>
               {filteredMembers.map((member) => (
@@ -160,7 +175,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                     setActiveTab("members");
                     onClose();
                   }}
-                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-[#F4F6F8] transition-colors cursor-pointer text-left touch-target"
+                  className="w-full flex items-center justify-between px-3 py-2 rounded-xl hover:bg-surface-hover transition-colors cursor-pointer text-left touch-target"
                 >
                   <div className="flex items-center gap-2.5">
                     <img
@@ -169,15 +184,15 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
                       className="w-6 h-6 rounded-full object-cover shrink-0"
                     />
                     <div>
-                      <div className="font-bold text-slate-900 text-xs">
+                      <div className="font-semibold text-ink text-body">
                         {member.name}
                       </div>
-                      <div className="text-[10px] text-slate-500 font-mono">
+                      <div className="text-small text-ink-tertiary font-mono">
                         {member.panMasked}
                       </div>
                     </div>
                   </div>
-                  <span className="text-[11px] font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+                  <span className="text-caption font-medium text-ink-tertiary bg-surface-alt px-2 py-0.5 rounded-full">
                     {member.role}
                   </span>
                 </button>
