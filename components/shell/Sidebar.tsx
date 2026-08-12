@@ -8,7 +8,6 @@ import {
   Files,
   ChartPie,
   Users,
-  Gear,
 } from "@phosphor-icons/react";
 
 export function Sidebar() {
@@ -25,153 +24,183 @@ export function Sidebar() {
     { id: "members", label: "Group Members", icon: Users, badge: members.length },
   ];
 
-  const adminMember = members[0]; // Niranjan
+  const mobileNav = [
+    { id: "dashboard", label: "Home", icon: SquaresFour },
+    { id: "ipos", label: "IPOs", icon: TrendUp, badge: ipos.length },
+    { id: "applications", label: "Apps", icon: Files },
+    { id: "portfolio", label: "Portfolio", icon: ChartPie },
+    { id: "members", label: "Members", icon: Users },
+  ];
+
+  const adminMember = members[0]; // Primary Admin
 
   return (
-    <aside className="w-[230px] bg-[#FCFCFD] border-r border-[#E2E8F0] flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
-      <div>
-        {/* Brand Header */}
-        <div className="p-4 border-b border-[#E2E8F0] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center text-white font-bold text-sm shadow-2xs">
-              N
+    <>
+      {/* DESKTOP SIDEBAR (Visible on lg screens >= 1024px) */}
+      <aside className="hidden lg:flex w-[230px] bg-[#FCFCFD] border-r border-[#E2E8F0] flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
+        <div>
+          {/* Brand Header */}
+          <div className="p-4 border-b border-[#E2E8F0] flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center text-white font-bold text-sm shadow-2xs">
+                N
+              </div>
+              <div>
+                <h1 className="text-sm font-bold tracking-tight text-[#111318] flex items-center gap-1">
+                  NEXO
+                  <span className="text-[10px] px-1 py-0.2 rounded bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-medium">
+                    OS
+                  </span>
+                </h1>
+              </div>
             </div>
-            <div>
-              <h1 className="text-sm font-bold tracking-tight text-[#111318] flex items-center gap-1">
-                NEXO
-                <span className="text-[10px] px-1 py-0.2 rounded bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-medium">
-                  OS
-                </span>
-              </h1>
+
+            <div className="flex items-center gap-1 text-[11px] text-[#12B76A] font-medium bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#A6F4C5]">
+              ● Verified
             </div>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-[#12B76A] font-medium bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#A6F4C5]">
-            ● Verified
-          </div>
+          {/* Navigation Sections */}
+          <nav className="p-3 space-y-4">
+            {/* WORKSPACE */}
+            <div className="space-y-1">
+              <div className="px-2 py-1 text-[11px] font-medium text-[#5F6673] uppercase tracking-wider">
+                WORKSPACE
+              </div>
+              {workspaceNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
+                      isActive
+                        ? "bg-[#EFF6FF] text-[#2563EB] font-semibold"
+                        : "text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] font-medium"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon
+                        size={16}
+                        className={
+                          isActive ? "text-[#2563EB]" : "text-[#5F6673] group-hover:text-[#111318]"
+                        }
+                      />
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.badge !== undefined && (
+                      <span
+                        className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
+                          isActive
+                            ? "bg-[#2563EB]/15 text-[#2563EB]"
+                            : "bg-[#F1F5F9] text-[#5F6673]"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+
+            {/* GROUP MANAGEMENT */}
+            <div className="space-y-1 pt-2 border-t border-[#E2E8F0]">
+              <div className="px-2 py-1 text-[11px] font-medium text-[#5F6673] uppercase tracking-wider">
+                COMMUNITY
+              </div>
+              {groupNav.map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
+                      isActive
+                        ? "bg-[#EFF6FF] text-[#2563EB] font-semibold"
+                        : "text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] font-medium"
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon
+                        size={16}
+                        className={
+                          isActive ? "text-[#2563EB]" : "text-[#5F6673] group-hover:text-[#111318]"
+                        }
+                      />
+                      <span>{item.label}</span>
+                    </div>
+
+                    {item.badge !== undefined && (
+                      <span
+                        className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
+                          isActive
+                            ? "bg-[#2563EB]/15 text-[#2563EB]"
+                            : "bg-[#F1F5F9] text-[#5F6673]"
+                        }`}
+                      >
+                        {item.badge}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </nav>
         </div>
 
-        {/* Compact Navigation Sections */}
-        <nav className="p-3 space-y-4">
-          {/* WORKSPACE */}
-          <div className="space-y-1">
-            <div className="px-2 py-1 text-[11px] font-medium text-[#5F6673] uppercase tracking-wider">
-              WORKSPACE
-            </div>
-            {workspaceNav.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
-                  className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
-                    isActive
-                      ? "bg-[#EFF6FF] text-[#2563EB] font-semibold"
-                      : "text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] font-medium"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon
-                      size={16}
-                      className={
-                        isActive ? "text-[#2563EB]" : "text-[#5F6673] group-hover:text-[#111318]"
-                      }
-                    />
-                    <span>{item.label}</span>
-                  </div>
-
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isActive
-                          ? "bg-[#2563EB]/15 text-[#2563EB]"
-                          : "bg-[#F1F5F9] text-[#5F6673]"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* GROUP */}
-          <div className="space-y-1">
-            <div className="px-2 py-1 text-[11px] font-medium text-[#5F6673] uppercase tracking-wider">
-              GROUP
-            </div>
-            {groupNav.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id as any)}
-                  className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
-                    isActive
-                      ? "bg-[#EFF6FF] text-[#2563EB] font-semibold"
-                      : "text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] font-medium"
-                  }`}
-                >
-                  <div className="flex items-center gap-2.5">
-                    <Icon
-                      size={16}
-                      className={
-                        isActive ? "text-[#2563EB]" : "text-[#5F6673] group-hover:text-[#111318]"
-                      }
-                    />
-                    <span>{item.label}</span>
-                  </div>
-
-                  {item.badge !== undefined && (
-                    <span
-                      className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
-                        isActive
-                          ? "bg-[#2563EB]/15 text-[#2563EB]"
-                          : "bg-[#F1F5F9] text-[#5F6673]"
-                      }`}
-                    >
-                      {item.badge}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
-        </nav>
-      </div>
-
-      {/* Footer User Profile */}
-      <div className="p-3 border-t border-[#E2E8F0] bg-[#F8FAFC]">
-        <div className="flex items-center justify-between p-1.5">
-          <div className="flex items-center gap-2">
+        {/* User Footer Profile */}
+        <div className="p-3 border-t border-[#E2E8F0] bg-white">
+          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]">
             <img
-              src={adminMember.avatar}
-              alt={adminMember.name}
-              className="w-7 h-7 rounded-full object-cover ring-1 ring-[#E2E8F0]"
+              src={adminMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
+              alt={adminMember?.name || "User"}
+              className="w-8 h-8 rounded-full object-cover shrink-0"
             />
-            <div className="overflow-hidden">
-              <div className="text-xs font-semibold text-[#111318] truncate">
-                {adminMember.name}
-              </div>
-              <div className="text-[11px] text-[#5F6673] truncate font-mono">
-                {adminMember.panMasked}
-              </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-bold text-[#111318] truncate">
+                {adminMember?.name || "Ankit"}
+              </p>
+              <p className="text-[10px] text-[#5F6673] truncate">
+                Syndicate Admin
+              </p>
             </div>
           </div>
-
-          <button
-            title="Workspace Settings"
-            className="p-1 rounded-md text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] transition-colors cursor-pointer"
-          >
-            <Gear size={15} />
-          </button>
         </div>
+      </aside>
+
+      {/* MOBILE BOTTOM NAVIGATION BAR (Visible on mobile/tablet screens < 1024px) */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200/90 py-1.5 px-2 flex items-center justify-around shadow-lg font-sans">
+        {mobileNav.map((item) => {
+          const Icon = item.icon;
+          const isActive = activeTab === item.id;
+
+          return (
+            <button
+              key={item.id}
+              onClick={() => setActiveTab(item.id as any)}
+              className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition-all cursor-pointer ${
+                isActive ? "text-blue-600 font-bold" : "text-slate-500 font-medium"
+              }`}
+            >
+              <div className="relative">
+                <Icon size={20} className={isActive ? "text-blue-600" : "text-slate-500"} />
+                {item.badge !== undefined && item.badge > 0 && (
+                  <span className="absolute -top-1 -right-2 bg-blue-600 text-white text-[9px] font-bold px-1 py-0.2 rounded-full min-w-[14px] text-center leading-none">
+                    {item.badge}
+                  </span>
+                )}
+              </div>
+              <span className="text-[10px] tracking-tight mt-0.5">{item.label}</span>
+            </button>
+          );
+        })}
       </div>
-    </aside>
+    </>
   );
 }
