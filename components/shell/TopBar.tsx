@@ -43,17 +43,8 @@ export function TopBar() {
               N
             </div>
           </div>
-          <span className="text-slate-900 font-extrabold text-base sm:text-lg tracking-tight hover:text-blue-600 transition-colors cursor-pointer select-none">
+          <span className="text-slate-900 font-extrabold text-base sm:text-lg tracking-tight select-none">
             {titles[activeTab] || "Dashboard"}
-          </span>
-          <svg className="w-3.5 h-3.5 text-slate-300 hidden sm:inline shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-          </svg>
-          <span className="inline-flex items-center gap-1.5 bg-slate-50 border border-slate-200/60 rounded-full px-3 py-1.2 text-[11px] font-bold text-slate-400 shadow-3xs hidden sm:inline select-none">
-            <svg className="w-3 h-3 text-slate-400 fill-current" viewBox="0 0 20 20" fill="currentColor">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-            </svg>
-            Private Vault
           </span>
         </div>
 
