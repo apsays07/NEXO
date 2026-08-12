@@ -108,6 +108,26 @@ export interface IPOOpportunity {
   closeCountdown?: string;
 }
 
+export interface ListedIPOUserProfit {
+  memberId: string;
+  memberName: string;
+  profit: number;
+}
+
+export interface ListedIPO {
+  id: string;
+  name: string;
+  category?: string;
+  logo?: string;
+  lotsAllotted: number;
+  totalProfit: number;
+  applicantsCount: number;
+  oneLotProfit: number;
+  listingDate?: string;
+  lotPrice?: number;
+  userProfits?: ListedIPOUserProfit[];
+}
+
 export interface PortfolioSummary {
   totalCapital: number;
   capitalDeployed: number;
