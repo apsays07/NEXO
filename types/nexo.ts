@@ -80,6 +80,7 @@ export interface FinancialMetrics {
   closeDate: string;
   allotmentDate: string;
   listingDate: string;
+  fundUnblockDate?: string;
   rhpUrl?: string; // Link to RHP PDF document
   retailQuotaPercent?: number;
   gmp?: number; // Grey Market Premium in ₹
