@@ -74,6 +74,19 @@ export function ApplicationModal() {
     });
   }, [effectiveIpos, members]);
 
+  const handleEqualSplit = () => {
+    const count = contributors.length || 1;
+    const equalShare = Math.floor(targetRequiredCapital / count);
+    const remainder = targetRequiredCapital - equalShare * count;
+
+    setContributors((prev) =>
+      prev.map((c, idx) => ({
+        ...c,
+        amount: idx === 0 ? equalShare + remainder : equalShare,
+      }))
+    );
+  };
+
   // Sync initial equal split when target capital changes
   useEffect(() => {
     handleEqualSplit();
@@ -123,18 +136,6 @@ export function ApplicationModal() {
     });
   };
 
-  const handleEqualSplit = () => {
-    const count = contributors.length || 1;
-    const equalShare = Math.floor(targetRequiredCapital / count);
-    const remainder = targetRequiredCapital - equalShare * count;
-
-    setContributors((prev) =>
-      prev.map((c, idx) => ({
-        ...c,
-        amount: idx === 0 ? equalShare + remainder : equalShare,
-      }))
-    );
-  };
 
   const handlePanChange = (index: number, value: string) => {
     const updated = [...panNumbers];
