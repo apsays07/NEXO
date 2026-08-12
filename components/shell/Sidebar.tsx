@@ -45,23 +45,26 @@ export function Sidebar() {
       <aside className="hidden lg:flex w-[230px] bg-[#FCFCFD] border-r border-[#E2E8F0] flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
         <div>
           {/* Brand Header */}
-          <div className="p-4 border-b border-[#E2E8F0] flex items-center justify-between">
+          <div className="p-4 border-b border-slate-200/80 bg-white/40 flex items-center justify-between">
             <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-lg bg-[#2563EB] flex items-center justify-center text-white font-bold text-sm shadow-2xs">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/20 hover:scale-[1.05] transition-transform duration-200 cursor-pointer">
                 N
               </div>
               <div>
-                <h1 className="text-sm font-bold tracking-tight text-[#111318] flex items-center gap-1">
+                <h1 className="text-sm font-extrabold tracking-tight text-slate-900 flex items-center gap-1">
                   NEXO
-                  <span className="text-[10px] px-1 py-0.2 rounded bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-medium">
+                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-blue-50 text-blue-600 border border-blue-100 font-extrabold tracking-wider uppercase">
                     OS
                   </span>
                 </h1>
               </div>
             </div>
 
-            <div className="flex items-center gap-1 text-[11px] text-[#12B76A] font-medium bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#A6F4C5]">
-              ● Verified
+            <div className="flex items-center gap-1 text-[10px] text-emerald-700 bg-emerald-50 border border-emerald-200/80 px-2 py-0.5 rounded-full font-bold shadow-3xs">
+              <svg className="w-3 h-3 text-emerald-600 fill-current shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+              <span>Verified</span>
             </div>
           </div>
 
