@@ -1,19 +1,20 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 import {
   IPOOpportunity,
   Member,
+  MemberRole,
   ActivityItem,
   PortfolioSummary,
   ParticipationType,
   ApplicationType,
   Application,
   AllotmentStatus,
-  MemberRole,
   IPOLifecycleStage,
   ActionItem,
   RecommendationType,
+  Transaction,
 } from "@/types/nexo";
 import {
   MOCK_IPOS,
@@ -36,6 +37,13 @@ interface NexoContextType {
   actionItems: ActionItem[];
   dismissActionItem: (id: string) => void;
   portfolioSummary: PortfolioSummary;
+  individualSavings: number;
+  updateIndividualSavings: (amount: number) => void;
+  userContributions: Record<string, number>;
+  updateUserContribution: (ipoId: string, amount: number) => void;
+  transactions: Transaction[];
+  clearTransactions: () => void;
+  deleteTransaction: (txnId: string) => void;
   selectedIpo: IPOOpportunity | null;
   openIpoDetail: (ipo: IPOOpportunity) => void;
   closeIpoDetail: () => void;
@@ -90,6 +98,50 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
   const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
+  const [individualSavings, setIndividualSavings] = useState<number>(() => {
+    try {
+      if (typeof window === "undefined") return 0;
+      const stored = localStorage.getItem("nexo_individualSavings");
+      return stored !== null ? parseFloat(stored) : 0;
+    } catch { return 0; }
+  });
+  const [userContributions, setUserContributions] = useState<Record<string, number>>(() => {
+    try {
+      if (typeof window === "undefined") return {};
+      const stored = localStorage.getItem("nexo_userContributions");
+      return stored !== null ? JSON.parse(stored) : {};
+    } catch { return {}; }
+  });
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    try {
+      if (typeof window === "undefined") return [];
+      const stored = localStorage.getItem("nexo_transactions");
+      return stored !== null ? JSON.parse(stored) : [];
+    } catch { return []; }
+  });
+
+  // Persist to localStorage on change
+  useEffect(() => {
+    try { localStorage.setItem("nexo_individualSavings", String(individualSavings)); } catch {}
+  }, [individualSavings]);
+  useEffect(() => {
+    try { localStorage.setItem("nexo_userContributions", JSON.stringify(userContributions)); } catch {}
+  }, [userContributions]);
+  useEffect(() => {
+    try { localStorage.setItem("nexo_transactions", JSON.stringify(transactions)); } catch {}
+  }, [transactions]);
+
+
+  const updateIndividualSavings = (amount: number) => {
+    setIndividualSavings(amount);
+  };
+
+  const updateUserContribution = (ipoId: string, amount: number) => {
+    setUserContributions((prev) => ({
+      ...prev,
+      [ipoId]: amount,
+    }));
+  };
 
   const [selectedIpo, setSelectedIpo] = useState<IPOOpportunity | null>(null);
   const [isApplicationModalOpen, setIsApplicationModalOpen] = useState(false);
@@ -265,6 +317,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
     const newAppId = `app_${Date.now()}`;
     const targetIpo = ipos.find((i) => i.id === ipoId);
+    const appNumber = `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`;
     const newApplication: Application = {
       id: newAppId,
       ipoId,
@@ -278,7 +331,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       allotmentStatus: "AWAITING",
       status: "AWAITING",
       createdAt: new Date().toISOString(),
-      applicationNumber: `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`,
+      applicationNumber: appNumber,
       applicationProofUrl: proofUrl,
       participants: formattedParticipants.length > 0 ? formattedParticipants : [
         {
@@ -327,6 +380,34 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
+    // Record transaction. Ledger keeps its own SOLO/COMBO vocabulary, so map
+    // from the canonical INDIVIDUAL/COMBINED type used by applications.
+    const newTransaction: Transaction = {
+      id: `txn_${Date.now()}`,
+      ipoId,
+      ipoName: activeApplicationIpo?.name || "IPO",
+      type: canonicalType === "INDIVIDUAL" ? "SOLO" : "COMBO",
+      amount: total,
+      applicationNumber: appNumber,
+      participants:
+        canonicalType === "INDIVIDUAL"
+          ? [applicantMember?.name || members[0].name]
+          : formattedParticipants.map((p) => p.memberName),
+      createdAt: new Date().toISOString(),
+      status: "SUBMITTED",
+    };
+    setTransactions((prev) => [newTransaction, ...prev]);
+
+    // Deduct applied amount from individual savings (only for solo applications)
+    if (canonicalType === "INDIVIDUAL") {
+      setIndividualSavings((prev) => Math.max(0, prev - total));
+      // Also record as a userContribution for the IPO
+      setUserContributions((prev) => ({
+        ...prev,
+        [ipoId]: (prev[ipoId] ?? 0) + total,
+      }));
+    }
+
     // Record activity
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
@@ -366,6 +447,27 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         actionItems,
         dismissActionItem,
         portfolioSummary,
+        individualSavings,
+        updateIndividualSavings,
+        userContributions,
+        updateUserContribution,
+        transactions,
+        clearTransactions: () => setTransactions([]),
+        deleteTransaction: (txnId: string) => {
+          const txn = transactions.find((t) => t.id === txnId);
+          if (!txn) return;
+          // Reverse balance deduction for SOLO
+          if (txn.type === "SOLO") {
+            setIndividualSavings((prev) => prev + txn.amount);
+            setUserContributions((prev) => {
+              const updated = { ...prev };
+              const existing = updated[txn.ipoId] ?? 0;
+              updated[txn.ipoId] = Math.max(0, existing - txn.amount);
+              return updated;
+            });
+          }
+          setTransactions((prev) => prev.filter((t) => t.id !== txnId));
+        },
         selectedIpo,
         openIpoDetail,
         closeIpoDetail,

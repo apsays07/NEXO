@@ -155,3 +155,15 @@ export interface ActionItem {
   memberName?: string;
   memberAvatar?: string;
 }
+
+export interface Transaction {
+  id: string;
+  ipoId: string;
+  ipoName: string;
+  type: "SOLO" | "COMBO";
+  amount: number;
+  applicationNumber: string;
+  participants: string[]; // member names
+  createdAt: string; // ISO string
+  status: "SUBMITTED" | "ALLOTTED" | "REFUNDED" | "REJECTED";
+}
