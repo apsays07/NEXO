@@ -73,7 +73,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-1.5 text-xs font-semibold text-[#027A48]">
               <ShieldCheck size={16} />
-              <span>SYNDICATE CONSENSUS</span>
+              <span>Description</span>
             </div>
             <RecommendationBadge type={ipo.recommendation} size="sm" />
           </div>
