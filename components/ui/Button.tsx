@@ -14,27 +14,27 @@ export function Button({
   ...props
 }: ButtonProps) {
   const baseStyles =
-    "inline-flex items-center justify-center font-bold transition-all duration-150 rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#F8FAFC] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98]";
+    "inline-flex items-center justify-center font-semibold transition-all duration-150 rounded-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-[#F7F8FA] disabled:opacity-50 disabled:cursor-not-allowed active:scale-[0.98] cursor-pointer";
 
   const variantStyles = {
     primary:
-      "bg-[#2563EB] hover:bg-[#1D4ED8] text-white focus:ring-[#2563EB] shadow-xs shadow-[#2563EB]/20",
+      "bg-[#2F6BFF] hover:bg-[#1D52D8] text-white focus:ring-[#2F6BFF] shadow-2xs",
     secondary:
-      "bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#0F172A] border border-[#E2E8F0] focus:ring-[#CBD5E1]",
+      "bg-[#F4F6F8] hover:bg-[#E4E7EC] text-[#111827] border border-[#E4E7EC] focus:ring-[#D0D5DD]",
     ghost:
-      "bg-transparent hover:bg-[#F1F5F9] text-[#475569] hover:text-[#0F172A] focus:ring-[#E2E8F0]",
+      "bg-transparent hover:bg-[#F4F6F8] text-[#667085] hover:text-[#111827] focus:ring-[#E4E7EC]",
     outline:
-      "bg-transparent hover:bg-[#F8FAFC] text-[#0F172A] border border-[#CBD5E1] focus:ring-[#94A3B8]",
+      "bg-transparent hover:bg-[#F7F8FA] text-[#111827] border border-[#D0D5DD] focus:ring-[#98A2B3]",
     success:
-      "bg-[#059669] hover:bg-[#047857] text-white font-bold focus:ring-[#059669] shadow-xs",
+      "bg-[#12B76A] hover:bg-[#027A48] text-white focus:ring-[#12B76A] shadow-2xs",
     danger:
-      "bg-[#FEF2F2] text-[#DC2626] hover:bg-[#FEE2E2] border border-[#FCA5A5] focus:ring-[#DC2626]",
+      "bg-[#FEF3F2] text-[#B42318] hover:bg-[#FEE4E2] border border-[#FECDCA] focus:ring-[#F04438]",
   };
 
   const sizeStyles = {
-    sm: "px-3 py-1.5 text-xs gap-1.5",
-    md: "px-4 py-2 text-sm gap-2",
-    lg: "px-6 py-3 text-base gap-2.5 rounded-2xl",
+    sm: "px-3 h-8 text-xs gap-1.5",
+    md: "px-3.5 h-9 text-xs sm:text-sm gap-2",
+    lg: "px-5 h-10 text-sm gap-2 rounded-lg",
   };
 
   return (

@@ -1,6 +1,7 @@
 import React from "react";
 
 interface CardProps {
+  id?: string;
   children: React.ReactNode;
   className?: string;
   hoverable?: boolean;
@@ -8,6 +9,7 @@ interface CardProps {
 }
 
 export function Card({
+  id,
   children,
   className = "",
   hoverable = false,
@@ -15,6 +17,7 @@ export function Card({
 }: CardProps) {
   return (
     <div
+      id={id}
       onClick={onClick}
       className={`bg-[#FFFFFF] rounded-2xl border border-[#E2E8F0] p-5 transition-all duration-200 shadow-xs ${
         hoverable

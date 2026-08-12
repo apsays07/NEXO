@@ -15,117 +15,151 @@ import {
 export function Sidebar() {
   const { activeTab, setActiveTab, members, ipos } = useNexo();
 
-  const navItems = [
+  const workspaceNav = [
     { id: "dashboard", label: "Home", icon: SquaresFour },
     { id: "ipos", label: "IPO Workspace", icon: TrendUp, badge: ipos.length },
     { id: "applications", label: "Applications", icon: Files },
     { id: "portfolio", label: "Portfolio", icon: ChartPie },
+  ];
+
+  const groupNav = [
     { id: "members", label: "Group Members", icon: Users, badge: members.length },
   ];
 
   const adminMember = members[0]; // Niranjan
 
   return (
-    <aside className="w-64 bg-[#FFFFFF] border-r border-[#E2E8F0] flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 shadow-sm">
+    <aside className="w-[230px] bg-[#FCFCFD] border-r border-[#E4E7EC] flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30">
       <div>
         {/* Brand Header */}
-        <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-[#2563EB] to-[#1D4ED8] flex items-center justify-center text-white font-black text-lg tracking-wider shadow-md shadow-[#2563EB]/20">
+        <div className="p-4 border-b border-[#E4E7EC] flex items-center justify-between">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-[#2F6BFF] flex items-center justify-center text-white font-black text-sm shadow-xs">
               N
             </div>
             <div>
-              <h1 className="text-base font-extrabold tracking-tight text-[#0F172A] flex items-center gap-1.5">
+              <h1 className="text-sm font-extrabold tracking-tight text-[#111827] flex items-center gap-1">
                 NEXO
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold tracking-normal">
+                <span className="text-[9px] px-1 py-0.2 rounded bg-[#EEF4FF] text-[#2F6BFF] border border-[#D0E1FF] font-semibold">
                   OS
                 </span>
               </h1>
-              <p className="text-[11px] text-[#64748B] font-medium">
-                Private Wealth Syndicate
-              </p>
             </div>
+          </div>
+
+          <div className="flex items-center gap-1 text-[10px] text-[#12B76A] font-bold bg-[#ECFDF3] px-2 py-0.5 rounded-full border border-[#A6F4C5]">
+            ● Verified
           </div>
         </div>
 
-        {/* Private Syndicate Badge */}
-        <div className="px-4 py-3 mx-3 mt-4 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <ShieldCheck size={18} className="text-[#059669]" />
-            <div>
-              <div className="text-xs font-bold text-[#0F172A]">Trusted Syndicate</div>
-              <div className="text-[10px] text-[#64748B]">5 Verified Members</div>
+        {/* Compact Navigation Sections */}
+        <nav className="p-3 space-y-4">
+          {/* WORKSPACE */}
+          <div className="space-y-1">
+            <div className="px-2 py-1 text-[10px] font-bold text-[#98A2B3] uppercase tracking-wider">
+              WORKSPACE
             </div>
+            {workspaceNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full h-8 flex items-center justify-between px-2.5 rounded-md text-xs font-semibold transition-colors group ${
+                    isActive
+                      ? "bg-[#EEF4FF] text-[#2F6BFF]"
+                      : "text-[#667085] hover:text-[#111827] hover:bg-[#F4F6F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      size={16}
+                      className={
+                        isActive ? "text-[#2F6BFF]" : "text-[#667085] group-hover:text-[#111827]"
+                      }
+                    />
+                    <span>{item.label}</span>
+                  </div>
+
+                  {item.badge !== undefined && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                        isActive
+                          ? "bg-[#2F6BFF]/15 text-[#2F6BFF]"
+                          : "bg-[#F2F4F7] text-[#667085]"
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-          <span className="h-2 w-2 rounded-full bg-[#059669] animate-ping" />
-        </div>
 
-        {/* Navigation Section */}
-        <nav className="p-3 space-y-1 mt-2">
-          <div className="px-3 py-1.5 text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">
-            Workspace Navigation
+          {/* GROUP */}
+          <div className="space-y-1">
+            <div className="px-2 py-1 text-[10px] font-bold text-[#98A2B3] uppercase tracking-wider">
+              GROUP
+            </div>
+            {groupNav.map((item) => {
+              const Icon = item.icon;
+              const isActive = activeTab === item.id;
+
+              return (
+                <button
+                  key={item.id}
+                  onClick={() => setActiveTab(item.id as any)}
+                  className={`w-full h-8 flex items-center justify-between px-2.5 rounded-md text-xs font-semibold transition-colors group ${
+                    isActive
+                      ? "bg-[#EEF4FF] text-[#2F6BFF]"
+                      : "text-[#667085] hover:text-[#111827] hover:bg-[#F4F6F8]"
+                  }`}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon
+                      size={16}
+                      className={
+                        isActive ? "text-[#2F6BFF]" : "text-[#667085] group-hover:text-[#111827]"
+                      }
+                    />
+                    <span>{item.label}</span>
+                  </div>
+
+                  {item.badge !== undefined && (
+                    <span
+                      className={`text-[10px] px-1.5 py-0.2 rounded-full font-mono ${
+                        isActive
+                          ? "bg-[#2F6BFF]/15 text-[#2F6BFF]"
+                          : "bg-[#F2F4F7] text-[#667085]"
+                      }`}
+                    >
+                      {item.badge}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
           </div>
-
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = activeTab === item.id;
-
-            return (
-              <button
-                key={item.id}
-                onClick={() => setActiveTab(item.id as any)}
-                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all duration-150 group ${
-                  isActive
-                    ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE] font-semibold shadow-sm"
-                    : "text-[#475569] hover:text-[#0F172A] hover:bg-[#F8FAFC]"
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <Icon
-                    size={18}
-                    className={
-                      isActive
-                        ? "text-[#2563EB]"
-                        : "text-[#64748B] group-hover:text-[#0F172A]"
-                    }
-                  />
-                  <span>{item.label}</span>
-                </div>
-
-                {item.badge !== undefined && (
-                  <span
-                    className={`text-xs px-2 py-0.5 rounded-full font-mono font-medium ${
-                      isActive
-                        ? "bg-[#2563EB]/15 text-[#2563EB]"
-                        : "bg-[#F1F5F9] text-[#64748B]"
-                    }`}
-                  >
-                    {item.badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
         </nav>
       </div>
 
       {/* Footer User Profile */}
-      <div className="p-3 border-t border-[#E2E8F0] bg-[#F8FAFC]">
-        <div className="p-2.5 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] flex items-center justify-between shadow-xs">
-          <div className="flex items-center gap-2.5">
+      <div className="p-3 border-t border-[#E4E7EC] bg-[#F7F8FA]">
+        <div className="flex items-center justify-between p-1.5">
+          <div className="flex items-center gap-2">
             <img
               src={adminMember.avatar}
               alt={adminMember.name}
-              className="w-8 h-8 rounded-full object-cover ring-2 ring-[#2563EB]/30"
+              className="w-7 h-7 rounded-full object-cover ring-1 ring-[#E4E7EC]"
             />
             <div className="overflow-hidden">
-              <div className="text-xs font-bold text-[#0F172A] flex items-center gap-1.5 truncate">
+              <div className="text-xs font-extrabold text-[#111827] truncate">
                 {adminMember.name}
-                <span className="text-[9px] px-1 py-0.2 rounded bg-amber-100 text-amber-800 font-mono font-bold">
-                  ADMIN
-                </span>
               </div>
-              <div className="text-[10px] text-[#64748B] truncate font-mono">
+              <div className="text-[10px] text-[#98A2B3] truncate font-mono">
                 {adminMember.panMasked}
               </div>
             </div>
@@ -133,9 +167,9 @@ export function Sidebar() {
 
           <button
             title="Workspace Settings"
-            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+            className="p-1 rounded-md text-[#667085] hover:text-[#111827] hover:bg-[#F4F6F8] transition-colors"
           >
-            <Gear size={16} />
+            <Gear size={15} />
           </button>
         </div>
       </div>

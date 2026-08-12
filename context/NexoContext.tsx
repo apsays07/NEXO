@@ -97,6 +97,10 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
   const openIpoDetail = (ipo: IPOOpportunity) => {
     setSelectedIpo(ipo);
+    const slug = ipo.name.toLowerCase().replace(/[^a-z0-9]+/g, "-");
+    if (typeof window !== "undefined") {
+      window.location.href = `/ipos/${slug}`;
+    }
   };
 
   const closeIpoDetail = () => {
