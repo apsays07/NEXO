@@ -65,6 +65,14 @@ export function ApplicationModal() {
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Clear error msg when modal status changes
+  useEffect(() => {
+    if (isApplicationModalOpen) {
+      setErrorMsg(null);
+    }
+  }, [isApplicationModalOpen]);
 
   // Initialize default applicant name
   useEffect(() => {
@@ -189,6 +197,7 @@ export function ApplicationModal() {
   };
 
   const handlePanChange = (index: number, value: string) => {
+    setErrorMsg(null);
     const updated = [...panNumbers];
     updated[index] = value.toUpperCase().slice(0, 10);
     setPanNumbers(updated);
@@ -200,7 +209,7 @@ export function ApplicationModal() {
     // Validate PAN card numbers (must be exactly 10 characters matching standard regex format)
     const anyInvalid = panNumbers.some((pan) => !isValidPan(pan));
     if (anyInvalid) {
-      alert("Please enter a valid 10-character PAN card number for all entries.");
+      setErrorMsg("Please enter a valid 10-character PAN card number for all entries.");
       return;
     }
 
@@ -298,6 +307,14 @@ export function ApplicationModal() {
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
+          {errorMsg && (
+            <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-modal-pop-in">
+              <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+              </svg>
+              <span>{errorMsg}</span>
+            </div>
+          )}
           {/* CAPITAL FUNDING STRUCTURE SWITCHER */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-slate-800">
