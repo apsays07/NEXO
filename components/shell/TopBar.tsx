@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { MagnifyingGlass, User, Gear, SignOut } from "@phosphor-icons/react";
-import { AvailableCapitalPopover } from "./AvailableCapitalPopover";
 import { NotificationPopover } from "./NotificationPopover";
 import { CommandPalette } from "../ui/CommandPalette";
 
@@ -72,9 +71,6 @@ export function TopBar() {
               ⌘K
             </kbd>
           </button>
-
-          {/* Available Capital Indicator Popover */}
-          <AvailableCapitalPopover summary={portfolioSummary} />
 
           {/* Activity Bell Popover */}
           <NotificationPopover />
