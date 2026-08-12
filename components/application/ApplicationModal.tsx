@@ -20,7 +20,7 @@ import {
   FileText,
 } from "@phosphor-icons/react";
 
-import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
+
 
 interface ContributorEntry {
   memberId: string;
@@ -64,7 +64,6 @@ export function ApplicationModal() {
 
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Clear error msg when modal status changes
@@ -245,33 +244,11 @@ export function ApplicationModal() {
       );
 
       setIsSubmitting(false);
-      setIsSuccess(true);
+      closeApplicationModal();
     }, 1200);
   };
 
-  const handleCloseSuccess = () => {
-    setIsSuccess(false);
-    closeApplicationModal();
-  };
-
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
-
-  if (isSuccess) {
-    return (
-      <ApplicationSuccessModal
-        isOpen={true}
-        onClose={handleCloseSuccess}
-        ipoName={activeApplicationIpo.name}
-        ipoLogo={activeApplicationIpo.logo}
-        applicantName={
-          applicantMode === "JOINT"
-            ? contributors.map((c) => c.memberName).join(", ")
-            : applicantName
-        }
-        panCount={panNumbers.length}
-      />
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-md p-4 animate-fade-in font-sans">

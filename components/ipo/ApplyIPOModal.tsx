@@ -21,7 +21,7 @@ import {
   Coins,
 } from "@phosphor-icons/react";
 
-import { ApplicationSuccessModal } from "../application/ApplicationSuccessModal";
+
 
 interface ApplyIPOModalProps {
   ipo: IPOOpportunity;
@@ -64,7 +64,6 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
 
   const [panNumbers, setPanNumbers] = useState<string[]>(["ABCDE2741D"]);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Clear error msg when modal status changes
@@ -236,13 +235,8 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
       );
 
       setIsSubmitting(false);
-      setIsSuccess(true);
+      onClose();
     }, 1200);
-  };
-
-  const handleCloseSuccess = () => {
-    setIsSuccess(false);
-    onClose();
   };
 
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
@@ -279,21 +273,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
           </button>
         </div>
 
-        {isSuccess ? (
-          <ApplicationSuccessModal
-            isOpen={true}
-            onClose={handleCloseSuccess}
-            ipoName={ipo.name}
-            ipoLogo={ipo.logo}
-            applicantName={
-              applicantMode === "JOINT"
-                ? contributors.map((c) => c.memberName).join(", ")
-                : applicantName
-            }
-            panCount={panNumbers.length}
-          />
-        ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
+        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
             {errorMsg && (
               <div className="p-3.5 bg-rose-50 border border-rose-200 text-rose-800 rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-modal-pop-in">
                 <svg className="w-4 h-4 text-rose-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -633,7 +613,6 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               </button>
             </div>
           </form>
-        )}
       </div>
     </div>
   );
