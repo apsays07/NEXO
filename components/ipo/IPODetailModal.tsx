@@ -22,6 +22,11 @@ interface IPODetailModalProps {
 
 type StepStatus = "done" | "active" | "upcoming";
 
+function formatDate(d?: string): string {
+  if (!d) return "—";
+  return d.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2").replace(/\s+/g, " ");
+}
+
 function getSteps(ipo: IPOOpportunity) {
   const stage = ipo.status;
   const done = (stages: string[]) => stages.includes(stage);
@@ -30,31 +35,31 @@ function getSteps(ipo: IPOOpportunity) {
   return [
     {
       label: "IPO open date",
-      date: ipo.metrics.openDate,
+      date: formatDate(ipo.metrics.openDate),
       status: (done(["APPLICATION_OPEN", "APPLYING", "APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"])
         ? "done" : active("RESEARCHING") || active("WATCHLIST") ? "active" : "upcoming") as StepStatus,
     },
     {
       label: "IPO close date",
-      date: ipo.metrics.closeDate,
+      date: formatDate(ipo.metrics.closeDate),
       status: (done(["APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"])
         ? "done" : active("APPLICATION_OPEN") || active("APPLYING") ? "active" : "upcoming") as StepStatus,
     },
     {
       label: "Allotment date",
-      date: ipo.metrics.allotmentDate,
+      date: formatDate(ipo.metrics.allotmentDate),
       status: (done(["ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"])
         ? "done" : active("APPLIED") || active("ALLOTMENT_PENDING") ? "active" : "upcoming") as StepStatus,
     },
     {
       label: "Funds unblock or debit",
-      date: ipo.metrics.allotmentDate,
+      date: formatDate(ipo.metrics.fundUnblockDate || ipo.metrics.allotmentDate),
       info: "Refund or debit based on allotment result",
       status: (done(["ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]) ? "done" : "upcoming") as StepStatus,
     },
     {
       label: "Tentative listing date",
-      date: ipo.metrics.listingDate,
+      date: formatDate(ipo.metrics.listingDate),
       status: (done(["LISTED", "HOLDING", "SOLD", "CLOSED"]) ? "done" : "upcoming") as StepStatus,
     },
   ];

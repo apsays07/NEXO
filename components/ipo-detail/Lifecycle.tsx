@@ -16,6 +16,11 @@ type ScheduleStep = {
   status: "done" | "active" | "upcoming";
 };
 
+function formatDate(d?: string): string {
+  if (!d) return "—";
+  return d.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2").replace(/\s+/g, " ");
+}
+
 function getSteps(ipo: IPOOpportunity): ScheduleStep[] {
   const stage = ipo.status;
 
@@ -34,28 +39,28 @@ function getSteps(ipo: IPOOpportunity): ScheduleStep[] {
   return [
     {
       label: "IPO open date",
-      date: ipo.metrics.openDate,
+      date: formatDate(ipo.metrics.openDate),
       status: openDone ? "done" : isActive("RESEARCHING") || isActive("WATCHLIST") ? "active" : "upcoming",
     },
     {
       label: "IPO close date",
-      date: ipo.metrics.closeDate,
+      date: formatDate(ipo.metrics.closeDate),
       status: closeDone ? "done" : isActive("APPLICATION_OPEN") || isActive("APPLYING") ? "active" : "upcoming",
     },
     {
       label: "Allotment date",
-      date: ipo.metrics.allotmentDate,
+      date: formatDate(ipo.metrics.allotmentDate),
       status: allotDone ? "done" : isActive("APPLIED") || isActive("ALLOTMENT_PENDING") ? "active" : "upcoming",
     },
     {
       label: "Funds unblock or debit",
-      date: ipo.metrics.allotmentDate,
+      date: formatDate(ipo.metrics.fundUnblockDate || ipo.metrics.allotmentDate),
       info: "Refund or debit based on allotment result",
       status: allotDone ? "done" : "upcoming",
     },
     {
       label: "Tentative listing date",
-      date: ipo.metrics.listingDate,
+      date: formatDate(ipo.metrics.listingDate),
       status: listDone ? "done" : "upcoming",
     },
   ];

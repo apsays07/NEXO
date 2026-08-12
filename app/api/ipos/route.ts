@@ -99,6 +99,12 @@ export async function GET(req: NextRequest) {
   return NextResponse.json({ success: true, ipos: visibleIpos }, { headers: corsHeaders });
 }
 
+function cleanDate(str: string | undefined, defaultVal: string): string {
+  if (!str || !str.trim()) return defaultVal;
+  let cleaned = str.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2");
+  return cleaned.replace(/\s+/g, " ");
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
@@ -128,11 +134,11 @@ export async function POST(req: NextRequest) {
         priceBand: { min: 0, max: 0 },
         lotSize: 1,
         minInvestment: Number(body.minInvestment) || 15000,
-        openDate: body.openDate?.trim() || "18 Aug 2026",
-        closeDate: body.closeDate.trim() || "28 Aug 2026",
-        allotmentDate: body.allotmentDate?.trim() || "01 Sep 2026",
-        listingDate: body.listingDate?.trim() || "04 Sep 2026",
-        fundUnblockDate: body.fundUnblockDate?.trim() || "02 Sep 2026",
+        openDate: cleanDate(body.openDate, "18 Aug 2026"),
+        closeDate: cleanDate(body.closeDate, "28 Aug 2026"),
+        allotmentDate: cleanDate(body.allotmentDate, "01 Sep 2026"),
+        listingDate: cleanDate(body.listingDate, "04 Sep 2026"),
+        fundUnblockDate: cleanDate(body.fundUnblockDate, "02 Sep 2026"),
       },
       createdBy: "Shivam Prasad",
       participantsCount: 0,
