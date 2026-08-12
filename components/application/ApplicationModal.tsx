@@ -36,18 +36,20 @@ export function ApplicationModal() {
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState<string>("");
 
-  // Dynamic Contributors State (Supports 2-4+ friends with custom rupee amounts)
+  const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
+  const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
+  const minInvest = activeApplicationIpo?.metrics?.minInvestment || 14964;
+  const targetRequiredCapital = minInvest * effectiveIpos;
+
+  // Dynamic Contributors State
   const [contributors, setContributors] = useState<ContributorEntry[]>([
-    { memberId: members[0]?.id || "mem_1", amount: 7500 },
-    { memberId: members[1]?.id || "mem_2", amount: 7500 },
+    { memberId: members[0]?.id || "mem_1", amount: Math.floor(targetRequiredCapital / 2) },
+    { memberId: members[1]?.id || "mem_2", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
   ]);
 
-  const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-
-  const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
 
   // Initialize default applicant name
   useEffect(() => {
@@ -72,9 +74,12 @@ export function ApplicationModal() {
     });
   }, [effectiveIpos, members]);
 
-  if (!isApplicationModalOpen || !activeApplicationIpo) return null;
+  // Sync initial equal split when target capital changes
+  useEffect(() => {
+    handleEqualSplit();
+  }, [targetRequiredCapital]);
 
-  const minInvest = activeApplicationIpo.metrics?.minInvestment || 14964;
+  if (!isApplicationModalOpen || !activeApplicationIpo) return null;
 
   const totalPooledCapital = contributors.reduce(
     (sum, c) => sum + (typeof c.amount === "number" ? c.amount : 0),
@@ -84,11 +89,15 @@ export function ApplicationModal() {
   const handleAddContributor = () => {
     const existingIds = new Set(contributors.map((c) => c.memberId));
     const unusedMember = members.find((m) => !existingIds.has(m.id)) || members[0];
-    setContributors((prev) => [...prev, { memberId: unusedMember.id, amount: "" }]);
+    const remainingNeeded = Math.max(0, targetRequiredCapital - totalPooledCapital);
+    setContributors((prev) => [
+      ...prev,
+      { memberId: unusedMember.id, amount: remainingNeeded > 0 ? remainingNeeded : 0 },
+    ]);
   };
 
   const handleRemoveContributor = (index: number) => {
-    if (contributors.length > 2) {
+    if (contributors.length > 1) {
       setContributors((prev) => prev.filter((_, idx) => idx !== index));
     }
   };
@@ -115,10 +124,9 @@ export function ApplicationModal() {
   };
 
   const handleEqualSplit = () => {
-    const targetTotal = minInvest * effectiveIpos;
-    const count = contributors.length;
-    const equalShare = Math.floor(targetTotal / count);
-    const remainder = targetTotal - equalShare * count;
+    const count = contributors.length || 1;
+    const equalShare = Math.floor(targetRequiredCapital / count);
+    const remainder = targetRequiredCapital - equalShare * count;
 
     setContributors((prev) =>
       prev.map((c, idx) => ({
@@ -270,16 +278,17 @@ export function ApplicationModal() {
             <input
               type="text"
               required
-              placeholder="e.g. Ankit Sharma"
+              placeholder="e.g. Ankit"
               value={applicantName}
               onChange={(e) => setApplicantName(e.target.value)}
               className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
             />
           </div>
 
-          {/* DYNAMIC MULTI-FRIEND SYNDICATE SPLIT CONTROLS */}
+          {/* FRIEND NAME | AMOUNT TABLE + SUM VALIDATION + ADD FRIEND BUTTON */}
           {applicantMode === "JOINT" && (
-            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3.5 animate-fade-in">
+            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3 animate-fade-in">
+              {/* Section Header */}
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
                   <Coins size={16} className="text-blue-600" /> Syndicate Multi-Friend Capital Pool
@@ -293,80 +302,103 @@ export function ApplicationModal() {
                 </button>
               </div>
 
-              {/* Dynamic Contributor Rows */}
-              <div className="space-y-2.5">
-                {contributors.map((c, idx) => {
-                  const numAmt = typeof c.amount === "number" ? c.amount : 0;
-                  const pct = totalPooledCapital > 0 ? ((numAmt / totalPooledCapital) * 100).toFixed(1) : "0";
+              {/* Table Header: Friend Name | Amount */}
+              <div className="grid grid-cols-12 gap-2 px-3 text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                <div className="col-span-6">Friend Name</div>
+                <div className="col-span-5 text-right">Amount (₹)</div>
+                <div className="col-span-1"></div>
+              </div>
 
-                  return (
-                    <div
-                      key={idx}
-                      className="p-2.5 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-2.5 shadow-2xs"
-                    >
-                      <div className="flex items-center gap-2 flex-1">
-                        <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
-                          #{idx + 1}
-                        </span>
-                        <select
-                          value={c.memberId}
-                          onChange={(e) => handleContributorMemberChange(idx, e.target.value)}
-                          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900 focus:border-blue-600 outline-none flex-1"
-                        >
-                          {members.map((m) => (
-                            <option key={m.id} value={m.id}>
-                              {m.name} ({m.role})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-
-                      {/* Custom Rupee Amount Input */}
-                      <div className="flex items-center gap-1.5 w-32 shrink-0">
-                        <span className="text-xs font-bold text-slate-500">₹</span>
-                        <input
-                          type="number"
-                          min={0}
-                          placeholder="Amount"
-                          value={c.amount}
-                          onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
-                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-blue-600 outline-none"
-                        />
-                      </div>
-
-                      {/* Percentage badge */}
-                      <span className="text-[11px] font-mono font-bold text-blue-600 w-12 text-right shrink-0">
-                        {pct}%
+              {/* Dynamic Friend Rows */}
+              <div className="space-y-2">
+                {contributors.map((c, idx) => (
+                  <div
+                    key={idx}
+                    className="grid grid-cols-12 gap-2 items-center p-2 bg-white border border-slate-200 rounded-xl shadow-2xs"
+                  >
+                    {/* Friend Name Select */}
+                    <div className="col-span-6 flex items-center gap-1.5">
+                      <span className="w-5 h-5 rounded-full bg-slate-100 text-slate-500 font-bold text-[10px] flex items-center justify-center shrink-0">
+                        #{idx + 1}
                       </span>
+                      <select
+                        value={c.memberId}
+                        onChange={(e) => handleContributorMemberChange(idx, e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5 text-xs font-bold text-slate-900 outline-none"
+                      >
+                        {members.map((m) => (
+                          <option key={m.id} value={m.id}>
+                            {m.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
 
-                      {/* Delete row button */}
-                      {contributors.length > 2 && idx > 0 && (
+                    {/* Custom Amount Input */}
+                    <div className="col-span-5 flex items-center gap-1">
+                      <span className="text-xs font-bold text-slate-400">₹</span>
+                      <input
+                        type="number"
+                        min={0}
+                        placeholder="0"
+                        value={c.amount}
+                        onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
+                        className="w-full bg-slate-50 border border-slate-200 rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 text-right outline-none"
+                      />
+                    </div>
+
+                    {/* Delete Button */}
+                    <div className="col-span-1 flex justify-end">
+                      {contributors.length > 1 && (
                         <button
                           type="button"
                           onClick={() => handleRemoveContributor(idx)}
-                          className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
-                          title="Remove Contributor"
+                          className="p-1 rounded text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                          title="Remove Friend"
                         >
                           <Trash size={15} />
                         </button>
                       )}
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
 
-              {/* + Add Friend Button */}
-              <div className="flex items-center justify-between pt-1">
+              {/* Footer: Add Friend Button + Target Sum Validation */}
+              <div className="flex items-center justify-between pt-2 border-t border-blue-200/60">
                 <button
                   type="button"
                   onClick={handleAddContributor}
-                  className="px-3 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3.5 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
                 >
-                  <Plus size={14} weight="bold" /> Add Co-Contributor Friend
+                  <Plus size={14} weight="bold" /> Add Friend
                 </button>
 
-                <div className="text-xs font-mono font-bold text-slate-800">
-                  Total Pooled: <span className="text-blue-600">{formatINR(totalPooledCapital)}</span>
+                <div className="text-right text-xs">
+                  <div className="font-mono font-bold text-slate-900">
+                    Total:{" "}
+                    <span
+                      className={
+                        totalPooledCapital === targetRequiredCapital
+                          ? "text-emerald-600"
+                          : "text-amber-600"
+                      }
+                    >
+                      {formatINR(totalPooledCapital)}
+                    </span>{" "}
+                    / {formatINR(targetRequiredCapital)}
+                  </div>
+                  {totalPooledCapital === targetRequiredCapital ? (
+                    <span className="text-[10px] font-semibold text-emerald-600 flex items-center justify-end gap-1">
+                      <CheckCircle size={12} weight="fill" /> Matches Required Capital
+                    </span>
+                  ) : (
+                    <span className="text-[10px] font-semibold text-amber-600">
+                      {totalPooledCapital < targetRequiredCapital
+                        ? `Need ${formatINR(targetRequiredCapital - totalPooledCapital)} more`
+                        : `Exceeds by ${formatINR(totalPooledCapital - targetRequiredCapital)}`}
+                    </span>
+                  )}
                 </div>
               </div>
             </div>
