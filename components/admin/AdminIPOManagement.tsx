@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { IPOOpportunity } from "@/types/nexo";
-import { Plus, Trash, CheckCircle, ShieldAlert, Buildings, ArrowLeft } from "@phosphor-icons/react";
+import { Plus, Trash, CheckCircle, WarningCircle, Buildings, ArrowLeft } from "@phosphor-icons/react";
 import { AddIPODrawer } from "./AddIPODrawer";
 
 export function AdminIPOManagement() {
@@ -48,7 +48,7 @@ export function AdminIPOManagement() {
     return (
       <div className="p-8 max-w-lg mx-auto text-center space-y-4 font-sans mt-12 bg-white border border-rose-200 rounded-3xl shadow-xl">
         <div className="w-14 h-14 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
-          <ShieldAlert size={32} />
+          <WarningCircle size={32} />
         </div>
         <h2 className="text-lg font-extrabold text-slate-900">Unauthorized Access</h2>
         <p className="text-xs text-slate-500 font-medium">

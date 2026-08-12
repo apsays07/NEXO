@@ -663,12 +663,12 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     description: string;
     closeDate: string;
   }) => {
-    const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+    const activeRole = currentUser?.role || currentUserRole;
     if (activeRole !== "ADMIN") {
       return { success: false, message: "Unauthorized. Admin privileges required." };
     }
 
-    const adminName = currentMember?.name || currentUser?.name || "Shivam Prasad";
+    const adminName = currentUser?.name || members[0]?.name || "Shivam Prasad";
     const formattedIssueSize = `₹${Number(data.issueSize).toLocaleString("en-IN")} Cr`;
 
     const newIpo: IPOOpportunity = {
@@ -706,7 +706,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       subtitle: `Closes on ${data.closeDate} • Min. Investment ₹${Number(data.minInvestment).toLocaleString("en-IN")}`,
       timestamp: "Today",
       memberName: adminName,
-      memberAvatar: currentMember?.avatar || members[0].avatar,
+      memberAvatar: currentUser?.avatar || members[0]?.avatar,
       ipoId: newIpo.id,
       ipoName: data.name,
     };
@@ -717,7 +717,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   };
 
   const removeIPO = (ipoId: string) => {
-    const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+    const activeRole = currentUser?.role || currentUserRole;
     if (activeRole !== "ADMIN") {
       return { success: false, message: "Unauthorized. Admin privileges required." };
     }
@@ -727,7 +727,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: "IPO not found." };
     }
 
-    const adminName = currentMember?.name || currentUser?.name || "Shivam Prasad";
+    const adminName = currentUser?.name || members[0]?.name || "Shivam Prasad";
 
     // Soft hide from member-facing lists while preserving application references
     setIpos((prev) =>
@@ -741,7 +741,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       subtitle: `IPO hidden from user website`,
       timestamp: "Today",
       memberName: adminName,
-      memberAvatar: currentMember?.avatar || members[0].avatar,
+      memberAvatar: currentUser?.avatar || members[0]?.avatar,
       ipoId: targetIpo.id,
       ipoName: targetIpo.name,
     };
