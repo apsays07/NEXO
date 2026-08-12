@@ -3,7 +3,6 @@
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Button } from "../ui/Button";
-import { UploadZone } from "../ui/UploadZone";
 import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR } from "@/lib/mockData";
 import { ParticipationType } from "@/types/nexo";
@@ -14,6 +13,9 @@ import {
   CheckCircle,
   LockKey,
   CaretRight,
+  IdentificationCard,
+  Eye,
+  EyeSlash,
 } from "@phosphor-icons/react";
 
 export function ApplicationModal() {
@@ -37,11 +39,23 @@ export function ApplicationModal() {
     mem_1: oneLotValue,
   });
 
-  const [proofUrl, setProofUrl] = useState<string>("");
+  // PAN entries: memberId -> PAN string entered by user
+  const [panEntries, setPanEntries] = useState<Record<string, string>>({});
+  // Which PANs are visible (revealed)
+  const [panVisible, setPanVisible] = useState<Record<string, boolean>>({});
 
   if (!isApplicationModalOpen || !activeApplicationIpo) return null;
 
   const totalPooled = Object.values(contributions).reduce((a, b) => a + (b || 0), 0);
+
+  const selectedMemberIds = Object.keys(contributions);
+  const selectedMembers = members.filter((m) => selectedMemberIds.includes(m.id));
+
+  // Check all selected members have a valid PAN entered (10 chars, alphanumeric)
+  const PAN_REGEX = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/;
+  const allPansValid = selectedMembers.every(
+    (m) => PAN_REGEX.test((panEntries[m.id] || "").toUpperCase())
+  );
 
   const handleContributionChange = (memberId: string, val: number) => {
     setContributions((prev) => ({
@@ -62,26 +76,57 @@ export function ApplicationModal() {
     });
   };
 
+  const handlePanChange = (memberId: string, value: string) => {
+    setPanEntries((prev) => ({ ...prev, [memberId]: value.toUpperCase() }));
+  };
+
+  const togglePanVisible = (memberId: string) => {
+    setPanVisible((prev) => ({ ...prev, [memberId]: !prev[memberId] }));
+  };
+
   const handleSubmit = () => {
     const list = Object.entries(contributions).map(([memberId, contribution]) => ({
       memberId,
       contribution,
     }));
-
-    createApplication(activeApplicationIpo.id, participationType, list, proofUrl);
+    createApplication(activeApplicationIpo.id, participationType, list, undefined);
   };
+
+  const stepLabels = ["Mode", "Capital", "PAN", "Confirm"];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
       <div className="w-full max-w-xl bg-[#FFFFFF] border border-[#E2E8F0] rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[90vh]">
+
         {/* Header */}
         <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div>
-            <div className="text-xs font-bold text-[#2563EB] uppercase tracking-wider">
-              Step {step} of 4 • Progressive Data Entry
+            {/* Step progress pills */}
+            <div className="flex items-center gap-1.5 mb-1.5">
+              {stepLabels.map((label, idx) => {
+                const s = idx + 1;
+                return (
+                  <div key={s} className="flex items-center gap-1.5">
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                        step === s
+                          ? "bg-[#2563EB] text-white border-[#2563EB]"
+                          : step > s
+                          ? "bg-[#ECFDF5] text-[#059669] border-[#A7F3D0]"
+                          : "bg-[#F1F5F9] text-[#94A3B8] border-[#E2E8F0]"
+                      }`}
+                    >
+                      {step > s ? "✓" : s} {label}
+                    </span>
+                    {idx < stepLabels.length - 1 && (
+                      <span className="text-[#CBD5E1] text-[10px]">›</span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
             <h3 className="text-base font-extrabold text-[#0F172A]">
-              Application for {activeApplicationIpo.name}
+              Application — {activeApplicationIpo.name}
             </h3>
           </div>
           <button
@@ -94,6 +139,7 @@ export function ApplicationModal() {
 
         {/* STEP CONTENT */}
         <div className="p-6 overflow-y-auto space-y-6">
+
           {/* STEP 1: PARTICIPATION MODE */}
           {step === 1 && (
             <div className="space-y-4">
@@ -175,7 +221,6 @@ export function ApplicationModal() {
                 </div>
               </div>
 
-              {/* Members Checklist & Contribution Inputs */}
               <div className="space-y-3">
                 {members.map((member) => {
                   const isSelected = contributions[member.id] !== undefined;
@@ -224,10 +269,7 @@ export function ApplicationModal() {
                                 step={5000}
                                 value={contrib}
                                 onChange={(e) =>
-                                  handleContributionChange(
-                                    member.id,
-                                    Number(e.target.value)
-                                  )
+                                  handleContributionChange(member.id, Number(e.target.value))
                                 }
                                 className="w-28 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-2.5 py-1 text-xs text-right text-[#0F172A] font-bold num-tabular focus:border-[#2563EB] focus:outline-none"
                               />
@@ -250,29 +292,93 @@ export function ApplicationModal() {
             </div>
           )}
 
-          {/* STEP 3: PROOF UPLOAD & PRIVATE VAULT */}
+          {/* STEP 3: PAN VERIFICATION */}
           {step === 3 && (
             <div className="space-y-4">
-              <div className="text-sm font-extrabold text-[#0F172A]">
-                Upload Private Application Record
+              <div className="flex items-center gap-2">
+                <IdentificationCard size={20} className="text-[#2563EB]" />
+                <div className="text-sm font-extrabold text-[#0F172A]">PAN Verification</div>
               </div>
               <p className="text-xs text-[#64748B] font-medium">
-                Proof screenshots are encrypted and accessible only to participating syndicate members.
+                Enter the PAN for each participant applying for this IPO. This is required for every application.
               </p>
 
-              <UploadZone
-                label="Application Screenshot / Payment Ref"
-                existingUrl={proofUrl}
-                onUploadComplete={(url) => setProofUrl(url)}
-              />
+              <div className="space-y-3">
+                {selectedMembers.map((member) => {
+                  const pan = panEntries[member.id] || "";
+                  const isValid = PAN_REGEX.test(pan.toUpperCase());
+                  const visible = panVisible[member.id];
 
-              <div className="p-3.5 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] text-xs text-[#047857] space-y-1">
-                <div className="font-bold text-[#0F172A] flex items-center gap-1.5">
-                  <LockKey size={14} className="text-[#059669]" /> Group Vault Privacy Guarantee
-                </div>
-                <div className="text-[11px] text-[#047857] font-medium">
-                  Full PAN and application reference numbers are never exposed outside your 5 trusted members.
-                </div>
+                  return (
+                    <div
+                      key={member.id}
+                      className="p-4 rounded-2xl border border-[#E2E8F0] bg-[#FFFFFF] shadow-2xs space-y-3"
+                    >
+                      <div className="flex items-center gap-3">
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="w-8 h-8 rounded-full object-cover ring-2 ring-[#E2E8F0]"
+                        />
+                        <div>
+                          <div className="text-xs font-bold text-[#0F172A]">{member.name}</div>
+                          <div className="text-[11px] text-[#64748B] font-medium">
+                            Contribution: <span className="font-bold text-[#0F172A]">{formatINR(contributions[member.id] || 0)}</span>
+                          </div>
+                        </div>
+                        {isValid && (
+                          <CheckCircle size={18} weight="fill" className="text-[#059669] ml-auto" />
+                        )}
+                      </div>
+
+                      <div>
+                        <label className="block text-[11px] font-bold text-[#475569] uppercase tracking-wider mb-1.5">
+                          PAN Number
+                        </label>
+                        <div className="relative">
+                          <input
+                            type={visible ? "text" : "password"}
+                            value={pan}
+                            onChange={(e) => handlePanChange(member.id, e.target.value)}
+                            placeholder="e.g. ABCDE1234F"
+                            maxLength={10}
+                            className={`w-full pr-10 pl-3 py-2.5 rounded-xl border text-sm font-bold tracking-widest outline-none transition-all font-mono ${
+                              pan.length > 0
+                                ? isValid
+                                  ? "border-[#059669] bg-[#ECFDF5] text-[#059669] focus:ring-2 focus:ring-[#059669]/20"
+                                  : "border-[#DC2626] bg-[#FEF2F2] text-[#DC2626] focus:ring-2 focus:ring-[#DC2626]/20"
+                                : "border-[#CBD5E1] bg-[#F8FAFC] text-[#0F172A] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20"
+                            }`}
+                          />
+                          <button
+                            type="button"
+                            onClick={() => togglePanVisible(member.id)}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#475569] transition-colors"
+                          >
+                            {visible ? <EyeSlash size={15} /> : <Eye size={15} />}
+                          </button>
+                        </div>
+                        {pan.length > 0 && !isValid && (
+                          <p className="text-[11px] text-[#DC2626] font-medium mt-1">
+                            Invalid PAN format. Must be 5 letters + 4 digits + 1 letter (e.g. ABCDE1234F)
+                          </p>
+                        )}
+                        {isValid && (
+                          <p className="text-[11px] text-[#059669] font-medium mt-1">
+                            ✓ Valid PAN
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="p-3.5 rounded-xl bg-[#EFF6FF] border border-[#BFDBFE] text-xs text-[#1E3A8A] flex items-start gap-2">
+                <LockKey size={14} className="text-[#2563EB] mt-0.5 shrink-0" />
+                <span className="font-medium">
+                  PAN details are encrypted and only visible to verified syndicate members. Never shared outside the group.
+                </span>
               </div>
             </div>
           )}
@@ -283,9 +389,9 @@ export function ApplicationModal() {
               <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center gap-3">
                 <CheckCircle size={28} className="text-[#059669]" />
                 <div>
-                  <div className="text-sm font-bold text-[#0F172A]">Ready for Group Vaulting</div>
+                  <div className="text-sm font-bold text-[#0F172A]">Ready to Submit</div>
                   <div className="text-xs text-[#059669] font-medium">
-                    Pro-rata calculations and proof records prepared
+                    All PANs verified · Pro-rata splits calculated
                   </div>
                 </div>
               </div>
@@ -308,19 +414,26 @@ export function ApplicationModal() {
 
                 <div className="pt-2">
                   <span className="text-[#64748B] block mb-2 font-bold">
-                    Participant Breakdown & Share:
+                    Participant Breakdown & PAN:
                   </span>
                   <div className="space-y-1.5">
                     {Object.entries(contributions).map(([memId, amount]) => {
                       const m = members.find((x) => x.id === memId);
                       const pct = ((amount / totalPooled) * 100).toFixed(1);
+                      const pan = panEntries[memId] || "";
+                      const maskedPan = pan.length === 10
+                        ? pan.substring(0, 2) + "XXXXX" + pan.substring(7)
+                        : "—";
                       return (
                         <div
                           key={memId}
-                          className="flex justify-between items-center bg-[#FFFFFF] border border-[#E2E8F0] p-2 rounded-lg"
+                          className="flex justify-between items-center bg-[#FFFFFF] border border-[#E2E8F0] p-2.5 rounded-xl gap-2"
                         >
-                          <span className="text-[#0F172A] font-bold">{m?.name}</span>
-                          <span className="text-[#475569] font-semibold num-tabular">
+                          <div>
+                            <span className="text-[#0F172A] font-bold block">{m?.name}</span>
+                            <span className="text-[10px] font-mono text-[#64748B]">{maskedPan}</span>
+                          </div>
+                          <span className="text-[#475569] font-semibold num-tabular text-right">
                             {formatINR(amount)} ({pct}%)
                           </span>
                         </div>
@@ -354,13 +467,13 @@ export function ApplicationModal() {
               variant="primary"
               size="sm"
               onClick={() => setStep((s) => (s + 1) as any)}
-              disabled={totalPooled <= 0}
+              disabled={step === 2 ? totalPooled <= 0 : step === 3 ? !allPansValid : false}
             >
               Continue <CaretRight size={14} />
             </Button>
           ) : (
             <Button variant="success" size="sm" onClick={handleSubmit}>
-              Confirm & Save Application
+              Confirm & Submit Application
             </Button>
           )}
         </div>

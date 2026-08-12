@@ -6,11 +6,11 @@ import { MetricCard, Card } from "../ui/Card";
 import { StatusBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { formatINR } from "@/lib/mockData";
-import { Wallet, FileText, TrendUp, PencilSimple, Plus, X, CheckCircle, ArrowCounterClockwise } from "@phosphor-icons/react";
+import { Wallet, FileText, TrendUp, PencilSimple, Plus, X, CheckCircle, ArrowCounterClockwise, Receipt, Users, Trash } from "@phosphor-icons/react";
 import { IPOOpportunity } from "@/types/nexo";
 
 export function PortfolioView() {
-  const { ipos, individualSavings, updateIndividualSavings, userContributions, updateUserContribution } = useNexo();
+  const { ipos, individualSavings, updateIndividualSavings, userContributions, updateUserContribution, transactions, clearTransactions, deleteTransaction } = useNexo();
 
   // Edit Savings Modal State
   const [isEditSavingsModalOpen, setIsEditSavingsModalOpen] = useState(false);
@@ -20,6 +20,9 @@ export function PortfolioView() {
   // Edit IPO Contribution Modal State
   const [editingIpo, setEditingIpo] = useState<IPOOpportunity | null>(null);
   const [contributionInput, setContributionInput] = useState("");
+
+  // Delete confirmation: which txn ID is pending confirm
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Calculate individual holdings strictly from user-added/edited contributions
   const myHoldings = ipos.map((ipo) => {
@@ -50,10 +53,12 @@ export function PortfolioView() {
     };
   });
 
+  // Sum applied from transactions (all types)
+  const txnTotalApplied = transactions.reduce((sum, t) => sum + t.amount, 0);
+
   // Individual aggregated metrics (only sum of edited/added amounts)
-  const myTotalApplied = myHoldings.reduce(
-    (sum, h) => sum + h.myContribution,
-    0
+  const myTotalApplied = Math.max(txnTotalApplied,
+    myHoldings.reduce((sum, h) => sum + h.myContribution, 0)
   );
   const myRealizedProfit = myHoldings.reduce(
     (sum, h) => sum + h.myRealized,
@@ -104,6 +109,12 @@ export function PortfolioView() {
   const handleResetAllToNil = () => {
     updateIndividualSavings(0);
     ipos.forEach((ipo) => updateUserContribution(ipo.id, 0));
+    clearTransactions();
+    try {
+      localStorage.removeItem("nexo_individualSavings");
+      localStorage.removeItem("nexo_userContributions");
+      localStorage.removeItem("nexo_transactions");
+    } catch {}
   };
 
   return (
@@ -125,17 +136,6 @@ export function PortfolioView() {
         </div>
 
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleResetAllToNil}
-            className="text-xs text-[#64748B] hover:text-[#DC2626]"
-            title="Reset all savings and contributions to 0"
-          >
-            <ArrowCounterClockwise size={14} weight="bold" />
-            Reset to 0
-          </Button>
-
           <Button
             variant="primary"
             size="sm"
@@ -176,7 +176,7 @@ export function PortfolioView() {
         <MetricCard
           label="Total Applied (My Capital)"
           value={myTotalApplied > 0 ? formatINR(myTotalApplied) : "₹0"}
-          subtitle={myTotalApplied > 0 ? `Across ${myHoldings.filter((h) => h.hasContribution).length} edited investments` : "No money added yet"}
+          subtitle={transactions.length > 0 ? `${transactions.length} application${transactions.length > 1 ? "s" : ""} submitted` : "No applications yet"}
           icon={<FileText size={20} className="text-[#D97706]" />}
         />
 
@@ -190,89 +190,140 @@ export function PortfolioView() {
         />
       </div>
 
-      {/* Detailed Holdings & History */}
+      {/* Transactions Section */}
       <Card>
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-4 gap-2">
-          <div>
-            <h3 className="text-base font-extrabold text-[#0F172A] flex items-center gap-2">
-              My Individual Portfolio Holdings
-              <span className="text-[10px] font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full">
-                Strict Individual View
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <Receipt size={18} className="text-[#2563EB]" />
+            <h3 className="text-base font-extrabold text-[#0F172A]">My Transactions</h3>
+            {transactions.length > 0 && (
+              <span className="text-[10px] font-bold text-white bg-[#2563EB] px-2 py-0.5 rounded-full">
+                {transactions.length}
               </span>
-            </h3>
-            <p className="text-xs text-[#64748B] font-medium">
-              Only displaying user-edited contributions. Unedited items default to ₹0.
-            </p>
+            )}
           </div>
+          <span className="text-xs text-[#64748B] font-medium">All IPO applications — Solo &amp; Group</span>
         </div>
 
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs">
-            <thead>
-              <tr className="border-b border-[#E2E8F0] text-[#64748B] uppercase text-[10px] tracking-wider font-bold">
-                <th className="py-3 px-3">IPO / Asset</th>
-                <th className="py-3 px-3">Status</th>
-                <th className="py-3 px-3">My Contribution</th>
-                <th className="py-3 px-3">Issue Price</th>
-                <th className="py-3 px-3">Current / Exit</th>
-                <th className="py-3 px-3 text-right">My Net Return</th>
-                <th className="py-3 px-3 text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-[#F1F5F9]">
-              {myHoldings.map(({ ipo, myContribution, myProfit, myRealized }) => (
-                <tr key={ipo.id} className="hover:bg-[#F8FAFC] transition-colors">
-                  <td className="py-3.5 px-3">
-                    <div className="font-extrabold text-[#0F172A] text-sm">{ipo.name}</div>
-                    <div className="text-[11px] text-[#64748B] font-medium">{ipo.company}</div>
-                  </td>
-                  <td className="py-3.5 px-3">
-                    <StatusBadge status={ipo.status} size="sm" />
-                  </td>
-                  <td className="py-3.5 px-3 font-bold num-tabular">
-                    {myContribution > 0 ? (
-                      <span className="text-[#0F172A]">{formatINR(myContribution)}</span>
-                    ) : (
-                      <span className="text-[#94A3B8] font-semibold bg-[#F1F5F9] px-2 py-0.5 rounded-md">₹0</span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-3 text-[#475569] num-tabular">
-                    ₹{ipo.issuePrice || ipo.metrics.priceBand.max}
-                  </td>
-                  <td className="py-3.5 px-3 font-bold text-[#0F172A] num-tabular">
-                    ₹{ipo.currentPrice || "-"}
-                  </td>
-                  <td className="py-3.5 px-3 text-right">
-                    {myProfit !== 0 ? (
-                      <div>
-                        <div className="text-[#059669] font-extrabold num-tabular">
-                          {formatINR(myProfit, true)}
-                        </div>
-                        <div className="text-[10px] text-[#059669] font-bold">
-                          {myRealized > 0 ? "Realized" : "Unrealized Gain"}
-                        </div>
-                      </div>
-                    ) : (
-                      <span className="text-[#94A3B8] font-medium">₹0</span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-3 text-center">
-                    <button
-                      onClick={() => {
-                        setEditingIpo(ipo);
-                        setContributionInput(myContribution > 0 ? myContribution.toString() : "");
-                      }}
-                      className="text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] px-2.5 py-1 rounded-lg transition-all border border-[#BFDBFE] inline-flex items-center gap-1 active:scale-95"
-                    >
-                      <PencilSimple size={12} weight="bold" />
-                      {myContribution > 0 ? "Edit Money" : "+ Add Money"}
-                    </button>
-                  </td>
+        {transactions.length === 0 ? (
+          <div className="py-10 flex flex-col items-center justify-center gap-3 text-center">
+            <div className="w-12 h-12 rounded-2xl bg-[#F1F5F9] flex items-center justify-center">
+              <Receipt size={24} className="text-[#94A3B8]" />
+            </div>
+            <div>
+              <p className="text-sm font-bold text-[#64748B]">No transactions yet</p>
+              <p className="text-xs text-[#94A3B8] mt-1">Apply to an IPO (solo or group) to see it here</p>
+            </div>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead>
+                <tr className="border-b border-[#E2E8F0] text-[#64748B] uppercase text-[10px] tracking-wider font-bold">
+                  <th className="py-3 px-3">IPO</th>
+                  <th className="py-3 px-3">Type</th>
+                  <th className="py-3 px-3">Participants</th>
+                  <th className="py-3 px-3">Amount Applied</th>
+                  <th className="py-3 px-3">App No.</th>
+                  <th className="py-3 px-3">Date &amp; Time</th>
+                  <th className="py-3 px-3 text-center">Status</th>
+                  <th className="py-3 px-3 text-center">Delete</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-[#F1F5F9]">
+                {transactions.map((txn) => {
+                  const d = new Date(txn.createdAt);
+                  const dateStr = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+                  const timeStr = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+                  return (
+                    <tr key={txn.id} className="hover:bg-[#F8FAFC] transition-colors">
+                      <td className="py-3.5 px-3">
+                        <div className="font-extrabold text-[#0F172A] text-sm">{txn.ipoName}</div>
+                      </td>
+                      <td className="py-3.5 px-3">
+                        {txn.type === "SOLO" ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full">
+                            <Wallet size={10} weight="bold" /> Solo
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#7C3AED] bg-[#F5F3FF] border border-[#DDD6FE] px-2 py-0.5 rounded-full">
+                            <Users size={10} weight="bold" /> Group
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-3 text-[#475569] font-medium">
+                        {txn.participants.join(", ") || "—"}
+                      </td>
+                      <td className="py-3.5 px-3 font-extrabold text-[#0F172A] num-tabular">
+                        {formatINR(txn.amount)}
+                      </td>
+                      <td className="py-3.5 px-3 font-mono text-[11px] text-[#64748B]">
+                        {txn.applicationNumber}
+                      </td>
+                      <td className="py-3.5 px-3 text-[#64748B]">
+                        <div className="font-medium">{dateStr}</div>
+                        <div className="text-[10px] font-mono text-[#94A3B8]">{timeStr}</div>
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        {txn.status === "SUBMITTED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] px-2 py-0.5 rounded-full">
+                            <CheckCircle size={10} weight="fill" /> Submitted
+                          </span>
+                        )}
+                        {txn.status === "ALLOTTED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] px-2 py-0.5 rounded-full">
+                            <CheckCircle size={10} weight="fill" /> Allotted
+                          </span>
+                        )}
+                        {txn.status === "REFUNDED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#64748B] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded-full">
+                            Refunded
+                          </span>
+                        )}
+                        {txn.status === "REJECTED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] px-2 py-0.5 rounded-full">
+                            Rejected
+                          </span>
+                        )}
+                      </td>
+                      <td className="py-3.5 px-3 text-center">
+                        {confirmDeleteId === txn.id ? (
+                          <div className="flex items-center justify-center gap-1.5">
+                            <button
+                              onClick={() => {
+                                deleteTransaction(txn.id);
+                                setConfirmDeleteId(null);
+                              }}
+                              className="text-[11px] font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-2 py-1 rounded-lg transition-all active:scale-95"
+                            >
+                              Confirm
+                            </button>
+                            <button
+                              onClick={() => setConfirmDeleteId(null)}
+                              className="text-[11px] font-bold text-[#64748B] bg-[#F1F5F9] hover:bg-[#E2E8F0] px-2 py-1 rounded-lg transition-all"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => setConfirmDeleteId(txn.id)}
+                            title="Delete this application"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#DC2626] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FECACA] px-2.5 py-1 rounded-lg transition-all active:scale-95"
+                          >
+                            <Trash size={12} weight="bold" />
+                            Delete
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </Card>
 
       {/* EDIT / ADD SAVINGS MODAL */}
