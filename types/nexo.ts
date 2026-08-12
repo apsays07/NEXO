@@ -12,9 +12,12 @@ export type IPOLifecycleStage =
   | "SOLD"
   | "CLOSED";
 
-export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
+export type AllotmentStatus = "AWAITING" | "ALLOTTED" | "NOT_ALLOTTED";
 
-export type ParticipationType = "SOLO" | "COMBO";
+export type ApplicationType = "INDIVIDUAL" | "COMBINED";
+export type ParticipationType = "INDIVIDUAL" | "COMBINED" | "SOLO" | "COMBO";
+
+export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
 
 export type MemberRole = "ADMIN" | "MEMBER";
 
@@ -35,14 +38,14 @@ export interface Member {
 export interface ApplicationParticipant {
   memberId: string;
   memberName: string;
-  avatar: string;
+  avatar?: string;
   contribution: number;
-  percentage: number;
-  panMasked: string;
+  percentage?: number;
+  panMasked?: string;
   panFull?: string;
   proofUrl?: string;
   proofUploadedAt?: string;
-  status: "PENDING" | "SUBMITTED" | "ALLOTTED" | "NOT_ALLOTTED" | "REFUNDED";
+  status?: "PENDING" | "SUBMITTED" | "ALLOTTED" | "NOT_ALLOTTED" | "REFUNDED";
   allotmentShares?: number;
   refundAmount?: number;
   profitLoss?: number;
@@ -52,9 +55,15 @@ export interface ApplicationParticipant {
 export interface Application {
   id: string;
   ipoId: string;
-  type: ParticipationType;
-  totalContribution: number;
-  status: "DRAFT" | "SUBMITTED" | "VERIFIED" | "ALLOTTED" | "REFUNDED";
+  type: ApplicationType | ParticipationType;
+  applicantName?: string;
+  memberId?: string;
+  panMasked?: string;
+  totalContribution: number; // Amount (e.g. ₹15,000)
+  lotCount?: number;         // Always 1
+  verified?: boolean;        // Checkmark ✓
+  status?: "DRAFT" | "SUBMITTED" | "VERIFIED" | "ALLOTTED" | "REFUNDED" | AllotmentStatus;
+  allotmentStatus: AllotmentStatus;
   createdAt: string;
   participants: ApplicationParticipant[];
   applicationProofUrl?: string;
@@ -93,6 +102,7 @@ export interface IPOOpportunity {
   currentPrice?: number;
   listingGainPercent?: number;
   realizedProfit?: number;
+  registrarUrl?: string;
   tags?: string[];
   isFeatured?: boolean;
   closeCountdown?: string;

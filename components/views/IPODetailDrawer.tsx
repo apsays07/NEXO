@@ -7,7 +7,7 @@ import { Button } from "../ui/Button";
 import { LifecycleBar } from "../ui/LifecycleBar";
 import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR } from "@/lib/mockData";
-import { X, UserPlus, CheckCircle } from "@phosphor-icons/react";
+import { X, UserPlus, CheckCircle, ShieldCheck } from "@phosphor-icons/react";
 
 export function IPODetailDrawer() {
   const { selectedIpo, closeIpoDetail, openApplicationModal } = useNexo();
@@ -15,23 +15,23 @@ export function IPODetailDrawer() {
   if (!selectedIpo) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/40 backdrop-blur-xs animate-fade-in">
-      <div className="w-full max-w-3xl bg-[#FFFFFF] border-l border-[#E2E8F0] h-full overflow-y-auto flex flex-col justify-between shadow-2xl">
+    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-xs animate-fade-in">
+      <div className="w-full max-w-2xl bg-white border-l border-[#E4E7EC] h-full overflow-y-auto flex flex-col justify-between shadow-2xl">
         <div>
           {/* HEADER */}
-          <div className="p-6 border-b border-[#E2E8F0] sticky top-0 bg-[#FFFFFF]/95 backdrop-blur-md z-10 flex items-start justify-between">
-            <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-2xl bg-[#EFF6FF] border border-[#BFDBFE] flex items-center justify-center font-extrabold text-lg text-[#2563EB]">
+          <div className="p-5 border-b border-[#E4E7EC] sticky top-0 bg-white/95 backdrop-blur-md z-10 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-[#EEF4FF] border border-[#D0E1FF] flex items-center justify-center font-extrabold text-base text-[#2F6BFF]">
                 {selectedIpo.logo}
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-xl font-extrabold text-[#0F172A] tracking-tight">
+                  <h2 className="text-lg font-extrabold text-[#111827] tracking-tight">
                     {selectedIpo.name}
                   </h2>
                   <StatusBadge status={selectedIpo.status} size="sm" />
                 </div>
-                <div className="text-xs text-[#64748B] mt-0.5 font-medium">
+                <div className="text-xs text-[#667085] font-medium">
                   {selectedIpo.company}
                 </div>
               </div>
@@ -39,178 +39,144 @@ export function IPODetailDrawer() {
 
             <button
               onClick={closeIpoDetail}
-              className="p-2 rounded-xl text-[#64748B] hover:text-[#0F172A] hover:bg-[#F1F5F9] transition-colors"
+              className="p-1.5 rounded-lg text-[#667085] hover:text-[#111827] hover:bg-[#F4F6F8] transition-colors cursor-pointer"
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
 
-          <div className="p-6 space-y-8">
-            {/* LIFECYCLE PROGRESS BAR */}
-            <div>
-              <div className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-2">
-                Opportunity Progression Lifecycle
+          <div className="p-6 space-y-6">
+            {/* LIFECYCLE PROGRESS TRACKER */}
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold text-[#98A2B3] uppercase tracking-wider">
+                Lifecycle Stage
               </div>
               <LifecycleBar currentStage={selectedIpo.status} />
             </div>
 
-            {/* OUR DECISION & THESIS */}
-            <div className="p-5 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 shadow-xs">
+            {/* SYNDICATE DECISION & COMMENT */}
+            <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold uppercase tracking-wider text-[#64748B]">
-                  Syndicate Analysis & Decision
-                </span>
-                <RecommendationBadge type={selectedIpo.recommendation} />
+                <div className="flex items-center gap-1.5 text-xs font-extrabold text-[#027A48]">
+                  <ShieldCheck size={16} />
+                  <span>SYNDICATE DECISION</span>
+                </div>
+                <RecommendationBadge type={selectedIpo.recommendation} size="sm" />
               </div>
 
-              <div className="text-sm text-[#0F172A] leading-relaxed font-normal">
+              <p className="text-xs text-[#027A48] font-medium leading-relaxed italic">
                 "{selectedIpo.thesis}"
-              </div>
+              </p>
 
-              <div className="flex items-center justify-between text-xs text-[#64748B] pt-2 border-t border-[#E2E8F0] font-medium">
-                <span>Analysis by {selectedIpo.createdBy} (Admin)</span>
-                {selectedIpo.metrics.gmpPercent && (
-                  <span className="text-[#059669] font-bold">
-                    Current Grey Market Premium: +{selectedIpo.metrics.gmpPercent}% (₹
-                    {selectedIpo.metrics.gmp})
-                  </span>
-                )}
+              <div className="text-[11px] text-[#059669] pt-1.5 border-t border-[#A6F4C5]/60 font-medium">
+                Decision by <strong>{selectedIpo.createdBy}</strong> (Admin)
               </div>
             </div>
 
-            {/* KEY FINANCIAL METRICS */}
-            <div>
-              <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider mb-3">
-                Key Offer Financial Metrics
-              </h3>
+            {/* KEY OFFER METRICS (4 Essential Items) */}
+            <div className="space-y-2">
+              <div className="text-[11px] font-bold text-[#98A2B3] uppercase tracking-wider">
+                Offer Details
+              </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                <div className="p-3.5 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-2xs">
-                  <span className="text-xs text-[#64748B] block font-medium">Price Band</span>
-                  <span className="text-sm font-extrabold text-[#0F172A] num-tabular">
-                    ₹{selectedIpo.metrics.priceBand.min} – ₹
-                    {selectedIpo.metrics.priceBand.max}
+                <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC]">
+                  <span className="text-[10px] text-[#667085] block font-bold uppercase">Price Band</span>
+                  <span className="text-xs font-extrabold text-[#111827] num-tabular">
+                    ₹{selectedIpo.metrics.priceBand.min} – ₹{selectedIpo.metrics.priceBand.max}
                   </span>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-2xs">
-                  <span className="text-xs text-[#64748B] block font-medium">Lot Size</span>
-                  <span className="text-sm font-extrabold text-[#0F172A] num-tabular">
+
+                <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC]">
+                  <span className="text-[10px] text-[#667085] block font-bold uppercase">Lot Size</span>
+                  <span className="text-xs font-extrabold text-[#111827] num-tabular">
                     {selectedIpo.metrics.lotSize} Shares
                   </span>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-2xs">
-                  <span className="text-xs text-[#64748B] block font-medium">Minimum Cut-off</span>
-                  <span className="text-sm font-extrabold text-[#0F172A] num-tabular">
+
+                <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC]">
+                  <span className="text-[10px] text-[#667085] block font-bold uppercase">Min Investment</span>
+                  <span className="text-xs font-extrabold text-[#111827] num-tabular">
                     {formatINR(selectedIpo.metrics.minInvestment)}
                   </span>
                 </div>
-                <div className="p-3.5 rounded-xl bg-[#FFFFFF] border border-[#E2E8F0] shadow-2xs">
-                  <span className="text-xs text-[#64748B] block font-medium">Issue Size</span>
-                  <span className="text-sm font-extrabold text-[#0F172A]">
-                    {selectedIpo.metrics.issueSize}
-                  </span>
-                </div>
-              </div>
 
-              {/* TIMELINE DATES */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-3">
-                <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
-                  <span className="text-[#64748B] block font-medium">Bidding Opens</span>
-                  <span className="font-bold text-[#0F172A]">
-                    {selectedIpo.metrics.openDate}
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
-                  <span className="text-[#64748B] block font-medium">Bidding Closes</span>
-                  <span className="font-bold text-[#D97706]">
+                <div className="p-3 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC]">
+                  <span className="text-[10px] text-[#667085] block font-bold uppercase">Last Date</span>
+                  <span className="text-xs font-extrabold text-[#D98A16]">
                     {selectedIpo.metrics.closeDate}
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
-                  <span className="text-[#64748B] block font-medium">Basis of Allotment</span>
-                  <span className="font-bold text-[#0F172A]">
-                    {selectedIpo.metrics.allotmentDate}
-                  </span>
-                </div>
-                <div className="p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0] text-xs">
-                  <span className="text-[#64748B] block font-medium">Listing Date</span>
-                  <span className="font-bold text-[#0F172A]">
-                    {selectedIpo.metrics.listingDate}
                   </span>
                 </div>
               </div>
             </div>
 
-            {/* OUR PARTICIPATION & APPLICATIONS */}
-            <div>
-              <div className="flex items-center justify-between mb-4">
+            {/* GROUP PARTICIPATION & MEMBER SPLITS */}
+            <div className="space-y-3">
+              <div className="flex items-center justify-between border-b border-[#E4E7EC] pb-2">
                 <div>
-                  <h3 className="text-xs font-bold text-[#64748B] uppercase tracking-wider">
-                    Group Applications & Member Splits
-                  </h3>
-                  <p className="text-xs text-[#64748B] font-medium">
-                    Automated pro-rata calculation of contributions & percentages
-                  </p>
+                  <div className="text-[11px] font-bold text-[#98A2B3] uppercase tracking-wider">
+                    Group Applications
+                  </div>
+                  <div className="text-xs font-bold text-[#111827]">
+                    {selectedIpo.participantsCount} Members Participating
+                  </div>
                 </div>
+
                 <div className="text-right">
-                  <div className="text-sm font-extrabold text-[#0F172A] num-tabular">
-                    {formatINR(selectedIpo.combinedCapital)}
-                  </div>
-                  <div className="text-[11px] text-[#059669] font-bold">
-                    {selectedIpo.participantsCount} Members Committed
-                  </div>
+                  <span className="text-xs font-extrabold text-[#12B76A] num-tabular">
+                    {formatINR(selectedIpo.combinedCapital)} Committed
+                  </span>
                 </div>
               </div>
 
               {selectedIpo.applications.length === 0 ? (
-                <div className="p-8 rounded-2xl bg-[#F8FAFC] border border-dashed border-[#CBD5E1] text-center">
-                  <p className="text-sm text-[#475569] font-medium">
-                    No group applications submitted for this opportunity yet.
+                <div className="p-6 rounded-xl bg-[#F7F8FA] border border-dashed border-[#D0D5DD] text-center space-y-3">
+                  <p className="text-xs text-[#667085] font-medium">
+                    No group applications filed for this IPO yet.
                   </p>
                   <Button
                     size="sm"
                     variant="primary"
-                    className="mt-4"
                     onClick={() => openApplicationModal(selectedIpo)}
                   >
-                    <UserPlus size={14} /> Initiate Solo / Combo Application
+                    <UserPlus size={14} /> Join Application
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {selectedIpo.applications.map((app) => (
                     <div
                       key={app.id}
-                      className="p-5 rounded-2xl bg-[#FFFFFF] border border-[#E2E8F0] space-y-4 shadow-xs"
+                      className="p-4 rounded-xl bg-white border border-[#E4E7EC] space-y-3"
                     >
-                      <div className="flex items-center justify-between border-b border-[#E2E8F0] pb-3">
+                      <div className="flex items-center justify-between text-xs pb-2 border-b border-[#E4E7EC]">
                         <div className="flex items-center gap-2">
-                          <span className="px-2.5 py-1 rounded-lg bg-[#EFF6FF] text-[#2563EB] font-extrabold text-xs">
-                            {app.type} APPLICATION
+                          <span className="px-2 py-0.5 rounded bg-[#EEF4FF] text-[#2F6BFF] font-extrabold text-[10px]">
+                            {app.type} POOL
                           </span>
-                          <span className="text-xs font-mono text-[#64748B]">
+                          <span className="font-mono text-[11px] text-[#667085]">
                             {app.applicationNumber}
                           </span>
                         </div>
-                        <span className="text-xs font-extrabold text-[#0F172A] num-tabular">
-                          Pooled: {formatINR(app.totalContribution)}
+                        <span className="font-bold text-[#111827] num-tabular">
+                          {formatINR(app.totalContribution)}
                         </span>
                       </div>
 
-                      {/* Participant Rows */}
-                      <div className="space-y-3">
+                      {/* Participant List */}
+                      <div className="space-y-2">
                         {app.participants.map((p, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between p-3 rounded-xl bg-[#F8FAFC] border border-[#E2E8F0]"
+                            className="flex items-center justify-between p-2.5 rounded-lg bg-[#F7F8FA] border border-[#E4E7EC] text-xs"
                           >
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2.5">
                               <img
                                 src={p.avatar}
                                 alt={p.memberName}
-                                className="w-9 h-9 rounded-full object-cover ring-2 ring-[#E2E8F0]"
+                                className="w-7 h-7 rounded-full object-cover"
                               />
                               <div>
-                                <div className="text-xs font-bold text-[#0F172A]">
+                                <div className="font-extrabold text-[#111827]">
                                   {p.memberName}
                                 </div>
                                 <MaskedPAN
@@ -221,29 +187,16 @@ export function IPODetailDrawer() {
                             </div>
 
                             <div className="text-right">
-                              <div className="text-xs font-bold text-[#0F172A] num-tabular">
+                              <div className="font-extrabold text-[#111827] num-tabular">
                                 {formatINR(p.contribution)}
                               </div>
-                              <div className="text-[11px] text-[#2563EB] font-bold num-tabular">
+                              <div className="text-[11px] text-[#2F6BFF] font-bold num-tabular">
                                 {p.percentage}% Share
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
-
-                      {/* Verified Screenshot record */}
-                      {app.applicationProofUrl && (
-                        <div className="p-3 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center justify-between text-xs">
-                          <span className="text-[#047857] flex items-center gap-1.5 font-bold">
-                            <CheckCircle size={16} className="text-[#059669]" /> Official
-                            Application Proof Verified
-                          </span>
-                          <span className="text-[11px] text-[#059669] font-mono font-medium">
-                            Timestamped & Vaulted
-                          </span>
-                        </div>
-                      )}
                     </div>
                   ))}
                 </div>
@@ -252,23 +205,18 @@ export function IPODetailDrawer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div className="p-5 border-t border-[#E2E8F0] bg-[#FFFFFF] flex items-center justify-between">
-          <div className="text-xs text-[#64748B] font-medium">
-            Private Wealth Syndicate Security Protocol
-          </div>
-          <div className="flex items-center gap-3">
-            <Button variant="secondary" size="sm" onClick={closeIpoDetail}>
-              Close
-            </Button>
-            <Button
-              variant="primary"
-              size="sm"
-              onClick={() => openApplicationModal(selectedIpo)}
-            >
-              <UserPlus size={14} /> Add Participation
-            </Button>
-          </div>
+        {/* BOTTOM ACTION BAR */}
+        <div className="p-4 border-t border-[#E4E7EC] bg-white flex items-center justify-between text-xs">
+          <Button variant="secondary" size="sm" onClick={closeIpoDetail}>
+            Close
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            onClick={() => openApplicationModal(selectedIpo)}
+          >
+            <UserPlus size={14} /> Join / Add Application
+          </Button>
         </div>
       </div>
     </div>
