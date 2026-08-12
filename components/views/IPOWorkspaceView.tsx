@@ -266,37 +266,38 @@ export function IPOWorkspaceView() {
             return (
               <div
                 key={ipo.id}
-                className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md transition-all duration-200 overflow-hidden flex flex-col justify-between group"
+                className="bg-white rounded-3xl border border-slate-200/80 hover:border-slate-300 shadow-xs hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 overflow-hidden flex flex-col justify-between group"
               >
                 {/* CARD TOP HEADER */}
-                <div className="p-5 border-b border-slate-100 bg-slate-50/40 space-y-3">
+                <div className="p-5 bg-gradient-to-b from-slate-50/50 to-transparent space-y-3">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-slate-900 text-white font-extrabold text-sm flex items-center justify-center shrink-0 shadow-2xs">
+                    <div className="flex items-center gap-3.5">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-950 text-white font-black text-xs flex items-center justify-center shrink-0 shadow-md border border-slate-700/20 group-hover:scale-105 transition-transform">
                         {ipo.logo || ipo.name.substring(0, 2).toUpperCase()}
                       </div>
                       <div>
-                        <h3 className="text-base font-black text-slate-900 tracking-tight group-hover:text-blue-600 transition-colors">
+                        <h3 className="text-base font-extrabold text-slate-900 tracking-tight leading-tight group-hover:text-blue-600 transition-colors">
                           {ipo.name}
                         </h3>
-                        <span className="inline-block px-2 py-0.5 text-[10px] font-extrabold rounded bg-slate-100 text-slate-600 border border-slate-200/80 mt-0.5">
+                        <span className="inline-block px-2.5 py-0.5 text-[10px] font-bold rounded-full bg-slate-100/80 border border-slate-200/60 text-slate-500 mt-1 select-none">
                           {ipo.category || "Mainboard"}
                         </span>
                       </div>
                     </div>
 
-                    <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[11px] font-extrabold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      <CheckCircle size={13} weight="fill" /> Listed
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-extrabold bg-emerald-50/80 text-emerald-700 border border-emerald-100/60 shadow-3xs select-none">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      Listed
                     </span>
                   </div>
                 </div>
 
                 {/* CARD BODY */}
-                <div className="p-5 space-y-4 flex-1">
+                <div className="p-5 pt-0 space-y-4 flex-1">
                   {/* METRIC 1 & 2: Number of IPO Allotted & Applicants */}
-                  <div className="grid grid-cols-2 gap-3 p-3.5 bg-slate-50/70 rounded-xl border border-slate-200/60">
-                    <div>
-                      <span className="text-[11px] font-extrabold text-slate-400 block mb-0.5 uppercase tracking-wider">
+                  <div className="grid grid-cols-2 gap-3.5 p-3.5 bg-slate-50/50 rounded-2xl border border-slate-200/50">
+                    <div className="space-y-0.5">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
                         IPO Allotted
                       </span>
                       <span className="text-base font-black text-slate-900 num-tabular">
@@ -304,12 +305,12 @@ export function IPOWorkspaceView() {
                       </span>
                     </div>
 
-                    <div>
-                      <span className="text-[11px] font-extrabold text-slate-400 block mb-0.5 uppercase tracking-wider">
+                    <div className="space-y-0.5 border-l border-slate-200/60 pl-3.5">
+                      <span className="text-[10px] font-bold text-slate-400 block uppercase tracking-wider">
                         Applicants
                       </span>
                       <span className="text-base font-black text-slate-900 num-tabular flex items-center gap-1">
-                        <Users size={14} className="text-slate-400" />
+                        <Users size={15} className="text-slate-400" />
                         {ipo.applicantsCount}
                       </span>
                     </div>
@@ -318,41 +319,50 @@ export function IPOWorkspaceView() {
                   {/* PROFIT METRICS: USER PROFIT (MY PROFIT) + 1 LOT PROFIT + TOTAL PROFIT */}
                   <div className="space-y-2.5 pt-1">
                     {/* USER PROFIT HIGHLIGHT (MY PROFIT) */}
-                    <div className="flex items-center justify-between p-3.5 rounded-xl bg-blue-50/80 border border-blue-200/80">
-                      <div className="flex items-center gap-2">
-                        <User size={16} className="text-blue-600 font-bold" />
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-blue-50/40 border border-blue-100/60 hover:bg-blue-50/60 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-600 flex items-center justify-center shrink-0">
+                          <User size={15} weight="bold" />
+                        </div>
                         <div>
-                          <span className="text-xs font-black text-blue-900 block">
+                          <span className="text-xs font-extrabold text-slate-800 block leading-tight">
                             User Profit ({activeUserName})
                           </span>
-                          <span className="text-[10px] font-semibold text-blue-600">
+                          <span className="text-[9px] font-semibold text-blue-500">
                             Your Allocation
                           </span>
                         </div>
                       </div>
-                      <span className="text-base font-black text-blue-700 font-mono num-tabular">
+                      <span className="text-[15px] font-extrabold text-blue-600 font-mono num-tabular">
                         +{formatINR(myProfitAmount)}
                       </span>
                     </div>
 
                     {/* 1 LOT PROFIT */}
-                    <div className="flex items-center justify-between p-3 rounded-xl bg-emerald-50/70 border border-emerald-200/80">
-                      <div className="flex items-center gap-2">
-                        <Coins size={16} className="text-emerald-600" />
-                        <span className="text-xs font-extrabold text-slate-700">1 Lot Profit</span>
+                    <div className="flex items-center justify-between p-3 rounded-2xl bg-slate-50/40 border border-slate-200/50 hover:bg-slate-50/80 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-7 h-7 rounded-lg bg-slate-100 border border-slate-200 text-slate-600 flex items-center justify-center shrink-0">
+                          <Coins size={14} />
+                        </div>
+                        <span className="text-xs font-bold text-slate-700">1 Lot Profit</span>
                       </div>
-                      <span className="text-sm font-black text-emerald-700 font-mono num-tabular">
+                      <span className="text-sm font-bold text-slate-700 font-mono num-tabular">
                         +{formatINR(ipo.oneLotProfit)}
                       </span>
                     </div>
 
                     {/* TOTAL PROFIT */}
-                    <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900 text-white shadow-xs">
-                      <div className="flex items-center gap-2">
-                        <TrendUp size={18} className="text-emerald-400" />
-                        <span className="text-xs font-bold text-slate-300">Total Profit</span>
+                    <div className="flex items-center justify-between p-3.5 rounded-2xl bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 text-white shadow-sm border border-slate-800">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center shadow-inner shrink-0">
+                          <TrendUp size={16} weight="bold" />
+                        </div>
+                        <div>
+                          <span className="text-xs font-extrabold text-slate-200 block leading-tight">Total Profit</span>
+                          <span className="text-[9px] font-medium text-slate-400">Syndicate Gain</span>
+                        </div>
                       </div>
-                      <span className="text-base font-black text-emerald-400 font-mono num-tabular">
+                      <span className="text-base font-extrabold text-emerald-400 font-mono num-tabular">
                         +{formatINR(ipo.totalProfit)}
                       </span>
                     </div>
@@ -360,8 +370,8 @@ export function IPOWorkspaceView() {
                 </div>
 
                 {/* CARD FOOTER INFO */}
-                <div className="px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
-                  <span>Listed: {ipo.listingDate || "Aug 2026"}</span>
+                <div className="px-5 py-3.5 bg-slate-50/30 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 font-semibold">
+                  <span>Listed on {ipo.listingDate || "Aug 2026"}</span>
                 </div>
               </div>
             );
