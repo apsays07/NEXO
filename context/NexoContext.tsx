@@ -444,26 +444,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     );
   };
 
-  const deleteApplication = (ipoId: string, applicationId: string) => {
-    setIpos((prev) =>
-      prev.map((ipo) => {
-        if (ipo.id === ipoId) {
-          const updatedApps = ipo.applications.filter((app) => app.id !== applicationId);
-          const totalCombined = updatedApps.reduce(
-            (sum, a) => sum + a.totalContribution,
-            0
-          );
-          return {
-            ...ipo,
-            applications: updatedApps,
-            combinedCapital: totalCombined,
-          };
-        }
-        return ipo;
-      })
-    );
-  };
-
   const [listedIpos, setListedIpos] = useState<import("@/types/nexo").ListedIPO[]>([
     {
       id: "listed_1",
