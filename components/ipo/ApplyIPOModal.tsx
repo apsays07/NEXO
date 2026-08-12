@@ -222,7 +222,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
 
       setIsSubmitting(false);
       setIsSuccess(true);
-    }, 400);
+    }, 1200);
   };
 
   const handleCloseSuccess = () => {

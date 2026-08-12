@@ -198,36 +198,38 @@ export function ApplicationModal() {
     e.preventDefault();
     setIsSubmitting(true);
 
-    const primaryMember =
-      members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
-      members[0];
+    setTimeout(() => {
+      const primaryMember =
+        members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
+        members[0];
 
-    let participantContributions;
+      let participantContributions;
 
-    if (applicantMode === "JOINT") {
-      participantContributions = contributors.map((c) => ({
-        memberId: c.memberId,
-        memberName: c.memberName.trim() || "Friend",
-        contribution: typeof c.amount === "number" ? c.amount : 0,
-      }));
-    } else {
-      participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
-        memberId: primaryMember.id,
-        memberName: primaryMember.name,
-        contribution: minInvest,
-      }));
-    }
+      if (applicantMode === "JOINT") {
+        participantContributions = contributors.map((c) => ({
+          memberId: c.memberId,
+          memberName: c.memberName.trim() || "Friend",
+          contribution: typeof c.amount === "number" ? c.amount : 0,
+        }));
+      } else {
+        participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
+          memberId: primaryMember.id,
+          memberName: primaryMember.name,
+          contribution: minInvest,
+        }));
+      }
 
-    createApplication(
-      activeApplicationIpo.id,
-      applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
-      participantContributions,
-      undefined,
-      primaryMember.id
-    );
+      createApplication(
+        activeApplicationIpo.id,
+        applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
+        participantContributions,
+        undefined,
+        primaryMember.id
+      );
 
-    setIsSubmitting(false);
-    setIsSuccess(true);
+      setIsSubmitting(false);
+      setIsSuccess(true);
+    }, 1200);
   };
 
   const handleCloseSuccess = () => {
