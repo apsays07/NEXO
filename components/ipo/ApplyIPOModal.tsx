@@ -204,18 +204,8 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                 required
                 value={numberOfIpos}
                 onChange={(e) => {
-                  const val = e.target.value;
-                  if (val === "") {
-                    setNumberOfIpos("");
-                  } else {
-                    const parsed = parseInt(val, 10);
-                    setNumberOfIpos(isNaN(parsed) ? "" : Math.max(1, parsed));
-                  }
-                }}
-                onBlur={() => {
-                  if (numberOfIpos === "" || numberOfIpos < 1) {
-                    setNumberOfIpos(1);
-                  }
+                  const parsed = parseInt(e.target.value, 10);
+                  setNumberOfIpos(isNaN(parsed) ? 1 : Math.max(1, Math.min(50, parsed)));
                 }}
                 className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
                 placeholder="Enter number of PAN cards (e.g. 5)"

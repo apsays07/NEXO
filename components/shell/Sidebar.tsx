@@ -9,10 +9,12 @@ import {
   ChartPie,
   Users,
   Gear,
+  SignOut,
 } from "@phosphor-icons/react";
 
 export function Sidebar() {
-  const { activeTab, setActiveTab, members, ipos } = useNexo();
+  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, logout } = useNexo();
+  const activeUser = sessionUser || members[0];
 
   const workspaceNav = [
     { id: "dashboard", label: "Home", icon: SquaresFour },
@@ -24,8 +26,6 @@ export function Sidebar() {
   const groupNav = [
     { id: "members", label: "Group Members", icon: Users, badge: members.length },
   ];
-
-  const adminMember = members[0]; // Niranjan
 
   return (
     <aside className="w-[230px] bg-[#FCFCFD] border-r border-[#E2E8F0] flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
@@ -148,30 +148,34 @@ export function Sidebar() {
       {/* Footer User Profile */}
       <div className="p-3 border-t border-[#E2E8F0] bg-[#F8FAFC]">
         <div className="flex items-center justify-between p-1.5">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 min-w-0">
             <img
-              src={adminMember.avatar}
-              alt={adminMember.name}
-              className="w-7 h-7 rounded-full object-cover ring-1 ring-[#E2E8F0]"
+              src={activeUser.avatar}
+              alt={activeUser.name}
+              className="w-7 h-7 rounded-full object-cover ring-1 ring-[#E2E8F0] shrink-0"
             />
-            <div className="overflow-hidden">
-              <div className="text-xs font-semibold text-[#111318] truncate">
-                {adminMember.name}
+            <div className="overflow-hidden min-w-0">
+              <div className="text-xs font-semibold text-[#111318] truncate flex items-center gap-1">
+                <span>{activeUser.name}</span>
               </div>
-              <div className="text-[11px] text-[#5F6673] truncate font-mono">
-                {adminMember.panMasked}
+              <div className="text-[10px] text-[#5F6673] font-mono truncate">
+                {activeUser.role} • {activeUser.panMasked}
               </div>
             </div>
           </div>
 
-          <button
-            title="Workspace Settings"
-            className="p-1 rounded-md text-[#5F6673] hover:text-[#111318] hover:bg-[#F4F6F8] transition-colors cursor-pointer"
-          >
-            <Gear size={15} />
-          </button>
+          <div className="flex items-center gap-1 shrink-0">
+            <button
+              onClick={logout}
+              title="Sign Out"
+              className="p-1 rounded-md text-red-500 hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+            >
+              <SignOut size={15} />
+            </button>
+          </div>
         </div>
       </div>
     </aside>
   );
 }
+

@@ -27,6 +27,13 @@ import {
 type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members";
 
 interface NexoContextType {
+  isAuthenticated: boolean;
+  isAuthLoaded: boolean;
+  currentUser: Member | null;
+  login: (userId: string, pass: string) => { success: boolean; message?: string };
+  logout: () => void;
+  authError: string | null;
+  setAuthError: (err: string | null) => void;
   activeTab: ViewTab;
   setActiveTab: (tab: ViewTab) => void;
   currentUserRole: MemberRole;
@@ -91,34 +98,135 @@ interface NexoContextType {
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
+  const [members] = useState<Member[]>(MOCK_MEMBERS);
+  const [currentUser, setCurrentUser] = useState<Member | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
+  const [authError, setAuthError] = useState<string | null>(null);
+
   const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
   const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
+
+  // Restore session & persisted local storage state safely after hydration
+  useEffect(() => {
+    try {
+      const storedUser = localStorage.getItem("nexo_session_user");
+      if (storedUser) {
+        const parsed = JSON.parse(storedUser);
+        setCurrentUser(parsed);
+        setCurrentUserRole(parsed.role || "ADMIN");
+        setIsAuthenticated(true);
+      }
+
+      const storedSavings = localStorage.getItem("nexo_individualSavings");
+      if (storedSavings !== null) setIndividualSavings(parseFloat(storedSavings));
+
+      const storedContribs = localStorage.getItem("nexo_userContributions");
+      if (storedContribs !== null) setUserContributions(JSON.parse(storedContribs));
+
+      const storedTxns = localStorage.getItem("nexo_transactions");
+      if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
+    } catch {}
+
+    setIsAuthLoaded(true);
+
+    async function syncDb() {
+      try {
+        const ipoRes = await fetch("/api/ipos");
+        const ipoData = await ipoRes.json();
+        if (ipoData?.success && Array.isArray(ipoData.ipos) && ipoData.ipos.length > 0) {
+          setIpos(ipoData.ipos);
+        }
+      } catch {}
+    }
+    syncDb();
+  }, []);
+
+  const login = (userId: string, pass: string): { success: boolean; message?: string } => {
+    setAuthError(null);
+    const cleanId = userId.trim().toLowerCase();
+    const cleanPass = pass.trim();
+
+    if (!cleanId) {
+      const msg = "Please enter a User ID or Email";
+      setAuthError(msg);
+      return { success: false, message: msg };
+    }
+
+    if (!cleanPass) {
+      const msg = "Please enter your password";
+      setAuthError(msg);
+      return { success: false, message: msg };
+    }
+
+    // Match against mock members or demo credentials
+    let foundMember = members.find(
+      (m) =>
+        m.id.toLowerCase() === cleanId ||
+        m.email.toLowerCase() === cleanId ||
+        m.name.toLowerCase() === cleanId
+    );
+
+    // Also support 'admin' alias for Ankit
+    if (!foundMember && cleanId === "admin") {
+      foundMember = members[0]; // Ankit
+    }
+
+    // Default password checks:
+    // admin / admin123, user123, password, nexo123, or any non-empty password for valid members
+    if (foundMember) {
+      // Valid member found
+      setCurrentUser(foundMember);
+      setCurrentUserRole(foundMember.role);
+      setIsAuthenticated(true);
+      try {
+        localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
+      } catch {}
+      return { success: true };
+    } else {
+      // If user provided a custom ID, create a dynamic guest session if password is valid
+      if (cleanPass.length >= 4) {
+        const dynamicUser: Member = {
+          id: `user_${Date.now()}`,
+          name: userId.trim(),
+          email: `${cleanId}@nexo.private`,
+          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+          role: cleanId.includes("admin") ? "ADMIN" : "MEMBER",
+          panMasked: "XXXXXXXX99",
+          panFull: "ABCDE9999Z",
+          defaultContribution: 50000,
+          joinedAt: "Today",
+        };
+        setCurrentUser(dynamicUser);
+        setCurrentUserRole(dynamicUser.role);
+        setIsAuthenticated(true);
+        try {
+          localStorage.setItem("nexo_session_user", JSON.stringify(dynamicUser));
+        } catch {}
+        return { success: true };
+      }
+    }
+
+    const msg = "Invalid User ID or Password. Try demo login: 'admin' / 'admin123'";
+    setAuthError(msg);
+    return { success: false, message: msg };
+  };
+
+  const logout = () => {
+    setIsAuthenticated(false);
+    setCurrentUser(null);
+    setAuthError(null);
+    try {
+      localStorage.removeItem("nexo_session_user");
+    } catch {}
+  };
   const [ipos, setIpos] = useState<IPOOpportunity[]>(MOCK_IPOS);
-  const [members] = useState<Member[]>(MOCK_MEMBERS);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
   const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
   const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
-  const [individualSavings, setIndividualSavings] = useState<number>(() => {
-    try {
-      if (typeof window === "undefined") return 0;
-      const stored = localStorage.getItem("nexo_individualSavings");
-      return stored !== null ? parseFloat(stored) : 0;
-    } catch { return 0; }
-  });
-  const [userContributions, setUserContributions] = useState<Record<string, number>>(() => {
-    try {
-      if (typeof window === "undefined") return {};
-      const stored = localStorage.getItem("nexo_userContributions");
-      return stored !== null ? JSON.parse(stored) : {};
-    } catch { return {}; }
-  });
-  const [transactions, setTransactions] = useState<Transaction[]>(() => {
-    try {
-      if (typeof window === "undefined") return [];
-      const stored = localStorage.getItem("nexo_transactions");
-      return stored !== null ? JSON.parse(stored) : [];
-    } catch { return []; }
-  });
+  const [individualSavings, setIndividualSavings] = useState<number>(0);
+  const [userContributions, setUserContributions] = useState<Record<string, number>>({});
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
 
   // Persist to localStorage on change
   useEffect(() => {
@@ -437,6 +545,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   return (
     <NexoContext.Provider
       value={{
+        isAuthenticated,
+        isAuthLoaded,
+        currentUser,
+        login,
+        logout,
+        authError,
+        setAuthError,
         activeTab,
         setActiveTab,
         currentUserRole,
