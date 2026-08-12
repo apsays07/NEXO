@@ -212,78 +212,6 @@ export function ApplicationsView() {
         )}
       </div>
 
-      {/* EDIT SELF APPLICATION MODAL */}
-      {editAppModalOpen && editingApp && (
-        <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl p-6 max-w-md w-full border border-slate-200 shadow-xl space-y-4 animate-fade-in">
-            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-              <h3 className="text-base font-bold text-slate-900">
-                Edit My Application ({editingApp.applicationNumber || "Self"})
-              </h3>
-              <button
-                onClick={() => setEditAppModalOpen(false)}
-                className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs">
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Applicant Name
-                </label>
-                <input
-                  type="text"
-                  value={editName}
-                  onChange={(e) => setEditName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 font-medium focus:border-blue-600 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  PAN Card Number
-                </label>
-                <input
-                  type="text"
-                  value={editPan}
-                  onChange={(e) => setEditPan(e.target.value.toUpperCase())}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 font-mono font-medium focus:border-blue-600 focus:bg-white outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="block font-semibold text-slate-700 mb-1">
-                  Contribution Amount (₹)
-                </label>
-                <input
-                  type="number"
-                  value={editAmount}
-                  onChange={(e) => setEditAmount(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2 text-slate-900 font-mono font-medium focus:border-blue-600 focus:bg-white outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
-              <button
-                onClick={() => setEditAppModalOpen(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSaveSelfEdit}
-                className="px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-extrabold hover:bg-blue-700 shadow-xs"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* FULL WIDTH FINTECH INVESTMENT LEDGER CONTAINER */}
       {selectedIpoList.map((ipo) => {
         const filteredApps = ipo.applications.filter((app) => {
@@ -358,14 +286,14 @@ export function ApplicationsView() {
               </div>
             </div>
 
-            {/* TABLE HEADER */}
-            <div className="hidden md:grid grid-cols-12 px-8 py-4 bg-slate-50/70 border-b border-slate-100 text-xs font-extrabold text-slate-400 uppercase tracking-wider">
+            {/* FINTECH TABLE HEADER (12 COLS GRID WITH BALANCED EQUAL SPACING) */}
+            <div className="hidden md:grid grid-cols-12 px-8 py-4 bg-slate-50/70 border-b border-slate-100 text-xs font-extrabold text-slate-400 uppercase tracking-wider items-center">
               <div className="col-span-1">#</div>
-              <div className="col-span-3">Applicant / Contributors</div>
-              <div className="col-span-3">PAN Card</div>
-              <div className="col-span-1">Type</div>
-              <div className="col-span-2 text-right">Amount</div>
-              <div className="col-span-2 text-right">Status / Actions</div>
+              <div className="col-span-3 text-left">Applicant / Contributors</div>
+              <div className="col-span-2 text-center">PAN Card</div>
+              <div className="col-span-2 text-center">Type</div>
+              <div className="col-span-2 text-center">Amount</div>
+              <div className="col-span-2 text-center">Status / Actions</div>
             </div>
 
             {/* APPLICATION LEDGER ROWS */}
@@ -425,49 +353,28 @@ export function ApplicationsView() {
                           </div>
                         </div>
 
-                        {/* PAN Card Column (Medium Dark) */}
-                        <div className="col-span-3">
+                        {/* PAN Card Column (Centered) */}
+                        <div className="col-span-2 text-center">
                           <div className="text-sm font-bold text-slate-700 font-mono">
                             {app.panMasked || "XXXXXXXX41"}
                           </div>
                         </div>
 
-                        {/* Type Badge */}
-                        <div className="col-span-1">
+                        {/* Type Badge (Centered) */}
+                        <div className="col-span-2 text-center">
                           <span className="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-slate-100 text-slate-600 border border-slate-200/60">
                             Individual
                           </span>
                         </div>
 
-                        {/* Amount */}
-                        <div className="col-span-2 text-right font-mono text-base font-extrabold text-slate-900 num-tabular">
+                        {/* Amount (Centered) */}
+                        <div className="col-span-2 text-center font-mono text-base font-extrabold text-slate-900 num-tabular">
                           {formatINR(app.totalContribution)}
                         </div>
 
-                        {/* Status + Edit & Delete Actions */}
-                        <div className="col-span-2 text-right flex items-center justify-end gap-2.5">
+                        {/* Status (Centered) */}
+                        <div className="col-span-2 text-center flex items-center justify-center gap-2.5">
                           {renderStatusControl(ipo.id, app.id, currentStatus)}
-
-                          <div className="flex items-center gap-1.5 ml-1">
-                            {isSelf && (
-                              <button
-                                onClick={() => handleOpenEditSelfModal(ipo.id, app)}
-                                title="Edit My Application"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer border border-transparent hover:border-blue-200"
-                              >
-                                <PencilSimple size={16} />
-                              </button>
-                            )}
-                            {currentUserRole === "ADMIN" && (
-                              <button
-                                onClick={() => handleDeleteSelfApp(ipo.id, app.id)}
-                                title="Delete Application (Admin)"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer border border-transparent hover:border-rose-200"
-                              >
-                                <Trash size={16} />
-                              </button>
-                            )}
-                          </div>
                         </div>
                       </div>
                     );
@@ -503,51 +410,30 @@ export function ApplicationsView() {
                           })}
                         </div>
 
-                        {/* PAN Card Column (Medium Dark) */}
-                        <div className="col-span-3 self-center">
+                        {/* PAN Card Column (Centered) */}
+                        <div className="col-span-2 text-center self-center">
                           <div className="text-sm font-bold text-slate-700 font-mono">
                             {app.panMasked || "XXXXXXXX41"}
                           </div>
                         </div>
 
-                        {/* Type Badge */}
-                        <div className="col-span-1 self-center">
+                        {/* Type Badge (Centered) */}
+                        <div className="col-span-2 text-center self-center">
                           <span className="inline-block px-2.5 py-1 rounded text-xs font-semibold bg-purple-50 text-purple-700 border border-purple-200/60">
                             Combined
                           </span>
                         </div>
 
-                        {/* Individual Contribution Amounts in AMOUNT Column */}
-                        <div className="col-span-2 text-right space-y-2 self-center font-mono text-base font-extrabold text-slate-900 num-tabular">
+                        {/* Individual Contribution Amounts (Centered) */}
+                        <div className="col-span-2 text-center space-y-2 self-center font-mono text-base font-extrabold text-slate-900 num-tabular">
                           {app.participants.map((p, idx) => (
                             <div key={idx}>{formatINR(p.contribution)}</div>
                           ))}
                         </div>
 
-                        {/* Single Combined Status + Edit & Delete Actions */}
-                        <div className="col-span-2 text-right self-center flex items-center justify-end gap-2.5">
+                        {/* Single Combined Status (Centered) */}
+                        <div className="col-span-2 text-center self-center flex items-center justify-center gap-2.5">
                           {renderStatusControl(ipo.id, app.id, currentStatus)}
-
-                          <div className="flex items-center gap-1.5 ml-1">
-                            {isSelf && (
-                              <button
-                                onClick={() => handleOpenEditSelfModal(ipo.id, app)}
-                                title="Edit My Application"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer border border-transparent hover:border-blue-200"
-                              >
-                                <PencilSimple size={16} />
-                              </button>
-                            )}
-                            {currentUserRole === "ADMIN" && (
-                              <button
-                                onClick={() => handleDeleteSelfApp(ipo.id, app.id)}
-                                title="Delete Application (Admin)"
-                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer border border-transparent hover:border-rose-200"
-                              >
-                                <Trash size={16} />
-                              </button>
-                            )}
-                          </div>
                         </div>
                       </div>
                     );

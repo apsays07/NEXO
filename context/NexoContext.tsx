@@ -98,6 +98,10 @@ interface NexoContextType {
     }
   ) => void;
   deleteApplication: (ipoId: string, applicationId: string) => void;
+  updateTransaction: (
+    txnId: string,
+    data: { amount?: number; applicantName?: string; panMasked?: string }
+  ) => void;
   listedIpos: import("@/types/nexo").ListedIPO[];
   addListedIpo: (ipo: Omit<import("@/types/nexo").ListedIPO, "id">) => void;
   deleteListedIpo: (id: string) => void;
@@ -119,10 +123,95 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
+  const [activeTab, setActiveTab] = useState<ViewTab>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nexo_active_tab");
+        if (stored) return stored as ViewTab;
+      } catch {}
+    }
+    return "dashboard";
+  });
   const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
 
-  // Restore session & persisted local storage state safely after hydration
+  // Auto-save activeTab to localStorage on tab switch
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("nexo_active_tab", activeTab); } catch {}
+    }
+  }, [activeTab]);
+
+  // State definitions initialized lazily from localStorage to guarantee persistence
+  const [ipos, setIpos] = useState<IPOOpportunity[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nexo_ipos");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return MOCK_IPOS;
+  });
+
+  const [individualSavings, setIndividualSavings] = useState<number>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nexo_individualSavings");
+        if (stored !== null && !isNaN(parseFloat(stored))) return parseFloat(stored);
+      } catch {}
+    }
+    return 50000;
+  });
+
+  const [userContributions, setUserContributions] = useState<Record<string, number>>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nexo_userContributions");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return {};
+  });
+
+  const [transactions, setTransactions] = useState<Transaction[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const stored = localStorage.getItem("nexo_transactions");
+        if (stored) return JSON.parse(stored);
+      } catch {}
+    }
+    return [];
+  });
+
+  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
+  const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
+  const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
+
+  // Auto-save to localStorage on state changes
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("nexo_individualSavings", String(individualSavings)); } catch {}
+    }
+  }, [individualSavings]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("nexo_userContributions", JSON.stringify(userContributions)); } catch {}
+    }
+  }, [userContributions]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("nexo_transactions", JSON.stringify(transactions)); } catch {}
+    }
+  }, [transactions]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try { localStorage.setItem("nexo_ipos", JSON.stringify(ipos)); } catch {}
+    }
+  }, [ipos]);
+
+  // Restore session & auth state safely on mount
   useEffect(() => {
     try {
       const storedUser = localStorage.getItem("nexo_session_user");
@@ -132,29 +221,9 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         setCurrentUserRole(parsed.role || "ADMIN");
         setIsAuthenticated(true);
       }
-
-      const storedSavings = localStorage.getItem("nexo_individualSavings");
-      if (storedSavings !== null) setIndividualSavings(parseFloat(storedSavings));
-
-      const storedContribs = localStorage.getItem("nexo_userContributions");
-      if (storedContribs !== null) setUserContributions(JSON.parse(storedContribs));
-
-      const storedTxns = localStorage.getItem("nexo_transactions");
-      if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
     } catch {}
 
     setIsAuthLoaded(true);
-
-    async function syncDb() {
-      try {
-        const ipoRes = await fetch("/api/ipos");
-        const ipoData = await ipoRes.json();
-        if (ipoData?.success && Array.isArray(ipoData.ipos) && ipoData.ipos.length > 0) {
-          setIpos(ipoData.ipos);
-        }
-      } catch {}
-    }
-    syncDb();
   }, []);
 
   const login = (userId: string, pass: string): { success: boolean; message?: string } => {
@@ -174,7 +243,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: msg };
     }
 
-    // Match against mock members or demo credentials
     let foundMember = members.find(
       (m) =>
         m.id.toLowerCase() === cleanId ||
@@ -182,15 +250,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         m.name.toLowerCase() === cleanId
     );
 
-    // Also support 'admin' alias for Ankit
     if (!foundMember && cleanId === "admin") {
-      foundMember = members[0]; // Ankit
+      foundMember = members[0];
     }
 
-    // Default password checks:
-    // admin / admin123, user123, password, nexo123, or any non-empty password for valid members
     if (foundMember) {
-      // Valid member found
       setCurrentUser(foundMember);
       setCurrentUserRole(foundMember.role);
       setIsAuthenticated(true);
@@ -199,7 +263,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       } catch {}
       return { success: true };
     } else {
-      // If user provided a custom ID, create a dynamic guest session if password is valid
       if (cleanPass.length >= 4) {
         const dynamicUser: Member = {
           id: `user_${Date.now()}`,
@@ -235,25 +298,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("nexo_session_user");
     } catch {}
   };
-  const [ipos, setIpos] = useState<IPOOpportunity[]>(MOCK_IPOS);
-  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
-  const [actionItems, setActionItems] = useState<ActionItem[]>(MOCK_ACTION_ITEMS);
-  const [portfolioSummary] = useState<PortfolioSummary>(MOCK_PORTFOLIO_SUMMARY);
-  const [individualSavings, setIndividualSavings] = useState<number>(0);
-  const [userContributions, setUserContributions] = useState<Record<string, number>>({});
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  // Persist to localStorage on change
-  useEffect(() => {
-    try { localStorage.setItem("nexo_individualSavings", String(individualSavings)); } catch {}
-  }, [individualSavings]);
-  useEffect(() => {
-    try { localStorage.setItem("nexo_userContributions", JSON.stringify(userContributions)); } catch {}
-  }, [userContributions]);
-  useEffect(() => {
-    try { localStorage.setItem("nexo_transactions", JSON.stringify(transactions)); } catch {}
-  }, [transactions]);
-
 
   const updateIndividualSavings = (amount: number) => {
     setIndividualSavings(amount);
@@ -408,9 +452,17 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const createApplication = (
     ipoId: string,
     type: ParticipationType | ApplicationType,
-    participantContributions: { memberId: string; contribution: number }[],
+    participantContributions: {
+      memberId: string;
+      memberName?: string;
+      contribution: number;
+      panMasked?: string;
+      panFull?: string;
+    }[],
     proofUrl?: string,
-    applicantMemberId?: string
+    applicantMemberId?: string,
+    customApplicantName?: string,
+    customPanMasked?: string
   ) => {
     const canonicalType: ApplicationType =
       type === "SOLO" || type === "INDIVIDUAL" ? "INDIVIDUAL" : "COMBINED";
@@ -426,28 +478,31 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       const percentage = total > 0 ? (p.contribution / total) * 100 : 0;
       return {
         memberId: p.memberId,
-        memberName: member?.name || "Member",
+        memberName: p.memberName || member?.name || "Member",
         avatar: member?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
         contribution: p.contribution,
         percentage: Number(percentage.toFixed(1)),
-        panMasked: member?.panMasked || "XXXXXXXX41",
-        panFull: member?.panFull,
+        panMasked: p.panMasked || member?.panMasked || "XXXXXXXX41",
+        panFull: p.panFull || member?.panFull,
         proofUrl: proofUrl,
         proofUploadedAt: proofUrl ? "Just now" : undefined,
         status: "SUBMITTED" as const,
       };
     });
 
-    const newAppId = `app_${Date.now()}`;
+    const newAppId = `app_${Date.now()}_${Math.floor(Math.random() * 1000)}`;
     const targetIpo = ipos.find((i) => i.id === ipoId);
     const appNumber = `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`;
+    const resolvedApplicantName = customApplicantName || applicantMember?.name || "Ankit";
+    const resolvedPanMasked = customPanMasked || formattedParticipants[0]?.panMasked || applicantMember?.panMasked || "XXXXXXXX41";
+
     const newApplication: Application = {
       id: newAppId,
       ipoId,
       type: canonicalType,
-      applicantName: applicantMember?.name || "Ankit",
+      applicantName: resolvedApplicantName,
       memberId: applicantMember?.id || "mem_1",
-      panMasked: applicantMember?.panMasked || "XXXXXXXX41",
+      panMasked: resolvedPanMasked,
       totalContribution: total,
       lotCount: Math.max(1, participantContributions.length),
       verified: true,
@@ -459,11 +514,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       participants: formattedParticipants.length > 0 ? formattedParticipants : [
         {
           memberId: applicantMember?.id || "mem_1",
-          memberName: applicantMember?.name || "Ankit",
+          memberName: resolvedApplicantName,
           avatar: applicantMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
           contribution: total,
           percentage: 100,
-          panMasked: applicantMember?.panMasked || "XXXXXXXX41",
+          panMasked: resolvedPanMasked,
           panFull: applicantMember?.panFull,
           status: "SUBMITTED" as const,
         }
@@ -503,33 +558,41 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       );
     }
 
-    // Record transaction. Ledger keeps its own SOLO/COMBO vocabulary, so map
-    // from the canonical INDIVIDUAL/COMBINED type used by applications.
+    // Determine the logged-in user's individual contribution share
+    const myContribEntry = participantContributions.find(
+      (p) =>
+        p.memberId === applicantMemberId ||
+        (p.memberName && p.memberName.toLowerCase().includes("ankit")) ||
+        p.memberId === (members[0]?.id || "mem_1")
+    );
+    const myShare = canonicalType === "INDIVIDUAL"
+      ? total
+      : (myContribEntry ? myContribEntry.contribution : participantContributions[0]?.contribution ?? total);
+
+    // Record transaction. Store user's deducted share as amount, and total group pool for ledger clarity
     const newTransaction: Transaction = {
-      id: `txn_${Date.now()}`,
+      id: `txn_${Date.now()}_${Math.floor(10000 + Math.random() * 90000)}`,
       ipoId,
-      ipoName: activeApplicationIpo?.name || "IPO",
+      ipoName: targetIpo?.name || activeApplicationIpo?.name || "IPO",
       type: canonicalType === "INDIVIDUAL" ? "SOLO" : "COMBO",
-      amount: total,
+      amount: myShare,
+      userContribution: myShare,
+      groupTotalPool: total,
       applicationNumber: appNumber,
       participants:
         canonicalType === "INDIVIDUAL"
-          ? [applicantMember?.name || members[0].name]
-          : formattedParticipants.map((p) => p.memberName),
+          ? [resolvedApplicantName]
+          : formattedParticipants.map((p) => `${p.memberName} (${p.contribution >= 1000 ? `₹${(p.contribution / 1000).toFixed(0)}k` : `₹${p.contribution}`})`),
       createdAt: new Date().toISOString(),
       status: "SUBMITTED",
     };
     setTransactions((prev) => [newTransaction, ...prev]);
 
-    // Deduct applied amount from individual savings (only for solo applications)
-    if (canonicalType === "INDIVIDUAL") {
-      setIndividualSavings((prev) => Math.max(0, prev - total));
-      // Also record as a userContribution for the IPO
-      setUserContributions((prev) => ({
-        ...prev,
-        [ipoId]: (prev[ipoId] ?? 0) + total,
-      }));
-    }
+    // Record logged-in user's contribution for this IPO (deducting only their share)
+    setUserContributions((prev) => ({
+      ...prev,
+      [ipoId]: (prev[ipoId] ?? 0) + myShare,
+    }));
 
     // Record activity
     const newActivity: ActivityItem = {
@@ -678,17 +741,103 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         deleteTransaction: (txnId: string) => {
           const txn = transactions.find((t) => t.id === txnId);
           if (!txn) return;
-          // Reverse balance deduction for SOLO
-          if (txn.type === "SOLO") {
-            setIndividualSavings((prev) => prev + txn.amount);
-            setUserContributions((prev) => {
-              const updated = { ...prev };
-              const existing = updated[txn.ipoId] ?? 0;
-              updated[txn.ipoId] = Math.max(0, existing - txn.amount);
-              return updated;
-            });
-          }
+
+          // 1. Restore capital back to userContributions / balance
+          setUserContributions((prev) => {
+            const updated = { ...prev };
+            const existing = updated[txn.ipoId] ?? 0;
+            updated[txn.ipoId] = Math.max(0, existing - txn.amount);
+            return updated;
+          });
+
+          // 2. Remove transaction from ledger
           setTransactions((prev) => prev.filter((t) => t.id !== txnId));
+
+          // 3. Remove corresponding application from ipos[].applications
+          setIpos((prev) =>
+            prev.map((ipo) => {
+              if (ipo.id === txn.ipoId) {
+                const filteredApps = ipo.applications.filter((app) => {
+                  if (txn.applicationNumber && app.applicationNumber === txn.applicationNumber) {
+                    return false;
+                  }
+                  if (txn.participants && txn.participants.length > 0 && app.applicantName) {
+                    const primaryParticipant = txn.participants[0].split("(")[0].trim();
+                    if (app.applicantName.trim().toLowerCase() === primaryParticipant.toLowerCase()) {
+                      return false;
+                    }
+                  }
+                  return true;
+                });
+
+                return {
+                  ...ipo,
+                  applications: filteredApps,
+                  status: filteredApps.length === 0 ? "WATCHLIST" : ipo.status,
+                };
+              }
+              return ipo;
+            })
+          );
+        },
+        updateTransaction: (
+          txnId: string,
+          data: { amount?: number; applicantName?: string; panMasked?: string }
+        ) => {
+          const txn = transactions.find((t) => t.id === txnId);
+          if (!txn) return;
+
+          const oldAmount = txn.amount;
+          const newAmount = data.amount !== undefined ? data.amount : oldAmount;
+          const newName = data.applicantName !== undefined ? data.applicantName : txn.participants[0];
+          const newPan = data.panMasked !== undefined ? data.panMasked : txn.panMasked;
+
+          if (newAmount !== oldAmount) {
+            const diff = newAmount - oldAmount;
+            setUserContributions((prev) => ({
+              ...prev,
+              [txn.ipoId]: Math.max(0, (prev[txn.ipoId] ?? 0) + diff),
+            }));
+          }
+
+          setTransactions((prev) =>
+            prev.map((t) => {
+              if (t.id === txnId) {
+                const updatedParts = [...t.participants];
+                if (updatedParts.length > 0 && data.applicantName) {
+                  updatedParts[0] = data.applicantName;
+                }
+                return {
+                  ...t,
+                  amount: newAmount,
+                  userContribution: newAmount,
+                  panMasked: newPan,
+                  participants: updatedParts,
+                };
+              }
+              return t;
+            })
+          );
+
+          setIpos((prev) =>
+            prev.map((ipo) => {
+              if (ipo.id === txn.ipoId) {
+                const updatedApps = ipo.applications.map((app) => {
+                  if (app.applicationNumber === txn.applicationNumber || app.applicantName === txn.participants[0]) {
+                    return {
+                      ...app,
+                      applicantName: newName,
+                      panMasked: newPan || app.panMasked,
+                      totalContribution: newAmount,
+                    };
+                  }
+                  return app;
+                });
+                return { ...ipo, applications: updatedApps };
+              }
+              return ipo;
+            })
+          );
         },
         selectedIpo,
         openIpoDetail,

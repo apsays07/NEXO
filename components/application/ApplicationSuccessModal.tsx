@@ -12,7 +12,6 @@ import {
 } from "@phosphor-icons/react";
 import { useNexo } from "@/context/NexoContext";
 
-
 interface ApplicationSuccessModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -35,33 +34,42 @@ export function ApplicationSuccessModal({
 
   React.useEffect(() => {
     if (isOpen) {
-      // Primary center splash
-      confetti({
-        particleCount: 80,
-        spread: 65,
-        origin: { y: 0.6 },
-        colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-      });
-      // Side sprays for a celebratory feel
-      const end = Date.now() + 1000;
-      const interval = setInterval(() => {
-        if (Date.now() > end) return clearInterval(interval);
-        confetti({
-          particleCount: 25,
-          angle: 60,
-          spread: 55,
-          origin: { x: 0, y: 0.8 },
-          colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-        });
-        confetti({
-          particleCount: 25,
-          angle: 120,
-          spread: 55,
-          origin: { x: 1, y: 0.8 },
-          colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
-        });
-      }, 150);
-      return () => clearInterval(interval);
+      let interval: NodeJS.Timeout;
+      import("canvas-confetti")
+        .then((module) => {
+          const confettiFn = module.default || module;
+          if (typeof confettiFn === "function") {
+            confettiFn({
+              particleCount: 80,
+              spread: 65,
+              origin: { y: 0.6 },
+              colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
+            });
+            const end = Date.now() + 1000;
+            interval = setInterval(() => {
+              if (Date.now() > end) return clearInterval(interval);
+              confettiFn({
+                particleCount: 25,
+                angle: 60,
+                spread: 55,
+                origin: { x: 0, y: 0.8 },
+                colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
+              });
+              confettiFn({
+                particleCount: 25,
+                angle: 120,
+                spread: 55,
+                origin: { x: 1, y: 0.8 },
+                colors: ["#10b981", "#3b82f6", "#f59e0b", "#8b5cf6"],
+              });
+            }, 150);
+          }
+        })
+        .catch(() => {});
+
+      return () => {
+        if (interval) clearInterval(interval);
+      };
     }
   }, [isOpen]);
 

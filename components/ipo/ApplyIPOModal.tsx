@@ -85,6 +85,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   // Auto-fetch friend names into Primary Applicant Name when in Multi-Friend mode
   useEffect(() => {
     if (applicantMode === "JOINT") {
+      setNumberOfIpos(1);
       const validNames = contributors
         .map((c) => c.memberName.trim())
         .filter((n) => n.length > 0);
@@ -196,29 +197,67 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
         members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
         members[0];
 
-      let participantContributions;
-
       if (applicantMode === "JOINT") {
-        participantContributions = contributors.map((c) => ({
+        let participantContributions = contributors.map((c) => ({
           memberId: c.memberId,
           memberName: c.memberName.trim() || "Friend",
           contribution: typeof c.amount === "number" ? c.amount : 0,
         }));
-      } else {
-        participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
-          memberId: primaryMember.id,
-          memberName: primaryMember.name,
-          contribution: minInvest,
-        }));
-      }
 
-      createApplication(
-        ipo.id,
-        applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
-        participantContributions,
-        undefined,
-        primaryMember.id
-      );
+        const currentSum = participantContributions.reduce((sum, p) => sum + p.contribution, 0);
+
+        // Guarantee total pooled capital equals targetRequiredCapital (minimum price of IPO)
+        if (currentSum !== targetRequiredCapital && currentSum > 0) {
+          const ratio = targetRequiredCapital / currentSum;
+          let runningSum = 0;
+          participantContributions = participantContributions.map((p, idx) => {
+            if (idx === participantContributions.length - 1) {
+              return { ...p, contribution: Math.max(0, targetRequiredCapital - runningSum) };
+            }
+            const scaled = Math.round(p.contribution * ratio);
+            runningSum += scaled;
+            return { ...p, contribution: scaled };
+          });
+        }
+
+        createApplication(
+          ipo.id,
+          "COMBO",
+          participantContributions,
+          undefined,
+          primaryMember.id
+        );
+      } else {
+        // SOLO MODE: Each PAN card creates a distinct individual application named sequentially (Ankit 1, Ankit 2, Ankit 3...)
+        const baseName = (applicantName || "Ankit").replace(/\s+\d+$/, "").replace(/\s*\(PAN\s*#?\d+\)$/i, "").trim() || "Ankit";
+        const existingCount = (ipo.applications || []).filter((a) =>
+          (a?.applicantName || "").toLowerCase().startsWith(baseName.toLowerCase())
+        ).length;
+
+        panNumbers.forEach((pan, idx) => {
+          const appNumberIndex = existingCount + idx + 1;
+          const appName = `${baseName} ${appNumberIndex}`;
+          const masked = pan && pan.length >= 10 ? `${pan.substring(0, 5)}****${pan.substring(9)}` : `XXXXXXXX${(idx % 9) + 1}D`;
+
+          createApplication(
+            ipo.id,
+            "SOLO",
+            [
+              {
+                memberId: primaryMember.id,
+                memberName: appName,
+                contribution: minInvest,
+                panMasked: masked,
+                panFull: pan,
+              },
+            ],
+            undefined,
+            primaryMember.id,
+            appName,
+            masked
+          );
+        });
+      }
 
       setIsSubmitting(false);
       setIsSuccess(true);
@@ -505,30 +544,68 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               </div>
             )}
 
-            {/* 2. Number of PAN Cards */}
-            <div className="space-y-1.5">
-              <div className="flex items-center justify-between">
-                <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
-                </label>
-                <span className="text-[11px] text-slate-500 font-mono">
-                  1 PAN per Application
-                </span>
+            {/* 2. Number of PAN Cards (Solo mode only) */}
+            {applicantMode === "SOLO" && (
+              <div className="space-y-1.5 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <label className="block text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
+                  </label>
+                  <span className="text-[11px] text-slate-500 font-mono">
+                    1 PAN per Application
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNumberOfIpos((prev) =>
+                        Math.max(1, (typeof prev === "number" ? prev : 1) - 1)
+                      )
+                    }
+                    className="w-10 h-10 rounded-xl bg-slate-100 hover:bg-slate-200 border border-slate-200/90 text-slate-700 font-extrabold text-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
+                    title="Decrease PAN count"
+                  >
+                    -
+                  </button>
+                  <input
+                    type="number"
+                    min={1}
+                    max={50}
+                    required
+                    value={numberOfIpos}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      if (val === "") {
+                        setNumberOfIpos("");
+                      } else {
+                        const parsed = parseInt(val, 10);
+                        setNumberOfIpos(isNaN(parsed) ? "" : Math.max(1, Math.min(50, parsed)));
+                      }
+                    }}
+                    onBlur={() => {
+                      if (numberOfIpos === "" || (typeof numberOfIpos === "number" && numberOfIpos < 1)) {
+                        setNumberOfIpos(1);
+                      }
+                    }}
+                    className="flex-1 text-center bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2 text-sm font-extrabold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all"
+                    placeholder="1"
+                  />
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setNumberOfIpos((prev) =>
+                        Math.min(50, (typeof prev === "number" ? prev : 1) + 1)
+                      )
+                    }
+                    className="w-10 h-10 rounded-xl bg-blue-50 hover:bg-blue-100 border border-blue-200/90 text-blue-600 font-extrabold text-lg flex items-center justify-center transition-all active:scale-95 cursor-pointer shrink-0"
+                    title="Increase PAN count"
+                  >
+                    +
+                  </button>
+                </div>
               </div>
-              <input
-                type="number"
-                min={1}
-                max={50}
-                required
-                value={numberOfIpos}
-                onChange={(e) => {
-                  const parsed = parseInt(e.target.value, 10);
-                  setNumberOfIpos(isNaN(parsed) ? 1 : Math.max(1, Math.min(50, parsed)));
-                }}
-                className="w-full bg-slate-50/80 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-semibold text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
-                placeholder="Enter number of PAN cards (e.g. 5)"
-              />
-            </div>
+            )}
 
             {/* 3. Dynamic PAN Cards Section */}
             <div className="space-y-2.5">
@@ -542,22 +619,29 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               </div>
 
               <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-                {panNumbers.map((pan, idx) => {
-                  const valid = isValidPan(pan);
-                  return (
-                    <div
-                      key={idx}
-                      className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
-                    >
-                      <span className="text-[11px] font-bold text-slate-500 w-16 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
-                        PAN #{idx + 1}
-                      </span>
-                      <div className="relative flex-1">
-                        <input
-                          type="text"
-                          required
-                          maxLength={10}
-                          placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
+                {(() => {
+                  const baseName = (applicantName || "Ankit").replace(/\s+\d+$/, "").replace(/\s*\(PAN\s*#?\d+\)$/i, "").trim() || "Ankit";
+                  const existingCount = (ipo.applications || []).filter((a) =>
+                    (a?.applicantName || "").toLowerCase().startsWith(baseName.toLowerCase())
+                  ).length;
+
+                  return panNumbers.map((pan, idx) => {
+                    const valid = isValidPan(pan);
+                    const panIndex = existingCount + idx + 1;
+                    return (
+                      <div
+                        key={idx}
+                        className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
+                      >
+                        <span className="text-[11px] font-bold text-slate-500 w-18 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
+                          PAN #{panIndex}
+                        </span>
+                        <div className="relative flex-1">
+                          <input
+                            type="text"
+                            required
+                            maxLength={10}
+                            placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
                           value={pan}
                           onChange={(e) => handlePanChange(idx, e.target.value)}
                           className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
@@ -568,9 +652,9 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           </div>
                         )}
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  });
+                })()}
               </div>
             </div>
 

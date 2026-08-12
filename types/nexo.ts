@@ -185,9 +185,12 @@ export interface Transaction {
   ipoId: string;
   ipoName: string;
   type: "SOLO" | "COMBO";
-  amount: number;
+  amount: number; // Logged-in user's deducted contribution
+  userContribution?: number; // User's contribution (e.g. ₹3,000)
+  groupTotalPool?: number; // Total pooled capital (e.g. ₹15,000)
+  panMasked?: string;
   applicationNumber: string;
-  participants: string[]; // member names
+  participants: string[]; // member names with shares
   createdAt: string; // ISO string
   status: "SUBMITTED" | "ALLOTTED" | "REFUNDED" | "REJECTED";
 }

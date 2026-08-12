@@ -50,15 +50,15 @@ export function MetricCard({
   action,
 }: MetricCardProps) {
   return (
-    <Card className="flex flex-col justify-between">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-xs font-medium text-[#5F6673] uppercase tracking-wider">
+    <Card className="flex flex-col justify-between p-5 bg-white rounded-2xl border border-slate-200/90 shadow-2xs hover:border-slate-300 transition-all">
+      <div className="flex items-center justify-between gap-2 mb-3">
+        <span className="text-xs font-bold text-slate-500 uppercase tracking-wider truncate">
           {label}
         </span>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0">
           {action}
           {icon && (
-            <div className="p-2 rounded-xl bg-[#F1F5F9] text-[#5F6673] border border-[#E2E8F0]">
+            <div className="p-2 rounded-xl bg-slate-100/80 text-slate-600 border border-slate-200/80 shadow-2xs">
               {icon}
             </div>
           )}
@@ -66,14 +66,14 @@ export function MetricCard({
       </div>
 
       <div>
-        <div className="text-2xl sm:text-3xl font-semibold tracking-tight text-[#111318] num-tabular">
+        <div className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#0F172A] num-tabular">
           {value}
         </div>
 
         <div className="flex items-center gap-2 mt-2">
           {change && (
             <span
-              className={`text-xs font-semibold px-2 py-0.5 rounded-md ${
+              className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                 changeType === "positive"
                   ? "bg-[#ECFDF3] text-[#059669] border border-[#A6F4C5]"
                   : changeType === "negative"
@@ -85,7 +85,7 @@ export function MetricCard({
             </span>
           )}
           {subtitle && (
-            <span className="text-xs text-[#5F6673] font-normal">
+            <span className="text-xs text-slate-500 font-medium leading-normal">
               {subtitle}
             </span>
           )}
