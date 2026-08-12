@@ -220,28 +220,39 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       try {
         localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
       } catch {}
-      return { success: true };
+
+      if (typeof window !== "undefined" && foundMember.role === "ADMIN") {
+        window.location.href = "http://localhost:3001";
+      }
+
+      return { success: true, role: foundMember.role };
     } else {
       // If user provided a custom ID, create a dynamic guest session if password is valid
       if (cleanPass.length >= 4) {
+        const userRole: MemberRole = (cleanId.includes("admin") || cleanId.includes("shivam")) ? "ADMIN" : "MEMBER";
         const dynamicUser: Member = {
           id: `user_${Date.now()}`,
           name: userId.trim(),
           email: `${cleanId}@nexo.private`,
           avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          role: cleanId.includes("admin") ? "ADMIN" : "MEMBER",
+          role: userRole,
           panMasked: "XXXXXXXX99",
           panFull: "ABCDE9999Z",
           defaultContribution: 50000,
           joinedAt: "Today",
         };
         setCurrentUser(dynamicUser);
-        setCurrentUserRole(dynamicUser.role);
+        setCurrentUserRole(userRole);
         setIsAuthenticated(true);
         try {
           localStorage.setItem("nexo_session_user", JSON.stringify(dynamicUser));
         } catch {}
-        return { success: true };
+
+        if (typeof window !== "undefined" && userRole === "ADMIN") {
+          window.location.href = "http://localhost:3001";
+        }
+
+        return { success: true, role: userRole };
       }
     }
 

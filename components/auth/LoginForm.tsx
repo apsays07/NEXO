@@ -25,8 +25,14 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      login(userId, password);
+      const res = login(userId, password);
       setIsSubmitting(false);
+
+      if (res?.success && res?.role === "ADMIN") {
+        if (typeof window !== "undefined") {
+          window.location.href = "http://localhost:3001";
+        }
+      }
     }, 300);
   };
 
