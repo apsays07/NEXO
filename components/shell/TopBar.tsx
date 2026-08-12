@@ -35,7 +35,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="h-14 border-b border-slate-100 bg-white/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-slate-100/30">
+      <header className="h-16 border-b border-slate-100 bg-white/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-slate-100/30">
         {/* Title & Breadcrumb + Mobile Brand Header */}
         <div className="flex items-center gap-2.5 text-xs font-semibold text-slate-500">
           <div className="flex lg:hidden items-center gap-2 mr-1">
