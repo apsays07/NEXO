@@ -5,16 +5,24 @@ import { useNexo } from "@/context/NexoContext";
 import { formatINR } from "@/lib/mockData";
 import {
   X,
+  CheckCircle,
   User,
   IdentificationCard,
-  CheckCircle,
   ShieldCheck,
   CircleNotch,
   UsersThree,
   Coins,
+  Plus,
+  Trash,
+  Scales,
 } from "@phosphor-icons/react";
 
 import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
+
+interface ContributorEntry {
+  memberId: string;
+  amount: number | "";
+}
 
 export function ApplicationModal() {
   const {
@@ -27,8 +35,12 @@ export function ApplicationModal() {
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState<string>("");
-  const [coApplicantId, setCoApplicantId] = useState<string>(members[1]?.id || members[0]?.id || "");
-  const [splitRatio, setSplitRatio] = useState<number>(50); // 50% / 50% split
+
+  // Dynamic Contributors State (Supports 2-4+ friends with custom rupee amounts)
+  const [contributors, setContributors] = useState<ContributorEntry[]>([
+    { memberId: members[0]?.id || "mem_1", amount: 7500 },
+    { memberId: members[1]?.id || "mem_2", amount: 7500 },
+  ]);
 
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
@@ -63,11 +75,58 @@ export function ApplicationModal() {
   if (!isApplicationModalOpen || !activeApplicationIpo) return null;
 
   const minInvest = activeApplicationIpo.metrics?.minInvestment || 14964;
-  const coMember = members.find((m) => m.id === coApplicantId) || members[1] || members[0];
 
-  const totalLotAmount = minInvest * effectiveIpos;
-  const primaryShareAmount = Math.round(totalLotAmount * (splitRatio / 100));
-  const coShareAmount = totalLotAmount - primaryShareAmount;
+  const totalPooledCapital = contributors.reduce(
+    (sum, c) => sum + (typeof c.amount === "number" ? c.amount : 0),
+    0
+  );
+
+  const handleAddContributor = () => {
+    const existingIds = new Set(contributors.map((c) => c.memberId));
+    const unusedMember = members.find((m) => !existingIds.has(m.id)) || members[0];
+    setContributors((prev) => [...prev, { memberId: unusedMember.id, amount: "" }]);
+  };
+
+  const handleRemoveContributor = (index: number) => {
+    if (contributors.length > 2) {
+      setContributors((prev) => prev.filter((_, idx) => idx !== index));
+    }
+  };
+
+  const handleContributorMemberChange = (index: number, memberId: string) => {
+    setContributors((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], memberId };
+      return updated;
+    });
+  };
+
+  const handleContributorAmountChange = (index: number, valStr: string) => {
+    setContributors((prev) => {
+      const updated = [...prev];
+      if (valStr === "") {
+        updated[index] = { ...updated[index], amount: "" };
+      } else {
+        const parsed = parseInt(valStr, 10);
+        updated[index] = { ...updated[index], amount: isNaN(parsed) ? "" : parsed };
+      }
+      return updated;
+    });
+  };
+
+  const handleEqualSplit = () => {
+    const targetTotal = minInvest * effectiveIpos;
+    const count = contributors.length;
+    const equalShare = Math.floor(targetTotal / count);
+    const remainder = targetTotal - equalShare * count;
+
+    setContributors((prev) =>
+      prev.map((c, idx) => ({
+        ...c,
+        amount: idx === 0 ? equalShare + remainder : equalShare,
+      }))
+    );
+  };
 
   const handlePanChange = (index: number, value: string) => {
     const updated = [...panNumbers];
@@ -86,11 +145,11 @@ export function ApplicationModal() {
 
       let participantContributions;
 
-      if (applicantMode === "JOINT" && coMember) {
-        participantContributions = [
-          { memberId: primaryMember.id, contribution: primaryShareAmount },
-          { memberId: coMember.id, contribution: coShareAmount },
-        ];
+      if (applicantMode === "JOINT") {
+        participantContributions = contributors.map((c) => ({
+          memberId: c.memberId,
+          contribution: typeof c.amount === "number" ? c.amount : 0,
+        }));
       } else {
         participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
           memberId: primaryMember.id,
@@ -127,7 +186,7 @@ export function ApplicationModal() {
         ipoLogo={activeApplicationIpo.logo}
         applicantName={
           applicantMode === "JOINT"
-            ? `${applicantName} & ${coMember.name} (50/50 Split)`
+            ? `${contributors.length} Friends Split Pool`
             : applicantName
         }
         panCount={panNumbers.length}
@@ -169,7 +228,7 @@ export function ApplicationModal() {
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
-          {/* APPLICATION TYPE SWITCHER (SOLO vs JOINT 50/50 SPLIT) */}
+          {/* APPLICATION TYPE SWITCHER (SOLO vs MULTI-FRIEND SPLIT) */}
           <div className="space-y-1.5">
             <label className="block text-xs font-semibold text-slate-800">
               Capital Funding Structure
@@ -198,7 +257,7 @@ export function ApplicationModal() {
                 }`}
               >
                 <UsersThree size={16} />
-                <span>Joint 50/50 Split</span>
+                <span>Multi-Friend Split</span>
               </button>
             </div>
           </div>
@@ -218,80 +277,96 @@ export function ApplicationModal() {
             />
           </div>
 
-          {/* JOINT / SPLIT APPLICATION CONTROLS */}
+          {/* DYNAMIC MULTI-FRIEND SYNDICATE SPLIT CONTROLS */}
           {applicantMode === "JOINT" && (
             <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3.5 animate-fade-in">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                  <Coins size={16} className="text-blue-600" /> Co-Applicant Friend Split
+                  <Coins size={16} className="text-blue-600" /> Syndicate Multi-Friend Capital Pool
                 </span>
-                <span className="text-[11px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full border border-blue-200">
-                  Shared 50 / 50 Split
-                </span>
-              </div>
-
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Select Co-Applicant Friend from Syndicate:
-                </label>
-                <select
-                  value={coApplicantId}
-                  onChange={(e) => setCoApplicantId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-blue-600 outline-none shadow-2xs"
+                <button
+                  type="button"
+                  onClick={handleEqualSplit}
+                  className="text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
                 >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.role})
-                    </option>
-                  ))}
-                </select>
+                  <Scales size={13} /> Split Equally
+                </button>
               </div>
 
-              {/* Split Ratio Chips */}
-              <div className="space-y-1.5">
-                <span className="block text-xs font-semibold text-slate-700">
-                  Capital Contribution Ratio:
-                </span>
-                <div className="flex items-center gap-2">
-                  {[
-                    { label: "50% / 50% (Equal)", val: 50 },
-                    { label: "60% / 40%", val: 60 },
-                    { label: "75% / 25%", val: 75 },
-                  ].map((chip) => (
-                    <button
-                      key={chip.val}
-                      type="button"
-                      onClick={() => setSplitRatio(chip.val)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                        splitRatio === chip.val
-                          ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
-                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                      }`}
+              {/* Dynamic Contributor Rows */}
+              <div className="space-y-2.5">
+                {contributors.map((c, idx) => {
+                  const numAmt = typeof c.amount === "number" ? c.amount : 0;
+                  const pct = totalPooledCapital > 0 ? ((numAmt / totalPooledCapital) * 100).toFixed(1) : "0";
+
+                  return (
+                    <div
+                      key={idx}
+                      className="p-2.5 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-2.5 shadow-2xs"
                     >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
+                      <div className="flex items-center gap-2 flex-1">
+                        <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
+                          #{idx + 1}
+                        </span>
+                        <select
+                          value={c.memberId}
+                          onChange={(e) => handleContributorMemberChange(idx, e.target.value)}
+                          className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900 focus:border-blue-600 outline-none flex-1"
+                        >
+                          {members.map((m) => (
+                            <option key={m.id} value={m.id}>
+                              {m.name} ({m.role})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+
+                      {/* Custom Rupee Amount Input */}
+                      <div className="flex items-center gap-1.5 w-32 shrink-0">
+                        <span className="text-xs font-bold text-slate-500">₹</span>
+                        <input
+                          type="number"
+                          min={0}
+                          placeholder="Amount"
+                          value={c.amount}
+                          onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
+                          className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-blue-600 outline-none"
+                        />
+                      </div>
+
+                      {/* Percentage badge */}
+                      <span className="text-[11px] font-mono font-bold text-blue-600 w-12 text-right shrink-0">
+                        {pct}%
+                      </span>
+
+                      {/* Delete row button */}
+                      {contributors.length > 2 && idx > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveContributor(idx)}
+                          className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                          title="Remove Contributor"
+                        >
+                          <Trash size={15} />
+                        </button>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
-              {/* Live Capital Split Calculation Card */}
-              <div className="p-3 bg-white rounded-xl border border-blue-200/60 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">
-                    {applicantName} ({splitRatio}%)
-                  </span>
-                  <span className="text-sm font-bold text-slate-900 num-tabular">
-                    {formatINR(primaryShareAmount)}
-                  </span>
-                </div>
+              {/* + Add Friend Button */}
+              <div className="flex items-center justify-between pt-1">
+                <button
+                  type="button"
+                  onClick={handleAddContributor}
+                  className="px-3 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                >
+                  <Plus size={14} weight="bold" /> Add Co-Contributor Friend
+                </button>
 
-                <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">
-                    {coMember.name} ({100 - splitRatio}%)
-                  </span>
-                  <span className="text-sm font-bold text-blue-600 num-tabular">
-                    {formatINR(coShareAmount)}
-                  </span>
+                <div className="text-xs font-mono font-bold text-slate-800">
+                  Total Pooled: <span className="text-blue-600">{formatINR(totalPooledCapital)}</span>
                 </div>
               </div>
             </div>
@@ -396,7 +471,7 @@ export function ApplicationModal() {
                 </>
               ) : (
                 <>
-                  <ShieldCheck size={18} weight="bold" /> Submit {applicantMode === "JOINT" ? "Joint 50/50" : ""} {effectiveIpos} IPO Application(s)
+                  <ShieldCheck size={18} weight="bold" /> Submit {applicantMode === "JOINT" ? `${contributors.length} Friends Split` : ""} {effectiveIpos} IPO Application(s)
                 </>
               )}
             </button>

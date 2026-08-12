@@ -16,6 +16,9 @@ import {
   CircleNotch,
   UsersThree,
   Coins,
+  Plus,
+  Trash,
+  Scales,
 } from "@phosphor-icons/react";
 
 import { ApplicationSuccessModal } from "../application/ApplicationSuccessModal";
@@ -26,13 +29,22 @@ interface ApplyIPOModalProps {
   onClose: () => void;
 }
 
+interface ContributorEntry {
+  memberId: string;
+  amount: number | "";
+}
+
 export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const { members, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState("Ashay");
-  const [coApplicantId, setCoApplicantId] = useState<string>(members[1]?.id || members[0]?.id || "");
-  const [splitRatio, setSplitRatio] = useState<number>(50); // 50% / 50% split
+
+  // Dynamic Contributors State (Supports 2-4+ friends with custom rupee amounts)
+  const [contributors, setContributors] = useState<ContributorEntry[]>([
+    { memberId: members[0]?.id || "mem_1", amount: 7500 },
+    { memberId: members[1]?.id || "mem_2", amount: 7500 },
+  ]);
 
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const [panNumbers, setPanNumbers] = useState<string[]>(["ABCDE2741D"]);
@@ -60,11 +72,58 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   if (!isOpen) return null;
 
   const minInvest = ipo.metrics?.minInvestment || 14964;
-  const coMember = members.find((m) => m.id === coApplicantId) || members[1] || members[0];
 
-  const totalLotAmount = minInvest * effectiveIpos;
-  const primaryShareAmount = Math.round(totalLotAmount * (splitRatio / 100));
-  const coShareAmount = totalLotAmount - primaryShareAmount;
+  const totalPooledCapital = contributors.reduce(
+    (sum, c) => sum + (typeof c.amount === "number" ? c.amount : 0),
+    0
+  );
+
+  const handleAddContributor = () => {
+    const existingIds = new Set(contributors.map((c) => c.memberId));
+    const unusedMember = members.find((m) => !existingIds.has(m.id)) || members[0];
+    setContributors((prev) => [...prev, { memberId: unusedMember.id, amount: "" }]);
+  };
+
+  const handleRemoveContributor = (index: number) => {
+    if (contributors.length > 2) {
+      setContributors((prev) => prev.filter((_, idx) => idx !== index));
+    }
+  };
+
+  const handleContributorMemberChange = (index: number, memberId: string) => {
+    setContributors((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], memberId };
+      return updated;
+    });
+  };
+
+  const handleContributorAmountChange = (index: number, valStr: string) => {
+    setContributors((prev) => {
+      const updated = [...prev];
+      if (valStr === "") {
+        updated[index] = { ...updated[index], amount: "" };
+      } else {
+        const parsed = parseInt(valStr, 10);
+        updated[index] = { ...updated[index], amount: isNaN(parsed) ? "" : parsed };
+      }
+      return updated;
+    });
+  };
+
+  const handleEqualSplit = () => {
+    const targetTotal = minInvest * effectiveIpos;
+    const count = contributors.length;
+    const equalShare = Math.floor(targetTotal / count);
+    const remainder = targetTotal - equalShare * count;
+
+    setContributors((prev) =>
+      prev.map((c, idx) => ({
+        ...c,
+        amount: idx === 0 ? equalShare + remainder : equalShare,
+      }))
+    );
+  };
 
   const handlePanChange = (index: number, value: string) => {
     const updated = [...panNumbers];
@@ -83,11 +142,11 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
 
       let participantContributions;
 
-      if (applicantMode === "JOINT" && coMember) {
-        participantContributions = [
-          { memberId: primaryMember.id, contribution: primaryShareAmount },
-          { memberId: coMember.id, contribution: coShareAmount },
-        ];
+      if (applicantMode === "JOINT") {
+        participantContributions = contributors.map((c) => ({
+          memberId: c.memberId,
+          contribution: typeof c.amount === "number" ? c.amount : 0,
+        }));
       } else {
         participantContributions = Array.from({ length: effectiveIpos }).map(() => ({
           memberId: primaryMember.id,
@@ -114,23 +173,6 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   };
 
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
-
-  if (isSuccess) {
-    return (
-      <ApplicationSuccessModal
-        isOpen={true}
-        onClose={handleCloseSuccess}
-        ipoName={ipo.name}
-        ipoLogo={ipo.logo}
-        applicantName={
-          applicantMode === "JOINT"
-            ? `${applicantName} & ${coMember.name} (50/50 Split)`
-            : applicantName
-        }
-        panCount={panNumbers.length}
-      />
-    );
-  }
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 backdrop-blur-sm p-4 animate-fade-in font-sans">
@@ -164,270 +206,302 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
-          {/* VIP Premium Boost Banner */}
-          <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-amber-500/30 text-white flex items-center justify-between shadow-md">
-            <div className="flex items-center gap-3">
-              <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <Crown size={20} weight="fill" />
-              </div>
-              <div>
-                <span className="font-bold text-amber-300 block text-xs flex items-center gap-1">
-                  <Sparkle size={13} weight="fill" className="text-amber-400" /> Nexo Pro VIP Allotment Boost
-                </span>
-                <span className="text-[11px] text-slate-300 font-medium">
-                  {isPremiumUser ? "4.8x Allotment Boost Unlocked" : "Boost allotment probability from 18% → 88%"}
-                </span>
-              </div>
-            </div>
-
-            {!isPremiumUser && (
-              <button
-                type="button"
-                onClick={() => {
-                  onClose();
-                  openPremiumModal(ipo);
-                }}
-                className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-[11px] hover:from-amber-300 hover:to-amber-400 transition-all shadow-xs cursor-pointer whitespace-nowrap flex items-center gap-1"
-              >
-                Upgrade <CaretRight size={12} weight="bold" />
-              </button>
-            )}
-          </div>
-
-          {/* APPLICATION TYPE SWITCHER (SOLO vs JOINT 50/50 SPLIT) */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-800">
-              Capital Funding Structure
-            </label>
-            <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
-              <button
-                type="button"
-                onClick={() => setApplicantMode("SOLO")}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                  applicantMode === "SOLO"
-                    ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <User size={15} className={applicantMode === "SOLO" ? "text-blue-600" : ""} />
-                <span>Solo (100% Capital)</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => setApplicantMode("JOINT")}
-                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
-                  applicantMode === "JOINT"
-                    ? "bg-blue-600 text-white shadow-xs"
-                    : "text-slate-600 hover:text-slate-900"
-                }`}
-              >
-                <UsersThree size={16} />
-                <span>Joint 50/50 Split</span>
-              </button>
-            </div>
-          </div>
-
-          {/* 1. Primary Applicant Name */}
-          <div className="space-y-1.5">
-            <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-              <User size={15} className="text-blue-600" /> Primary Applicant Name <span className="text-rose-500">*</span>
-            </label>
-            <input
-              type="text"
-              required
-              placeholder="e.g. Ashay"
-              value={applicantName}
-              onChange={(e) => setApplicantName(e.target.value)}
-              className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          {/* JOINT / SPLIT APPLICATION CONTROLS */}
-          {applicantMode === "JOINT" && (
-            <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3.5 animate-fade-in">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
-                  <Coins size={16} className="text-blue-600" /> Co-Applicant Friend Split
-                </span>
-                <span className="text-[11px] font-bold text-blue-700 bg-blue-100/80 px-2 py-0.5 rounded-full border border-blue-200">
-                  Shared 50 / 50 Split
-                </span>
+        {isSuccess ? (
+          <ApplicationSuccessModal
+            isOpen={true}
+            onClose={handleCloseSuccess}
+            ipoName={ipo.name}
+            ipoLogo={ipo.logo}
+            applicantName={
+              applicantMode === "JOINT"
+                ? `${contributors.length} Friends Split Pool`
+                : applicantName
+            }
+            panCount={panNumbers.length}
+          />
+        ) : (
+          <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
+            {/* VIP Premium Boost Banner */}
+            <div className="p-3.5 rounded-2xl bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 border border-amber-500/30 text-white flex items-center justify-between shadow-md">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                  <Crown size={20} weight="fill" />
+                </div>
+                <div>
+                  <span className="font-bold text-amber-300 block text-xs flex items-center gap-1">
+                    <Sparkle size={13} weight="fill" className="text-amber-400" /> Nexo Pro VIP Allotment Boost
+                  </span>
+                  <span className="text-[11px] text-slate-300 font-medium">
+                    {isPremiumUser ? "4.8x Allotment Boost Unlocked" : "Boost allotment probability from 18% → 88%"}
+                  </span>
+                </div>
               </div>
 
-              <div className="space-y-1.5">
-                <label className="block text-xs font-semibold text-slate-700">
-                  Select Co-Applicant Friend from Syndicate:
-                </label>
-                <select
-                  value={coApplicantId}
-                  onChange={(e) => setCoApplicantId(e.target.value)}
-                  className="w-full bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs font-bold text-slate-900 focus:border-blue-600 outline-none shadow-2xs"
+              {!isPremiumUser && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onClose();
+                    openPremiumModal(ipo);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 font-bold text-[11px] hover:from-amber-300 hover:to-amber-400 transition-all shadow-xs cursor-pointer whitespace-nowrap flex items-center gap-1"
                 >
-                  {members.map((m) => (
-                    <option key={m.id} value={m.id}>
-                      {m.name} ({m.role})
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Split Ratio Chips */}
-              <div className="space-y-1.5">
-                <span className="block text-xs font-semibold text-slate-700">
-                  Capital Contribution Ratio:
-                </span>
-                <div className="flex items-center gap-2">
-                  {[
-                    { label: "50% / 50% (Equal)", val: 50 },
-                    { label: "60% / 40%", val: 60 },
-                    { label: "75% / 25%", val: 75 },
-                  ].map((chip) => (
-                    <button
-                      key={chip.val}
-                      type="button"
-                      onClick={() => setSplitRatio(chip.val)}
-                      className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all cursor-pointer border ${
-                        splitRatio === chip.val
-                          ? "bg-blue-600 text-white border-blue-600 shadow-2xs"
-                          : "bg-white text-slate-700 border-slate-200 hover:bg-slate-100"
-                      }`}
-                    >
-                      {chip.label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Live Capital Split Calculation Card */}
-              <div className="p-3 bg-white rounded-xl border border-blue-200/60 grid grid-cols-2 gap-3 text-xs">
-                <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">
-                    {applicantName} ({splitRatio}%)
-                  </span>
-                  <span className="text-sm font-bold text-slate-900 num-tabular">
-                    {formatINR(primaryShareAmount)}
-                  </span>
-                </div>
-
-                <div>
-                  <span className="text-[11px] text-slate-500 block font-medium">
-                    {coMember.name} ({100 - splitRatio}%)
-                  </span>
-                  <span className="text-sm font-bold text-blue-600 num-tabular">
-                    {formatINR(coShareAmount)}
-                  </span>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* 2. Number of PAN Cards */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
-              </label>
-              <span className="text-[11px] text-slate-500 font-mono">
-                1 PAN per Application
-              </span>
-            </div>
-            <input
-              type="number"
-              min={1}
-              max={50}
-              required
-              value={numberOfIpos}
-              onChange={(e) => {
-                const val = e.target.value;
-                if (val === "") {
-                  setNumberOfIpos("");
-                } else {
-                  const parsed = parseInt(val, 10);
-                  setNumberOfIpos(isNaN(parsed) ? "" : Math.max(1, parsed));
-                }
-              }}
-              onBlur={() => {
-                if (numberOfIpos === "" || numberOfIpos < 1) {
-                  setNumberOfIpos(1);
-                }
-              }}
-              className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
-              placeholder="Enter number of PAN cards (e.g. 5)"
-            />
-          </div>
-
-          {/* 3. Dynamic PAN Inputs with status indicators */}
-          <div className="space-y-2.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                <IdentificationCard size={15} className="text-blue-600" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
-              </label>
-              <span className="text-[11px] text-slate-400 font-medium">
-                Auto-formatted Uppercase
-              </span>
-            </div>
-
-            <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
-              {panNumbers.map((pan, idx) => {
-                const valid = isValidPan(pan);
-                return (
-                  <div
-                    key={idx}
-                    className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
-                  >
-                    <span className="text-[11px] font-bold text-slate-500 w-16 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
-                      PAN #{idx + 1}
-                    </span>
-                    <div className="relative flex-1">
-                      <input
-                        type="text"
-                        required
-                        maxLength={10}
-                        placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
-                        value={pan}
-                        onChange={(e) => handlePanChange(idx, e.target.value)}
-                        className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
-                      />
-                      {valid && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600">
-                          <CheckCircle size={16} weight="fill" />
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Footer Actions */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isSubmitting}
-              className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-75 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
-            >
-              {isSubmitting ? (
-                <>
-                  <CircleNotch size={18} className="animate-spin" /> Filing Application...
-                </>
-              ) : (
-                <>
-                  <ShieldCheck size={18} weight="bold" /> Submit {applicantMode === "JOINT" ? "Joint 50/50" : ""} {effectiveIpos} IPO Application(s)
-                </>
+                  Upgrade <CaretRight size={12} weight="bold" />
+                </button>
               )}
-            </button>
-          </div>
-        </form>
+            </div>
+
+            {/* APPLICATION TYPE SWITCHER (SOLO vs MULTI-FRIEND SPLIT) */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-800">
+                Capital Funding Structure
+              </label>
+              <div className="grid grid-cols-2 gap-2 bg-slate-100 p-1 rounded-2xl border border-slate-200/80">
+                <button
+                  type="button"
+                  onClick={() => setApplicantMode("SOLO")}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    applicantMode === "SOLO"
+                      ? "bg-white text-slate-900 shadow-xs border border-slate-200/80"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <User size={15} className={applicantMode === "SOLO" ? "text-blue-600" : ""} />
+                  <span>Solo (100% Capital)</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => setApplicantMode("JOINT")}
+                  className={`py-2 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                    applicantMode === "JOINT"
+                      ? "bg-blue-600 text-white shadow-xs"
+                      : "text-slate-600 hover:text-slate-900"
+                  }`}
+                >
+                  <UsersThree size={16} />
+                  <span>Multi-Friend Split</span>
+                </button>
+              </div>
+            </div>
+
+            {/* 1. Applicant Name */}
+            <div className="space-y-1.5">
+              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                <User size={15} className="text-blue-600" /> Primary Applicant Name <span className="text-rose-500">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                placeholder="e.g. Ashay"
+                value={applicantName}
+                onChange={(e) => setApplicantName(e.target.value)}
+                className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+              />
+            </div>
+
+            {/* DYNAMIC MULTI-FRIEND SYNDICATE SPLIT CONTROLS */}
+            {applicantMode === "JOINT" && (
+              <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-200/80 space-y-3.5 animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-blue-900 flex items-center gap-1.5">
+                    <Coins size={16} className="text-blue-600" /> Syndicate Multi-Friend Capital Pool
+                  </span>
+                  <button
+                    type="button"
+                    onClick={handleEqualSplit}
+                    className="text-[11px] font-bold text-blue-700 bg-white border border-blue-200 hover:bg-blue-100 px-2.5 py-1 rounded-xl shadow-2xs transition-all flex items-center gap-1 cursor-pointer"
+                  >
+                    <Scales size={13} /> Split Equally
+                  </button>
+                </div>
+
+                {/* Dynamic Contributor Rows */}
+                <div className="space-y-2.5">
+                  {contributors.map((c, idx) => {
+                    const memberObj = members.find((m) => m.id === c.memberId) || members[0];
+                    const numAmt = typeof c.amount === "number" ? c.amount : 0;
+                    const pct = totalPooledCapital > 0 ? ((numAmt / totalPooledCapital) * 100).toFixed(1) : "0";
+
+                    return (
+                      <div
+                        key={idx}
+                        className="p-2.5 bg-white border border-slate-200 rounded-2xl flex items-center justify-between gap-2.5 shadow-2xs"
+                      >
+                        <div className="flex items-center gap-2 flex-1">
+                          <span className="w-6 h-6 rounded-full bg-slate-100 text-slate-600 font-bold text-[11px] flex items-center justify-center shrink-0">
+                            #{idx + 1}
+                          </span>
+                          <select
+                            value={c.memberId}
+                            onChange={(e) => handleContributorMemberChange(idx, e.target.value)}
+                            className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-bold text-slate-900 focus:border-blue-600 outline-none flex-1"
+                          >
+                            {members.map((m) => (
+                              <option key={m.id} value={m.id}>
+                                {m.name} ({m.role})
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        {/* Custom Rupee Amount Input */}
+                        <div className="flex items-center gap-1.5 w-32 shrink-0">
+                          <span className="text-xs font-bold text-slate-500">₹</span>
+                          <input
+                            type="number"
+                            min={0}
+                            placeholder="Amount"
+                            value={c.amount}
+                            onChange={(e) => handleContributorAmountChange(idx, e.target.value)}
+                            className="w-full bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 text-xs font-mono font-bold text-slate-900 focus:bg-white focus:border-blue-600 outline-none"
+                          />
+                        </div>
+
+                        {/* Percentage badge */}
+                        <span className="text-[11px] font-mono font-bold text-blue-600 w-12 text-right shrink-0">
+                          {pct}%
+                        </span>
+
+                        {/* Delete row button */}
+                        {contributors.length > 2 && idx > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveContributor(idx)}
+                            className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors shrink-0"
+                            title="Remove Contributor"
+                          >
+                            <Trash size={15} />
+                          </button>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* + Add Friend Button */}
+                <div className="flex items-center justify-between pt-1">
+                  <button
+                    type="button"
+                    onClick={handleAddContributor}
+                    className="px-3 py-1.5 rounded-xl bg-white border border-blue-300 text-blue-700 hover:bg-blue-100 font-bold text-xs shadow-2xs transition-all flex items-center gap-1.5 cursor-pointer"
+                  >
+                    <Plus size={14} weight="bold" /> Add Co-Contributor Friend
+                  </button>
+
+                  <div className="text-xs font-mono font-bold text-slate-800">
+                    Total Pooled: <span className="text-blue-600">{formatINR(totalPooledCapital)}</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* 2. Number of PAN Cards */}
+            <div className="space-y-1.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                  <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-slate-500 font-mono">
+                  1 PAN per Application
+                </span>
+              </div>
+              <input
+                type="number"
+                min={1}
+                max={50}
+                required
+                value={numberOfIpos}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  if (val === "") {
+                    setNumberOfIpos("");
+                  } else {
+                    const parsed = parseInt(val, 10);
+                    setNumberOfIpos(isNaN(parsed) ? "" : Math.max(1, parsed));
+                  }
+                }}
+                onBlur={() => {
+                  if (numberOfIpos === "" || numberOfIpos < 1) {
+                    setNumberOfIpos(1);
+                  }
+                }}
+                className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
+                placeholder="Enter number of PAN cards (e.g. 5)"
+              />
+            </div>
+
+            {/* 3. Dynamic PAN Inputs with status indicators */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
+                  <IdentificationCard size={15} className="text-blue-600" /> PAN Card Numbers ({panNumbers.length} Required) <span className="text-rose-500">*</span>
+                </label>
+                <span className="text-[11px] text-slate-400 font-medium">
+                  Auto-formatted Uppercase
+                </span>
+              </div>
+
+              <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                {panNumbers.map((pan, idx) => {
+                  const valid = isValidPan(pan);
+                  return (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2.5 p-2 bg-slate-50/80 border border-slate-200/80 hover:border-slate-300 rounded-2xl transition-all"
+                    >
+                      <span className="text-[11px] font-bold text-slate-500 w-16 shrink-0 font-mono text-center bg-white py-1.5 px-2 rounded-xl border border-slate-200 shadow-2xs">
+                        PAN #{idx + 1}
+                      </span>
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          required
+                          maxLength={10}
+                          placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
+                          value={pan}
+                          onChange={(e) => handlePanChange(idx, e.target.value)}
+                          className="w-full bg-white border border-slate-200 hover:border-slate-300 rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-slate-900 tracking-widest uppercase focus:border-blue-600 focus:ring-3 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-slate-400"
+                        />
+                        {valid && (
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 text-emerald-600">
+                            <CheckCircle size={16} weight="fill" />
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Footer Actions */}
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 disabled:opacity-75 text-white font-semibold text-xs shadow-lg shadow-emerald-600/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer"
+              >
+                {isSubmitting ? (
+                  <>
+                    <CircleNotch size={18} className="animate-spin" /> Filing Application...
+                  </>
+                ) : (
+                  <>
+                    <ShieldCheck size={18} weight="bold" /> Submit {applicantMode === "JOINT" ? `${contributors.length} Friends Split` : ""} {effectiveIpos} IPO Application(s)
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
