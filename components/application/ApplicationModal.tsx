@@ -1,12 +1,12 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Button } from "../ui/Button";
 import { UploadZone } from "../ui/UploadZone";
 import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR } from "@/lib/mockData";
-import { ParticipationType } from "@/types/nexo";
+import { ApplicationType } from "@/types/nexo";
 import {
   X,
   User,
@@ -14,6 +14,7 @@ import {
   CheckCircle,
   LockKey,
   CaretRight,
+  WarningCircle,
 } from "@phosphor-icons/react";
 
 export function ApplicationModal() {
@@ -26,18 +27,33 @@ export function ApplicationModal() {
   } = useNexo();
 
   const [step, setStep] = useState<1 | 2 | 3 | 4>(1);
-  const [participationType, setParticipationType] = useState<ParticipationType>("COMBO");
+  const [appType, setAppType] = useState<ApplicationType>("INDIVIDUAL");
+  const [selectedMemberId, setSelectedMemberId] = useState<string>("mem_1");
 
+  // Combined contributions
   const [contributions, setContributions] = useState<Record<string, number>>({
-    mem_1: 50000,
-    mem_2: 50000,
+    mem_1: 5000,
+    mem_2: 5000,
+    mem_3: 5000,
   });
 
   const [proofUrl, setProofUrl] = useState<string>("");
 
+  const requiredLotPrice = activeApplicationIpo?.metrics.minInvestment || 15000;
+
+  useEffect(() => {
+    if (activeApplicationIpo && appType === "INDIVIDUAL") {
+      setContributions({
+        [selectedMemberId]: activeApplicationIpo.metrics.minInvestment,
+      });
+    }
+  }, [activeApplicationIpo, appType, selectedMemberId]);
+
   if (!isApplicationModalOpen || !activeApplicationIpo) return null;
 
   const totalPooled = Object.values(contributions).reduce((a, b) => a + (b || 0), 0);
+
+  const isValidCombinedTotal = appType === "COMBINED" ? totalPooled === requiredLotPrice : true;
 
   const handleContributionChange = (memberId: string, val: number) => {
     setContributions((prev) => ({
@@ -52,21 +68,39 @@ export function ApplicationModal() {
       if (copy[memberId] !== undefined) {
         delete copy[memberId];
       } else {
-        const member = members.find((m) => m.id === memberId);
-        copy[memberId] = member?.defaultContribution || 30000;
+        copy[memberId] = 5000;
       }
       return copy;
     });
   };
 
   const handleSubmit = () => {
-    const list = Object.entries(contributions).map(([memberId, contribution]) => ({
-      memberId,
-      contribution,
-    }));
+    if (appType === "COMBINED" && !isValidCombinedTotal) return;
 
-    createApplication(activeApplicationIpo.id, participationType, list, proofUrl);
+    if (appType === "INDIVIDUAL") {
+      const list = [
+        {
+          memberId: selectedMemberId,
+          contribution: requiredLotPrice,
+        },
+      ];
+      createApplication(
+        activeApplicationIpo.id,
+        "INDIVIDUAL",
+        list,
+        proofUrl,
+        selectedMemberId
+      );
+    } else {
+      const list = Object.entries(contributions).map(([memberId, contribution]) => ({
+        memberId,
+        contribution,
+      }));
+      createApplication(activeApplicationIpo.id, "COMBINED", list, proofUrl);
+    }
   };
+
+  const selectedMember = members.find((m) => m.id === selectedMemberId) || members[0];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-xs p-4 animate-fade-in">
@@ -75,10 +109,10 @@ export function ApplicationModal() {
         <div className="p-5 border-b border-[#E2E8F0] flex items-center justify-between bg-[#F8FAFC]">
           <div>
             <div className="text-xs font-bold text-[#2563EB] uppercase tracking-wider">
-              Step {step} of 4 • Progressive Data Entry
+              Step {step} of 4 • Add Application Entry
             </div>
             <h3 className="text-base font-extrabold text-[#0F172A]">
-              Application for {activeApplicationIpo.name}
+              Application for {activeApplicationIpo.name} (Lot: {formatINR(requiredLotPrice)})
             </h3>
           </div>
           <button
@@ -91,25 +125,25 @@ export function ApplicationModal() {
 
         {/* STEP CONTENT */}
         <div className="p-6 overflow-y-auto space-y-6">
-          {/* STEP 1: PARTICIPATION MODE */}
+          {/* STEP 1: APPLICATION TYPE */}
           {step === 1 && (
             <div className="space-y-4">
               <div className="text-sm font-extrabold text-[#0F172A]">
-                Select Participation Structure
+                Select Application Type
               </div>
               <p className="text-xs text-[#64748B] font-medium">
-                Choose whether you are applying independently or pooling capital with syndicate members.
+                Every application entry represents exactly 1 IPO lot ({formatINR(requiredLotPrice)}).
               </p>
 
               <div className="grid grid-cols-2 gap-4">
                 <button
                   type="button"
                   onClick={() => {
-                    setParticipationType("SOLO");
-                    setContributions({ mem_1: activeApplicationIpo.metrics.minInvestment });
+                    setAppType("INDIVIDUAL");
+                    setContributions({ [selectedMemberId]: requiredLotPrice });
                   }}
                   className={`p-5 rounded-2xl border text-left transition-all ${
-                    participationType === "SOLO"
+                    appType === "INDIVIDUAL"
                       ? "bg-[#EFF6FF] border-[#2563EB] text-[#0F172A] shadow-xs"
                       : "bg-[#FFFFFF] border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]"
                   }`}
@@ -117,20 +151,20 @@ export function ApplicationModal() {
                   <div className="w-10 h-10 rounded-xl bg-[#FFFFFF] border border-[#BFDBFE] flex items-center justify-center text-[#2563EB] mb-3 shadow-2xs">
                     <User size={22} />
                   </div>
-                  <div className="font-bold text-sm text-[#0F172A]">SOLO Application</div>
+                  <div className="font-bold text-sm text-[#0F172A]">Individual Application</div>
                   <div className="text-xs text-[#64748B] mt-1 font-medium">
-                    One member applies independently under their own PAN.
+                    1 person funds the entire IPO lot ({formatINR(requiredLotPrice)}).
                   </div>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => {
-                    setParticipationType("COMBO");
-                    setContributions({ mem_1: 50000, mem_2: 50000 });
+                    setAppType("COMBINED");
+                    setContributions({ mem_1: 5000, mem_2: 5000, mem_3: 5000 });
                   }}
                   className={`p-5 rounded-2xl border text-left transition-all ${
-                    participationType === "COMBO"
+                    appType === "COMBINED"
                       ? "bg-[#ECFDF5] border-[#059669] text-[#0F172A] shadow-xs"
                       : "bg-[#FFFFFF] border-[#E2E8F0] text-[#475569] hover:border-[#CBD5E1]"
                   }`}
@@ -139,136 +173,175 @@ export function ApplicationModal() {
                     <Users size={22} />
                   </div>
                   <div className="font-bold text-sm text-[#0F172A] flex items-center gap-1.5">
-                    COMBO Syndicate
-                    <span className="text-[10px] px-1.5 py-0.2 rounded bg-[#059669] text-white font-bold">
-                      Recommended
-                    </span>
+                    Combined Application
                   </div>
                   <div className="text-xs text-[#64748B] mt-1 font-medium">
-                    Two or more friends pool capital together. NEXO auto-calculates split percentages.
+                    Multiple people jointly fund 1 IPO lot ({formatINR(requiredLotPrice)}).
                   </div>
                 </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: CONTRIBUTIONS & PRO-RATA SPLITS */}
+          {/* STEP 2: APPLICANT / CONTRIBUTOR SELECTION & VALIDATION */}
           {step === 2 && (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-sm font-extrabold text-[#0F172A]">
-                    Member Capital Allocations
-                  </div>
-                  <div className="text-xs text-[#64748B] font-medium">
-                    Percentages auto-calculated in real time
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-xs text-[#64748B] font-medium">Total Pooled Capital</div>
-                  <div className="text-base font-extrabold text-[#059669] num-tabular">
-                    {formatINR(totalPooled)}
-                  </div>
-                </div>
-              </div>
-
-              {/* Members Checklist & Contribution Inputs */}
-              <div className="space-y-3">
-                {members.map((member) => {
-                  const isSelected = contributions[member.id] !== undefined;
-                  const contrib = contributions[member.id] || 0;
-                  const percentage =
-                    totalPooled > 0 ? ((contrib / totalPooled) * 100).toFixed(1) : "0.0";
-
-                  return (
-                    <div
-                      key={member.id}
-                      className={`p-3.5 rounded-2xl border transition-all ${
-                        isSelected
-                          ? "bg-[#FFFFFF] border-[#E2E8F0] shadow-2xs"
-                          : "bg-[#F8FAFC] border-[#E2E8F0] opacity-60"
-                      }`}
+              {appType === "INDIVIDUAL" ? (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-[#0F172A] block mb-1.5">
+                      Select Applicant
+                    </label>
+                    <select
+                      value={selectedMemberId}
+                      onChange={(e) => setSelectedMemberId(e.target.value)}
+                      className="w-full bg-[#F8FAFC] border border-[#CBD5E1] rounded-xl p-2.5 text-xs font-bold text-[#0F172A] focus:border-[#2563EB] outline-none"
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                          <input
-                            type="checkbox"
-                            checked={isSelected}
-                            onChange={() => toggleMemberSelection(member.id)}
-                            className="w-4 h-4 rounded border-[#CBD5E1] accent-[#2563EB]"
-                          />
-                          <img
-                            src={member.avatar}
-                            alt={member.name}
-                            className="w-8 h-8 rounded-full object-cover ring-2 ring-[#E2E8F0]"
-                          />
-                          <div>
-                            <div className="text-xs font-bold text-[#0F172A]">
-                              {member.name}
-                            </div>
-                            <MaskedPAN panMasked={member.panMasked} />
-                          </div>
-                        </div>
+                      {members.map((m) => (
+                        <option key={m.id} value={m.id}>
+                          {m.name} ({m.panMasked})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-                        {isSelected ? (
-                          <div className="flex items-center gap-3">
-                            <div className="text-right">
-                              <span className="text-[10px] text-[#64748B] block font-medium">
-                                Contribution (₹)
-                              </span>
-                              <input
-                                type="number"
-                                step={5000}
-                                value={contrib}
-                                onChange={(e) =>
-                                  handleContributionChange(
-                                    member.id,
-                                    Number(e.target.value)
-                                  )
-                                }
-                                className="w-28 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-2.5 py-1 text-xs text-right text-[#0F172A] font-bold num-tabular focus:border-[#2563EB] focus:outline-none"
-                              />
-                            </div>
-                            <div className="w-16 text-right">
-                              <span className="text-[10px] text-[#64748B] block font-medium">Share</span>
-                              <span className="text-xs font-bold text-[#2563EB] num-tabular">
-                                {percentage}%
-                              </span>
-                            </div>
-                          </div>
-                        ) : (
-                          <span className="text-xs text-[#94A3B8] font-medium">Not Participating</span>
-                        )}
+                  <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2 text-xs">
+                    <div className="flex justify-between">
+                      <span className="text-[#64748B]">Applicant Name:</span>
+                      <span className="font-bold text-[#0F172A]">{selectedMember.name}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#64748B]">Masked PAN:</span>
+                      <span className="font-mono font-bold text-[#0F172A]">
+                        {selectedMember.panMasked}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-[#64748B]">Lot Amount:</span>
+                      <span className="font-extrabold text-[#059669] num-tabular">
+                        {formatINR(requiredLotPrice)}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                /* COMBINED CONTRIBUTORS & VALIDATION */
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm font-extrabold text-[#0F172A]">
+                        Contributors for 1 Joint Lot
+                      </div>
+                      <div className="text-xs text-[#64748B] font-medium">
+                        Total must equal exactly {formatINR(requiredLotPrice)}
                       </div>
                     </div>
-                  );
-                })}
-              </div>
+                    <div className="text-right">
+                      <div className="text-xs text-[#64748B] font-medium">Total Pooled</div>
+                      <div
+                        className={`text-base font-extrabold num-tabular ${
+                          isValidCombinedTotal ? "text-[#059669]" : "text-rose-600"
+                        }`}
+                      >
+                        {formatINR(totalPooled)} / {formatINR(requiredLotPrice)}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Validation Alert */}
+                  {!isValidCombinedTotal && (
+                    <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2 font-medium">
+                      <WarningCircle size={18} className="shrink-0 text-rose-600" />
+                      <span>
+                        Total contributions ({formatINR(totalPooled)}) must equal the required IPO lot price ({formatINR(requiredLotPrice)}).
+                      </span>
+                    </div>
+                  )}
+
+                  {/* Contributor List */}
+                  <div className="space-y-2.5">
+                    {members.map((member) => {
+                      const isSelected = contributions[member.id] !== undefined;
+                      const contrib = contributions[member.id] || 0;
+
+                      return (
+                        <div
+                          key={member.id}
+                          className={`p-3 rounded-2xl border transition-all ${
+                            isSelected
+                              ? "bg-[#FFFFFF] border-[#E2E8F0] shadow-2xs"
+                              : "bg-[#F8FAFC] border-[#E2E8F0] opacity-50"
+                          }`}
+                        >
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleMemberSelection(member.id)}
+                                className="w-4 h-4 rounded border-[#CBD5E1] accent-[#2563EB]"
+                              />
+                              <div>
+                                <div className="text-xs font-bold text-[#0F172A]">
+                                  {member.name}
+                                </div>
+                                <div className="text-[10px] font-mono text-[#64748B]">
+                                  {member.panMasked}
+                                </div>
+                              </div>
+                            </div>
+
+                            {isSelected ? (
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs text-[#64748B] font-medium">₹</span>
+                                <input
+                                  type="number"
+                                  step={1000}
+                                  value={contrib}
+                                  onChange={(e) =>
+                                    handleContributionChange(
+                                      member.id,
+                                      Number(e.target.value)
+                                    )
+                                  }
+                                  className="w-28 bg-[#F8FAFC] border border-[#CBD5E1] rounded-lg px-2 py-1 text-xs text-right text-[#0F172A] font-bold num-tabular focus:border-[#2563EB] outline-none"
+                                />
+                              </div>
+                            ) : (
+                              <span className="text-xs text-[#94A3B8]">Not contributing</span>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )}
 
-          {/* STEP 3: PROOF UPLOAD & PRIVATE VAULT */}
+          {/* STEP 3: PROOF UPLOAD */}
           {step === 3 && (
             <div className="space-y-4">
               <div className="text-sm font-extrabold text-[#0F172A]">
-                Upload Private Application Record
+                Upload Application Proof (Optional)
               </div>
               <p className="text-xs text-[#64748B] font-medium">
-                Proof screenshots are encrypted and accessible only to participating syndicate members.
+                Proof screenshots verify application submission check mark.
               </p>
 
               <UploadZone
-                label="Application Screenshot / Payment Ref"
+                label="Application Screenshot / Proof"
                 existingUrl={proofUrl}
                 onUploadComplete={(url) => setProofUrl(url)}
               />
 
               <div className="p-3.5 rounded-xl bg-[#ECFDF5] border border-[#A7F3D0] text-xs text-[#047857] space-y-1">
                 <div className="font-bold text-[#0F172A] flex items-center gap-1.5">
-                  <LockKey size={14} className="text-[#059669]" /> Group Vault Privacy Guarantee
+                  <LockKey size={14} className="text-[#059669]" /> Masked PAN Security
                 </div>
                 <div className="text-[11px] text-[#047857] font-medium">
-                  Full PAN and application reference numbers are never exposed outside your 5 trusted members.
+                  Full PAN is never displayed in the shared application ledger.
                 </div>
               </div>
             </div>
@@ -280,50 +353,59 @@ export function ApplicationModal() {
               <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] flex items-center gap-3">
                 <CheckCircle size={28} className="text-[#059669]" />
                 <div>
-                  <div className="text-sm font-bold text-[#0F172A]">Ready for Group Vaulting</div>
+                  <div className="text-sm font-bold text-[#0F172A]">Application Ready</div>
                   <div className="text-xs text-[#059669] font-medium">
-                    Pro-rata calculations and proof records prepared
+                    Default status will be set to 🟡 Awaiting
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-3 text-xs">
+              <div className="p-4 rounded-2xl bg-[#F8FAFC] border border-[#E2E8F0] space-y-2.5 text-xs">
                 <div className="flex justify-between py-1 border-b border-[#E2E8F0]">
                   <span className="text-[#64748B] font-medium">IPO Target</span>
                   <span className="font-bold text-[#0F172A]">{activeApplicationIpo.name}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-[#E2E8F0]">
-                  <span className="text-[#64748B] font-medium">Structure</span>
-                  <span className="font-bold text-[#2563EB]">{participationType}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-[#E2E8F0]">
-                  <span className="text-[#64748B] font-medium">Total Pooled Amount</span>
-                  <span className="font-bold text-[#0F172A] num-tabular">
-                    {formatINR(totalPooled)}
-                  </span>
+                  <span className="text-[#64748B] font-medium">Type</span>
+                  <span className="font-bold text-[#2563EB]">{appType}</span>
                 </div>
 
-                <div className="pt-2">
-                  <span className="text-[#64748B] block mb-2 font-bold">
-                    Participant Breakdown & Share:
-                  </span>
-                  <div className="space-y-1.5">
-                    {Object.entries(contributions).map(([memId, amount]) => {
-                      const m = members.find((x) => x.id === memId);
-                      const pct = ((amount / totalPooled) * 100).toFixed(1);
-                      return (
-                        <div
-                          key={memId}
-                          className="flex justify-between items-center bg-[#FFFFFF] border border-[#E2E8F0] p-2 rounded-lg"
-                        >
-                          <span className="text-[#0F172A] font-bold">{m?.name}</span>
-                          <span className="text-[#475569] font-semibold num-tabular">
-                            {formatINR(amount)} ({pct}%)
-                          </span>
-                        </div>
-                      );
-                    })}
+                {appType === "INDIVIDUAL" ? (
+                  <div className="flex justify-between py-1 border-b border-[#E2E8F0]">
+                    <span className="text-[#64748B] font-medium">Applicant</span>
+                    <span className="font-bold text-[#0F172A]">
+                      {selectedMember.name} ({selectedMember.panMasked})
+                    </span>
                   </div>
+                ) : (
+                  <div className="pt-2">
+                    <span className="text-[#64748B] block mb-1.5 font-bold">
+                      Contributors Breakdown:
+                    </span>
+                    <div className="space-y-1">
+                      {Object.entries(contributions).map(([memId, amount]) => {
+                        const m = members.find((x) => x.id === memId);
+                        return (
+                          <div
+                            key={memId}
+                            className="flex justify-between items-center bg-white p-2 rounded-lg border border-[#E2E8F0]"
+                          >
+                            <span className="font-bold text-[#0F172A]">{m?.name}</span>
+                            <span className="font-semibold text-[#475569] num-tabular">
+                              {formatINR(amount)}
+                            </span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between pt-2 border-t border-[#E2E8F0]">
+                  <span className="text-[#64748B] font-bold">Total Lot Amount</span>
+                  <span className="font-extrabold text-[#059669] num-tabular text-sm">
+                    {formatINR(appType === "INDIVIDUAL" ? requiredLotPrice : totalPooled)}
+                  </span>
                 </div>
               </div>
             </div>
@@ -351,7 +433,7 @@ export function ApplicationModal() {
               variant="primary"
               size="sm"
               onClick={() => setStep((s) => (s + 1) as any)}
-              disabled={totalPooled <= 0}
+              disabled={step === 2 && appType === "COMBINED" && !isValidCombinedTotal}
             >
               Continue <CaretRight size={14} />
             </Button>

@@ -24,6 +24,8 @@ type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members";
 interface NexoContextType {
   activeTab: ViewTab;
   setActiveTab: (tab: ViewTab) => void;
+  currentUserRole: MemberRole;
+  setCurrentUserRole: (role: MemberRole) => void;
   ipos: IPOOpportunity[];
   members: Member[];
   activities: ActivityItem[];
@@ -57,11 +59,14 @@ interface NexoContextType {
   togglePanReveal: (memberId: string) => void;
   createApplication: (
     ipoId: string,
-    type: ParticipationType,
+    type: ParticipationType | ApplicationType,
     participantContributions: { memberId: string; contribution: number }[],
-    proofUrl?: string
+    proofUrl?: string,
+    applicantMemberId?: string
   ) => void;
   updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
+  updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
+  updateRegistrarUrl: (ipoId: string, url: string) => void;
   isLoading: boolean;
 }
 
@@ -69,6 +74,7 @@ const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
+  const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
   const [ipos, setIpos] = useState<IPOOpportunity[]>(MOCK_IPOS);
   const [members] = useState<Member[]>(MOCK_MEMBERS);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
@@ -151,7 +157,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         allotmentDate: "T+3 Days",
         listingDate: "T+6 Days",
       },
-      createdBy: "Niranjan",
+      createdBy: "Shivam Prasad",
       participantsCount: 0,
       combinedCapital: 0,
       applications: [],
@@ -162,11 +168,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
       type: "IPO_ADDED",
-      title: `Ashay added ${data.name}`,
+      title: `Shivam added ${data.name}`,
       subtitle: `Priced ₹${data.priceMin}–₹${data.priceMax} per share • Lot size ${data.lotSize}`,
       timestamp: "Just now",
-      memberName: "Ashay",
-      memberAvatar: members[1].avatar,
+      memberName: "Shivam Prasad",
+      memberAvatar: members[0].avatar,
       ipoId: newIpo.id,
       ipoName: data.name,
     };
@@ -184,13 +190,41 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateApplicationStatus = (
+    ipoId: string,
+    applicationId: string,
+    allotmentStatus: AllotmentStatus
+  ) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const updatedApps = ipo.applications.map((app) =>
+            app.id === applicationId
+              ? { ...app, allotmentStatus, status: allotmentStatus }
+              : app
+          );
+          return { ...ipo, applications: updatedApps };
+        }
+        return ipo;
+      })
+    );
+  };
+
   const createApplication = (
     ipoId: string,
-    type: ParticipationType,
+    type: ParticipationType | ApplicationType,
     participantContributions: { memberId: string; contribution: number }[],
-    proofUrl?: string
+    proofUrl?: string,
+    applicantMemberId?: string
   ) => {
+    const canonicalType: ApplicationType =
+      type === "SOLO" || type === "INDIVIDUAL" ? "INDIVIDUAL" : "COMBINED";
+
     const total = participantContributions.reduce((sum, p) => sum + p.contribution, 0);
+
+    const applicantMember = applicantMemberId
+      ? members.find((m) => m.id === applicantMemberId)
+      : members[0];
 
     const formattedParticipants = participantContributions.map((p) => {
       const member = members.find((m) => m.id === p.memberId);
@@ -210,16 +244,22 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     });
 
     const newAppId = `app_${Date.now()}`;
-    const newApplication = {
+    const newApplication: Application = {
       id: newAppId,
       ipoId,
-      type,
+      type: canonicalType,
+      applicantName: canonicalType === "INDIVIDUAL" ? applicantMember?.name || "Shivam Prasad" : undefined,
+      memberId: canonicalType === "INDIVIDUAL" ? applicantMember?.id || "mem_1" : undefined,
+      panMasked: canonicalType === "INDIVIDUAL" ? applicantMember?.panMasked || "XXXXX1234X" : undefined,
       totalContribution: total,
-      status: "SUBMITTED" as const,
+      lotCount: 1,
+      verified: true,
+      allotmentStatus: "AWAITING",
+      status: "AWAITING",
       createdAt: new Date().toISOString(),
       applicationNumber: `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`,
       applicationProofUrl: proofUrl,
-      participants: formattedParticipants,
+      participants: canonicalType === "COMBINED" ? formattedParticipants : [],
     };
 
     setIpos((prev) =>
@@ -231,7 +271,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
             0
           );
           const uniqueParticipants = new Set(
-            updatedApps.flatMap((a) => a.participants.map((p) => p.memberId))
+            updatedApps.flatMap((a) =>
+              a.type === "INDIVIDUAL" && a.memberId
+                ? [a.memberId]
+                : a.participants.map((p) => p.memberId)
+            )
           ).size;
 
           return {
@@ -248,20 +292,20 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
     // Dismiss missing proof action if proof was uploaded
     if (proofUrl) {
-      setActionItems((prev) => prev.filter((a) => a.ipoId !== ipoId || a.type !== "PROOF_MISSING"));
+      setActionItems((prev) =>
+        prev.filter((a) => a.ipoId !== ipoId || a.type !== "PROOF_MISSING")
+      );
     }
 
     // Record activity
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
       type: "APPLICATION_SUBMITTED",
-      title: `${type} Application Submitted`,
-      subtitle: `Combined ₹${total.toLocaleString("en-IN")} pooled for ${
+      title: `${canonicalType} Application Submitted`,
+      subtitle: `Lot of ₹${total.toLocaleString("en-IN")} submitted for ${
         activeApplicationIpo?.name || "IPO"
       }`,
       timestamp: "Just now",
-      memberName: "Niranjan",
-      memberAvatar: members[0].avatar,
       ipoId,
       ipoName: activeApplicationIpo?.name,
     };
@@ -270,11 +314,19 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     closeApplicationModal();
   };
 
+  const updateRegistrarUrl = (ipoId: string, url: string) => {
+    setIpos((prev) =>
+      prev.map((ipo) => (ipo.id === ipoId ? { ...ipo, registrarUrl: url } : ipo))
+    );
+  };
+
   return (
     <NexoContext.Provider
       value={{
         activeTab,
         setActiveTab,
+        currentUserRole,
+        setCurrentUserRole,
         ipos,
         members,
         activities,
@@ -298,6 +350,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         togglePanReveal,
         createApplication,
         updateIpoStatus,
+        updateApplicationStatus,
+        updateRegistrarUrl,
         isLoading,
       }}
     >
