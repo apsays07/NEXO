@@ -24,11 +24,11 @@ export function NotificationPopover() {
       <button
         onClick={() => setIsOpen(!isOpen)}
         title="Unread Action Items"
-        className="p-2 rounded-xl bg-slate-50 hover:bg-slate-100/90 text-slate-500 hover:text-slate-900 border border-slate-200/80 hover:border-slate-300 transition-all duration-150 relative cursor-pointer active:scale-[0.98] shadow-3xs"
+        className="h-10 w-10 flex items-center justify-center rounded-xl bg-slate-50 hover:bg-slate-100/90 text-slate-505 hover:text-slate-900 border border-slate-200/80 hover:border-slate-300 transition-all duration-150 relative cursor-pointer active:scale-[0.98] shadow-3xs"
       >
-        <Bell size={16} className="transition-transform group-hover:rotate-12" />
+        <Bell size={18} className="transition-transform group-hover:rotate-12" />
         {actionItems.length > 0 && (
-          <span className="absolute top-1 right-1 flex h-2 w-2">
+          <span className="absolute top-2.5 right-2.5 flex h-2 w-2">
             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
             <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
           </span>

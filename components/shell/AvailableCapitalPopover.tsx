@@ -27,7 +27,7 @@ export function AvailableCapitalPopover({ summary }: AvailableCapitalPopoverProp
     <div className="relative inline-block font-sans" ref={containerRef}>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-3.5 py-1.8 rounded-xl bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200/80 text-xs font-bold text-emerald-800 transition-all duration-150 active:scale-[0.98] shadow-3xs cursor-pointer"
+        className="flex items-center gap-2.5 px-4 h-10 rounded-xl bg-emerald-50/80 hover:bg-emerald-100/90 border border-emerald-200/80 text-xs sm:text-sm font-bold text-emerald-800 transition-all duration-150 active:scale-[0.98] shadow-3xs cursor-pointer"
       >
         <span className="relative flex h-2 w-2">
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
