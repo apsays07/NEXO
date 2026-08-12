@@ -25,6 +25,7 @@ export function ApplicationsView() {
     activeApplicationIpo,
     deleteApplication,
     updateApplication,
+    currentMember,
   } = useNexo();
 
   // Local Filter for selecting IPO / Company
@@ -472,6 +473,11 @@ export function ApplicationsView() {
                       ? app.participants.map((p) => p.memberName).join(", ")
                       : applicantName;
 
+                  const isMine =
+                    app.memberId === currentMember?.id ||
+                    (app.applicantName && app.applicantName.toLowerCase() === currentMember?.name?.toLowerCase()) ||
+                    (app.participants && app.participants.some(p => p.memberId === currentMember?.id || p.memberName.toLowerCase() === currentMember?.name?.toLowerCase()));
+
                   return (
                     <React.Fragment key={app.id}>
                       {/* DESKTOP ROW (md and larger) */}
@@ -507,27 +513,35 @@ export function ApplicationsView() {
 
                         {/* ACTIONS: EDIT & DELETE */}
                         <div className="col-span-2 flex items-center justify-end gap-1.5">
-                          <button
-                            onClick={() =>
-                              setEditingApp({
-                                ipoId: ipo.id,
-                                appId: app.id,
-                                applicantName: applicantName,
-                                lotCount: lotCount,
-                              })
-                            }
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
-                            title="Edit Application"
-                          >
-                            <PencilSimple size={16} weight="bold" />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
-                            title="Delete Application"
-                          >
-                            <Trash size={16} weight="bold" />
-                          </button>
+                          {isMine ? (
+                            <>
+                              <button
+                                onClick={() =>
+                                  setEditingApp({
+                                    ipoId: ipo.id,
+                                    appId: app.id,
+                                    applicantName: applicantName,
+                                    lotCount: lotCount,
+                                  })
+                                }
+                                className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors cursor-pointer"
+                                title="Edit Application"
+                              >
+                                <PencilSimple size={16} weight="bold" />
+                              </button>
+                              <button
+                                onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
+                                className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                title="Delete Application"
+                              >
+                                <Trash size={16} weight="bold" />
+                              </button>
+                            </>
+                          ) : (
+                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/50">
+                              View Only
+                            </span>
+                          )}
                         </div>
                       </div>
 
@@ -545,27 +559,35 @@ export function ApplicationsView() {
                           </div>
 
                           <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              onClick={() =>
-                                setEditingApp({
-                                  ipoId: ipo.id,
-                                  appId: app.id,
-                                  applicantName: applicantName,
-                                  lotCount: lotCount,
-                                })
-                              }
-                              className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
-                              title="Edit Application"
-                            >
-                              <PencilSimple size={16} weight="bold" />
-                            </button>
-                            <button
-                              onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
-                              title="Delete Application"
-                            >
-                              <Trash size={16} weight="bold" />
-                            </button>
+                            {isMine ? (
+                              <>
+                                <button
+                                  onClick={() =>
+                                    setEditingApp({
+                                      ipoId: ipo.id,
+                                      appId: app.id,
+                                      applicantName: applicantName,
+                                      lotCount: lotCount,
+                                    })
+                                  }
+                                  className="p-1.5 rounded-lg text-slate-500 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                                  title="Edit Application"
+                                >
+                                  <PencilSimple size={16} weight="bold" />
+                                </button>
+                                <button
+                                  onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
+                                  className="p-1.5 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors"
+                                  title="Delete Application"
+                                >
+                                  <Trash size={16} weight="bold" />
+                                </button>
+                              </>
+                            ) : (
+                              <span className="text-[9px] font-bold text-slate-400 uppercase tracking-wider bg-slate-100/80 px-2 py-0.5 rounded border border-slate-200/50">
+                                View Only
+                              </span>
+                            )}
                           </div>
                         </div>
 
