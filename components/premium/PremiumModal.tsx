@@ -414,7 +414,7 @@ export function PremiumModal({ ipo, isOpen, onClose }: PremiumModalProps) {
             )}
             {discountApplied && (
               <p className="text-xs text-emerald-400 text-center font-semibold flex items-center justify-center gap-1">
-                <CheckCircle size={14} /> Coupon 'NEXOPRO2026' Applied! 20% Discount unlocked.
+                <CheckCircle size={14} /> Coupon &apos;NEXOPRO2026&apos; Applied! 20% Discount unlocked.
               </p>
             )}
 

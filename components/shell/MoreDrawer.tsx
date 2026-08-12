@@ -25,7 +25,7 @@ export function MoreDrawer({ isOpen, onClose }: MoreDrawerProps) {
 
   const handleNavClick = (tabId: string) => {
     if (["dashboard", "ipos", "applications", "portfolio", "members"].includes(tabId)) {
-      setActiveTab(tabId as any);
+      setActiveTab(tabId as "dashboard" | "ipos" | "applications" | "portfolio" | "members");
     }
     onClose();
   };
