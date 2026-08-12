@@ -71,6 +71,13 @@ interface NexoContextType {
   updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
   updateApplicationStatus: (ipoId: string, applicationId: string, status: AllotmentStatus) => void;
   updateRegistrarUrl: (ipoId: string, url: string) => void;
+  deleteApplication: (ipoId: string, applicationId: string) => void;
+  updateApplication: (
+    ipoId: string,
+    applicationId: string,
+    newApplicantName: string,
+    newLotCount: number
+  ) => void;
   isLoading: boolean;
   isPremiumUser: boolean;
   activePlan: string;
@@ -224,6 +231,58 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
               : app
           );
           return { ...ipo, applications: updatedApps };
+        }
+        return ipo;
+      })
+    );
+  };
+
+  const deleteApplication = (ipoId: string, applicationId: string) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const updatedApps = ipo.applications.filter((app) => app.id !== applicationId);
+          const newTotalCapital = updatedApps.reduce((sum, a) => sum + a.totalContribution, 0);
+          return {
+            ...ipo,
+            applications: updatedApps,
+            participantsCount: updatedApps.length,
+            combinedCapital: newTotalCapital,
+          };
+        }
+        return ipo;
+      })
+    );
+  };
+
+  const updateApplication = (
+    ipoId: string,
+    applicationId: string,
+    newApplicantName: string,
+    newLotCount: number
+  ) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const minInvest = ipo.metrics?.minInvestment || 14964;
+          const updatedApps = ipo.applications.map((app) => {
+            if (app.id === applicationId) {
+              const newTotal = newLotCount * minInvest;
+              return {
+                ...app,
+                applicantName: newApplicantName,
+                lotCount: newLotCount,
+                totalContribution: newTotal,
+              };
+            }
+            return app;
+          });
+          const newTotalCapital = updatedApps.reduce((sum, a) => sum + a.totalContribution, 0);
+          return {
+            ...ipo,
+            applications: updatedApps,
+            combinedCapital: newTotalCapital,
+          };
         }
         return ipo;
       })
@@ -385,6 +444,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateIpoStatus,
         updateApplicationStatus,
         updateRegistrarUrl,
+        deleteApplication,
+        updateApplication,
         isLoading,
         isPremiumUser,
         activePlan,
