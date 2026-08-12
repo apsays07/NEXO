@@ -222,21 +222,6 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               </div>
             </div>
 
-            {/* Investment Summary Box */}
-            <div className="p-4 rounded-xl bg-[#ECFDF3] border border-[#A6F4C5] flex items-center justify-between text-xs">
-              <div>
-                <span className="text-[#027A48] font-semibold block">
-                  Total Investment Required
-                </span>
-                <span className="text-[11px] text-[#059669] font-medium">
-                  {numberOfIpos} IPO(s) × {formatINR(minInvest)} per lot
-                </span>
-              </div>
-              <span className="text-lg font-bold text-[#12B76A] num-tabular">
-                {formatINR(totalAmount)}
-              </span>
-            </div>
-
             {/* Footer Buttons */}
             <div className="pt-3 border-t border-[#E2E8F0] flex items-center justify-end gap-3">
               <Button variant="secondary" size="md" type="button" onClick={onClose}>
