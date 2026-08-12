@@ -31,7 +31,7 @@ interface NexoContextType {
   isAuthLoaded: boolean;
   currentUser: Member | null;
   currentMember: Member;
-  login: (userId: string, pass: string) => { success: boolean; message?: string };
+  login: (userId: string, pass: string) => { success: boolean; role?: MemberRole; message?: string };
   logout: () => void;
   authError: string | null;
   setAuthError: (err: string | null) => void;
