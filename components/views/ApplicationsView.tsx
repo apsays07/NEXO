@@ -30,7 +30,7 @@ export function ApplicationsView() {
   } = useNexo();
 
   // Local Filter for selecting IPO / Company
-  const [ipoFilter, setIpoFilter] = useState<string>(ipos[0]?.id || "ALL");
+  const [ipoFilter, setIpoFilter] = useState<string>("ALL");
   const [viewScope, setViewScope] = useState<"ALL" | "MY">("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ALLOTTED" | "AWAITING" | "NOT_ALLOTTED">("ALL");
   
@@ -53,15 +53,12 @@ export function ApplicationsView() {
     name: string;
   } | null>(null);
 
-  // Sync filter when navigating from Home / applying for specific IPO
+  // Sync filter when navigating from applying for specific IPO
   useEffect(() => {
-    const target = activeApplicationIpo || selectedIpo;
-    if (target) {
-      setTimeout(() => {
-        setIpoFilter(target.id);
-      }, 0);
+    if (activeApplicationIpo) {
+      setIpoFilter(activeApplicationIpo.id);
     }
-  }, [selectedIpo, activeApplicationIpo]);
+  }, [activeApplicationIpo]);
 
   // Dynamically select the active IPO to display based on ipoFilter
   const selectedIpoList = useMemo(() => {
@@ -224,9 +221,10 @@ export function ApplicationsView() {
               onChange={(e) => setIpoFilter(e.target.value)}
               className="bg-surface-alt border border-line-strong rounded-xl px-3.5 py-1.5 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer min-w-[190px] shadow-2xs transition-all"
             >
+              <option value="ALL">All IPOs & History</option>
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
-                  {ipo.name} IPO
+                  {ipo.name} IPO {ipo.isHidden ? "(History)" : ""}
                 </option>
               ))}
             </select>
@@ -441,7 +439,14 @@ export function ApplicationsView() {
       )}
 
       {/* SINGLE CLEAN FINTECH INVESTMENT LEDGER CONTAINER */}
-      {selectedIpoList.map((ipo) => {
+      {selectedIpoList
+        .filter((ipo) => {
+          if (ipoFilter === "ALL") {
+            return ipo.applications && ipo.applications.length > 0;
+          }
+          return true;
+        })
+        .map((ipo) => {
         const filteredApps = ipo.applications.filter((app) => {
           // Status filter
           if (statusFilter !== "ALL") {
