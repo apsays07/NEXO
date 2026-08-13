@@ -11,7 +11,6 @@ import {
   Pencil,
   X,
   CheckCircle,
-  User,
 } from "@phosphor-icons/react";
 import { Member } from "@/types/nexo";
 
@@ -162,19 +161,9 @@ export function MembersView() {
                           </span>
                         )}
                       </h3>
-                      <div className="text-xs text-ink-secondary font-normal">{member.email}</div>
+                      <div className="text-xs text-ink-secondary font-mono font-medium">@{mUsername}</div>
                     </div>
                   </div>
-                </div>
-
-                {/* Username Box */}
-                <div className="mt-4 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle flex items-center justify-between text-xs font-mono">
-                  <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1.5">
-                    <User size={14} className="text-accent" /> Username:
-                  </span>
-                  <span className="font-bold text-ink bg-surface px-2.5 py-0.5 rounded border border-line">
-                    {mUsername}
-                  </span>
                 </div>
 
                 {/* Attributes */}
