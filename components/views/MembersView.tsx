@@ -9,22 +9,18 @@ import {
   UserPlus,
   ShieldCheck,
   Key,
-  Eye,
-  EyeSlash,
   Pencil,
   X,
   CheckCircle,
   User,
-  Lock,
 } from "@phosphor-icons/react";
 import { Member } from "@/types/nexo";
 
 export function MembersView() {
-  const { members, addMember, updateMember, currentUser } = useNexo();
+  const { members, ipos, addMember, updateMember, currentUser } = useNexo();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
   // Add form state
   const [name, setName] = useState("");
@@ -42,8 +38,26 @@ export function MembersView() {
   const [editPan, setEditPan] = useState("");
   const [editRole, setEditRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
 
-  const togglePasswordReveal = (id: string) => {
-    setShowPasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  const getAppliedIpoCount = (member: Member): number => {
+    if (!ipos || ipos.length === 0) return 0;
+    return ipos.filter((ipo) => {
+      if (!ipo.applications || ipo.applications.length === 0) return false;
+      return ipo.applications.some((app: any) => {
+        const isDirectMatch =
+          app.memberId === member.id ||
+          (app.applicantName && app.applicantName.toLowerCase() === member.name.toLowerCase());
+
+        const isParticipantMatch =
+          Array.isArray(app.participants) &&
+          app.participants.some(
+            (p: any) =>
+              p.memberId === member.id ||
+              (p.memberName && p.memberName.toLowerCase() === member.name.toLowerCase())
+          );
+
+        return isDirectMatch || isParticipantMatch;
+      });
+    }).length;
   };
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -113,13 +127,13 @@ export function MembersView() {
             </span>
           </h2>
           <p className="text-xs text-ink-secondary font-normal mt-0.5">
-            Manage trusted members and issue login credentials (usernames & passwords)
+            Manage trusted group members and view IPO application activity
           </p>
         </div>
 
         {isCurrentUserAdmin && (
           <Button size="sm" variant="primary" onClick={() => setIsAddModalOpen(true)}>
-            <UserPlus size={16} /> Add Member & Issue Credentials
+            <UserPlus size={16} /> Add Member
           </Button>
         )}
       </div>
@@ -128,8 +142,7 @@ export function MembersView() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
         {members.map((member) => {
           const mUsername = member.username || member.name.toLowerCase();
-          const mPassword = member.password || (member.role === "ADMIN" ? "admin123" : "user123");
-          const isRevealed = Boolean(showPasswords[member.id]);
+          const appliedCount = getAppliedIpoCount(member);
 
           return (
             <Card key={member.id} className="flex flex-col justify-between space-y-4 border-line">
@@ -155,39 +168,24 @@ export function MembersView() {
                   </div>
                 </div>
 
-                {/* Login Credentials Box */}
-                <div className="mt-4 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between font-mono">
-                    <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1">
-                      <User size={13} className="text-accent" /> Username:
-                    </span>
-                    <span className="font-bold text-ink bg-surface px-2 py-0.5 rounded border border-line">
-                      {mUsername}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between font-mono">
-                    <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1">
-                      <Lock size={13} className="text-positive" /> Password:
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-ink bg-surface px-2 py-0.5 rounded border border-line">
-                        {isRevealed ? mPassword : "••••••••"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordReveal(member.id)}
-                        className="text-ink-tertiary hover:text-ink transition-colors cursor-pointer p-0.5"
-                        title={isRevealed ? "Hide Password" : "Reveal Password"}
-                      >
-                        {isRevealed ? <EyeSlash size={14} /> : <Eye size={14} />}
-                      </button>
-                    </div>
-                  </div>
+                {/* Username Box */}
+                <div className="mt-4 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle flex items-center justify-between text-xs font-mono">
+                  <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1.5">
+                    <User size={14} className="text-accent" /> Username:
+                  </span>
+                  <span className="font-bold text-ink bg-surface px-2.5 py-0.5 rounded border border-line">
+                    {mUsername}
+                  </span>
                 </div>
 
                 {/* Attributes */}
                 <div className="mt-3 p-3 rounded-xl bg-page border border-line space-y-2 text-xs">
+                  <div className="flex justify-between items-center">
+                    <span className="text-ink-secondary font-medium">IPOs Applied Till Date</span>
+                    <span className="font-bold text-accent bg-accent-soft px-2.5 py-0.5 rounded-full text-[11px] font-mono border border-accent/20">
+                      {appliedCount} {appliedCount === 1 ? "IPO" : "IPOs"}
+                    </span>
+                  </div>
                   <div className="flex justify-between items-center">
                     <span className="text-ink-secondary font-medium">Default Lot Allocation</span>
                     <span className="font-semibold text-ink num-tabular">
@@ -210,7 +208,7 @@ export function MembersView() {
                     onClick={() => openEditModal(member)}
                     className="text-accent hover:underline font-semibold cursor-pointer flex items-center gap-1"
                   >
-                    <Pencil size={13} /> Edit Credentials
+                    <Pencil size={13} /> Edit Member
                   </button>
                 )}
               </div>
