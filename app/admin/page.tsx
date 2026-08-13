@@ -3,34 +3,35 @@
 import React, { useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { useRouter } from "next/navigation";
-import { AdminConsole } from "@/src/features/admin/AdminConsole";
-import { ShieldCheck } from "@phosphor-icons/react";
+import { AdminIPOManagement } from "@/components/admin/AdminIPOManagement";
 
 export default function AdminPage() {
-  const { currentMember, currentUser, currentUserRole, isAuthLoaded, isAuthenticated } = useNexo();
+  const { currentMember, currentUser, currentUserRole, isAuthLoaded } = useNexo();
   const router = useRouter();
 
-  const activeUser = currentMember || currentUser;
-  const activeRole = activeUser?.role || currentUserRole;
-  const isAdmin = activeRole === "ADMIN" || activeRole === "SUPER_ADMIN";
+  const activeRole = currentMember?.role || currentUser?.role || currentUserRole;
+  const isAdmin = activeRole === "ADMIN";
 
   useEffect(() => {
-    if (isAuthLoaded && (!isAuthenticated || !isAdmin)) {
-      router.replace("/admin/login");
+    if (isAuthLoaded && !isAdmin) {
+      router.replace("/");
     }
-  }, [isAuthLoaded, isAuthenticated, isAdmin, router]);
+  }, [isAuthLoaded, isAdmin, router]);
 
-  if (!isAuthLoaded || !isAuthenticated || !isAdmin) {
+  if (!isAdmin) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-950 text-slate-100 font-sans p-4">
-        <div className="p-6 max-w-sm w-full bg-slate-900 border border-slate-800 rounded-3xl shadow-xl text-center space-y-3">
-          <ShieldCheck size={32} className="text-blue-500 mx-auto animate-pulse" weight="fill" />
-          <h2 className="text-base font-extrabold text-white">Verifying Admin Access...</h2>
-          <p className="text-xs text-slate-400">Redirecting to Admin Portal Login...</p>
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 font-sans p-4">
+        <div className="p-6 max-w-sm w-full bg-white border border-rose-200 rounded-3xl shadow-xl text-center space-y-3">
+          <h2 className="text-base font-extrabold text-slate-900">Unauthorized Access</h2>
+          <p className="text-xs text-slate-500">Redirecting to user website...</p>
         </div>
       </div>
     );
   }
 
-  return <AdminConsole />;
+  return (
+    <div className="min-h-screen bg-slate-50 text-slate-900 font-sans">
+      <AdminIPOManagement />
+    </div>
+  );
 }
