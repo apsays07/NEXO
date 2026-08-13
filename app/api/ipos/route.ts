@@ -1,8 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { MOCK_IPOS } from "@/lib/mockData";
 
-const SHARED_FILE_PATH = path.join(process.cwd(), "..", "shared_ipos.json");
+const SHARED_FILE_PATH = path.join(process.cwd(), "shared_ipos.json");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,12 +16,17 @@ function readSharedIpos(): any[] {
     if (fs.existsSync(SHARED_FILE_PATH)) {
       const data = fs.readFileSync(SHARED_FILE_PATH, "utf-8");
       const parsed = JSON.parse(data);
-      if (Array.isArray(parsed)) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
     }
   } catch (err) {
     console.error("Error reading shared_ipos.json:", err);
   }
-  return [];
+  
+  // Seed with initial MOCK_IPOS if shared file is missing or empty
+  try {
+    fs.writeFileSync(SHARED_FILE_PATH, JSON.stringify(MOCK_IPOS, null, 2), "utf-8");
+  } catch (e) {}
+  return MOCK_IPOS;
 }
 
 function writeSharedIpos(ipos: any[]) {
@@ -44,9 +50,6 @@ export async function OPTIONS() {
 export async function GET(req: NextRequest) {
   try {
     const allIpos = readSharedIpos();
-    const url = new URL(req.url);
-    const isAdmin = url.searchParams.get("admin") === "true";
-
     return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
   } catch (err: any) {
     console.error("GET /api/ipos error:", err);
@@ -130,7 +133,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "IPO updated successfully." }, { headers: corsHeaders });
     }
 
-    // 2. Action: Create New IPO Opportunity
+    // 4. Action: Create New IPO Opportunity
     const name = body.name || body.company || "";
     const minInvestment = Number(body.minInvestment || body.minimumInvestment) || 15000;
     const issueSize = Number(body.issueSize) || 2400;
@@ -174,7 +177,7 @@ export async function POST(req: NextRequest) {
       applications: [],
     };
 
-    const updated = [newIpo, ...allIpos];
+    const updated = [newIpo, ...allIpos.filter((i: any) => i.id !== newIpo.id)];
     writeSharedIpos(updated);
 
     return NextResponse.json({

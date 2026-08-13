@@ -84,38 +84,19 @@ export function AdminIPOManagement() {
       )}
 
       {/* HEADER SECTION */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 bg-white border border-slate-200/90 rounded-2xl shadow-2xs">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-extrabold text-blue-600 bg-blue-50 border border-blue-200 px-2 py-0.5 rounded uppercase tracking-wider font-mono">
-              ADMIN
-            </span>
-            <span className="text-slate-300">•</span>
-            <span className="text-xs font-bold text-slate-500">Console</span>
-          </div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            IPO MANAGEMENT
-          </h1>
-          <p className="text-xs font-medium text-slate-500 mt-0.5">
-            Manage IPOs displayed on the user website.
-          </p>
-        </div>
-
-        <button
-          onClick={() => setIsDrawerOpen(true)}
-          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs transition-all shadow-md shadow-blue-500/20 active:scale-[0.98] cursor-pointer self-start sm:self-auto"
-        >
-          <Plus size={16} weight="bold" />
-          <span>+ Add IPO</span>
-        </button>
-      </div>
-
       {/* ACTIVE IPO LIST TABLE / ROW CARDS */}
       <div className="bg-white border border-slate-200 rounded-2xl shadow-2xs overflow-hidden">
         <div className="p-4 sm:p-5 border-b border-slate-100 bg-slate-50/50 flex items-center justify-between">
           <h3 className="text-xs font-extrabold text-slate-800 uppercase tracking-wider">
             Active User Website IPOs ({visibleIpos.length})
           </h3>
+          <button
+            onClick={() => setIsDrawerOpen(true)}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-xs transition-all shadow-xs active:scale-[0.98] cursor-pointer"
+          >
+            <Plus size={14} weight="bold" />
+            <span>+ Add IPO</span>
+          </button>
         </div>
 
         {visibleIpos.length === 0 ? (
