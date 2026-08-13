@@ -14,32 +14,98 @@ interface ChatWindowProps {
   onOpenIpoPage?: (ipoId: string) => void;
 }
 
+const STATIC_FALLBACK_MESSAGES: Record<string, Message[]> = {
+  conv_ipo_ipo_abc: [
+    {
+      id: "msg_1",
+      conversationId: "conv_ipo_ipo_abc",
+      senderId: "mem_1",
+      senderName: "Ankit",
+      senderUsername: "ankit",
+      senderAvatar: "/oggy.png",
+      text: "I think we should apply for 2 lots.",
+      type: "TEXT",
+      createdAt: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
+      status: "READ",
+    },
+    {
+      id: "msg_2",
+      conversationId: "conv_ipo_ipo_abc",
+      senderId: "mem_2",
+      senderName: "Ashay",
+      senderUsername: "ashay",
+      senderAvatar: "/jack.png",
+      text: "Agreed. I'll contribute ₹40,000.",
+      type: "TEXT",
+      createdAt: new Date(Date.now() - 6 * 60 * 1000).toISOString(),
+      status: "READ",
+    },
+    {
+      id: "msg_3",
+      conversationId: "conv_ipo_ipo_abc",
+      senderId: "mem_3",
+      senderName: "Ranveer",
+      senderUsername: "ranveer",
+      senderAvatar: "/sinchan.png",
+      text: "Application submitted ✓",
+      type: "TEXT",
+      createdAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+      status: "READ",
+    },
+  ],
+  conv_dir_mem_1_mem_2: [
+    {
+      id: "msg_dir_1",
+      conversationId: "conv_dir_mem_1_mem_2",
+      senderId: "mem_2",
+      senderName: "Ashay",
+      senderUsername: "ashay",
+      senderAvatar: "/jack.png",
+      text: "Let's discuss the lot size.",
+      type: "TEXT",
+      createdAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
+      status: "READ",
+    },
+  ],
+  conv_dir_mem_1_mem_3: [
+    {
+      id: "msg_dir_2",
+      conversationId: "conv_dir_mem_1_mem_3",
+      senderId: "mem_3",
+      senderName: "Ranveer",
+      senderUsername: "ranveer",
+      senderAvatar: "/sinchan.png",
+      text: "Allotment results are out.",
+      type: "TEXT",
+      createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+      status: "READ",
+    },
+  ],
+};
+
 export function ChatWindow({
   conversation,
   currentMemberId,
   onBackMobile,
   onOpenIpoPage,
 }: ChatWindowProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const initialMsgs = STATIC_FALLBACK_MESSAGES[conversation.id] || [];
+  const [messages, setMessages] = useState<Message[]>(initialMsgs);
   const [typingUsers, setTypingUsers] = useState<string[]>([]);
   const [presenceStatus, setPresenceStatus] = useState<UserPresenceStatus>("ONLINE");
 
-  // Fetch messages for conversation
+  // Fetch messages from API
   const fetchMessages = useCallback(async () => {
     try {
-      setIsLoading(true);
       const res = await fetch(
         `/api/conversations/${conversation.id}/messages?memberId=${currentMemberId}`
       );
       const data = await res.json();
-      if (data?.success && Array.isArray(data.messages)) {
+      if (data?.success && Array.isArray(data.messages) && data.messages.length > 0) {
         setMessages(data.messages);
       }
     } catch (err) {
       console.error("Failed to fetch messages:", err);
-    } finally {
-      setIsLoading(false);
     }
   }, [conversation.id, currentMemberId]);
 
@@ -57,11 +123,12 @@ export function ChatWindow({
   }, [conversation.id, currentMemberId]);
 
   useEffect(() => {
+    setMessages(STATIC_FALLBACK_MESSAGES[conversation.id] || []);
     fetchMessages();
     markAsRead();
-  }, [fetchMessages, markAsRead]);
+  }, [conversation.id, fetchMessages, markAsRead]);
 
-  // Listen to real-time events (new message, typing, presence)
+  // Real-time event listeners
   useEffect(() => {
     const unsubNewMsg = chatRealtime.on("message:new", (msg: Message) => {
       if (msg.conversationId === conversation.id) {
@@ -101,6 +168,20 @@ export function ChatWindow({
   }, [conversation.id, conversation.otherMember, currentMemberId, markAsRead]);
 
   const handleSendMessage = async (text: string) => {
+    const tempId = `msg_temp_${Date.now()}`;
+    const tempMsg: Message = {
+      id: tempId,
+      conversationId: conversation.id,
+      senderId: currentMemberId,
+      senderName: "Me",
+      text,
+      type: "TEXT",
+      createdAt: new Date().toISOString(),
+      status: "SENT",
+    };
+
+    setMessages((prev) => [...prev, tempMsg]);
+
     try {
       const res = await fetch(`/api/conversations/${conversation.id}/messages`, {
         method: "POST",
@@ -109,7 +190,7 @@ export function ChatWindow({
       });
       const data = await res.json();
       if (data?.success && data.message) {
-        setMessages((prev) => [...prev, data.message]);
+        setMessages((prev) => prev.map((m) => (m.id === tempId ? data.message : m)));
         chatRealtime.notifyNewMessage(data.message);
       }
     } catch (err) {
@@ -162,7 +243,7 @@ export function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col h-full bg-surface">
+    <div className="flex flex-col h-full bg-[#0C0E12] select-none font-sans overflow-hidden">
       <ChatHeader
         conversation={conversation}
         currentMemberId={currentMemberId}

@@ -9,15 +9,99 @@ import { NewConversationModal } from "@/src/features/chat/components/NewConversa
 import { chatRealtime } from "@/src/features/chat/utils/chatRealtime";
 import { ChatCircleDots } from "@phosphor-icons/react";
 
+const STATIC_FALLBACK_CONVERSATIONS: Conversation[] = [
+  {
+    id: "conv_ipo_ipo_abc",
+    type: "IPO",
+    title: "Dhoot Transmission",
+    avatar: "/oggy.png",
+    ipoId: "ipo_abc",
+    createdBy: "mem_1",
+    lastMessage: "Application submitted ✓",
+    lastMessageAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
+    unreadCount: 1,
+    otherMember: {
+      id: "mem_2",
+      name: "Ashay",
+      username: "ashay",
+      email: "ashay@nexo.private",
+      avatar: "/jack.png",
+      role: "MEMBER",
+      panMasked: "BCDEF2345G",
+      panFull: "BCDEF2345G",
+      defaultContribution: 50000,
+      joinedAt: "Jan 2025",
+    },
+    participants: [
+      { id: "mem_1", name: "Ankit", username: "ankit", avatar: "/oggy.png", role: "ADMIN", email: "", panMasked: "", panFull: "", defaultContribution: 50000, joinedAt: "" },
+      { id: "mem_2", name: "Ashay", username: "ashay", avatar: "/jack.png", role: "MEMBER", email: "", panMasked: "", panFull: "", defaultContribution: 50000, joinedAt: "" },
+      { id: "mem_3", name: "Ranveer", username: "ranveer", avatar: "/sinchan.png", role: "MEMBER", email: "", panMasked: "", panFull: "", defaultContribution: 30000, joinedAt: "" },
+    ],
+  },
+  {
+    id: "conv_dir_mem_1_mem_2",
+    type: "DIRECT",
+    title: "Ashay",
+    avatar: "/jack.png",
+    createdBy: "mem_1",
+    directKey: "mem_1_mem_2",
+    lastMessage: "Let's discuss the lot size.",
+    lastMessageAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
+    unreadCount: 0,
+    otherMember: {
+      id: "mem_2",
+      name: "Ashay",
+      username: "ashay",
+      email: "ashay@nexo.private",
+      avatar: "/jack.png",
+      role: "MEMBER",
+      panMasked: "BCDEF2345G",
+      panFull: "BCDEF2345G",
+      defaultContribution: 50000,
+      joinedAt: "Jan 2025",
+    },
+  },
+  {
+    id: "conv_dir_mem_1_mem_3",
+    type: "DIRECT",
+    title: "Ranveer",
+    avatar: "/sinchan.png",
+    createdBy: "mem_1",
+    directKey: "mem_1_mem_3",
+    lastMessage: "Allotment results are out.",
+    lastMessageAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    updatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
+    unreadCount: 0,
+    otherMember: {
+      id: "mem_3",
+      name: "Ranveer",
+      username: "ranveer",
+      email: "ranveer@nexo.private",
+      avatar: "/sinchan.png",
+      role: "MEMBER",
+      panMasked: "CDEFG3456H",
+      panFull: "CDEFG3456H",
+      defaultContribution: 30000,
+      joinedAt: "Feb 2025",
+    },
+  },
+];
+
 export function MessagesView() {
   const { currentMember, currentUser, members, openIpoDetail, ipos } = useNexo();
   const activeUser = currentUser || currentMember || members[0];
   const currentMemberId = activeUser?.id || "mem_1";
 
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<Conversation[]>(STATIC_FALLBACK_CONVERSATIONS);
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(
+    STATIC_FALLBACK_CONVERSATIONS[0].id
+  );
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
 
   // Connect to real-time service
   useEffect(() => {
@@ -27,22 +111,19 @@ export function MessagesView() {
     };
   }, [currentMemberId]);
 
-  // Fetch conversations list
+  // Fetch conversations list from API
   const fetchConversations = useCallback(async () => {
     try {
-      setIsLoading(true);
       const res = await fetch(`/api/conversations?memberId=${currentMemberId}`);
       const data = await res.json();
-      if (data?.success && Array.isArray(data.conversations)) {
+      if (data?.success && Array.isArray(data.conversations) && data.conversations.length > 0) {
         setConversations(data.conversations);
-        if (data.conversations.length > 0 && !activeConversationId) {
+        if (!activeConversationId) {
           setActiveConversationId(data.conversations[0].id);
         }
       }
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
-    } finally {
-      setIsLoading(false);
     }
   }, [currentMemberId, activeConversationId]);
 
@@ -93,10 +174,10 @@ export function MessagesView() {
   };
 
   return (
-    <div className="h-[calc(100vh-5.5rem)] flex flex-col md:flex-row overflow-hidden bg-surface/90 backdrop-blur-md border border-line/80 rounded-2xl shadow-xl font-sans relative">
-      {/* LEFT: Conversation List */}
+    <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row overflow-hidden bg-[#0C0E12] border border-line/70 rounded-2xl shadow-2xl font-sans relative select-none">
+      {/* LEFT: Conversation List (Fixed 320px width on desktop) */}
       <div
-        className={`w-full md:w-[30%] lg:w-[32%] shrink-0 h-full ${
+        className={`w-full md:w-[320px] lg:w-[340px] shrink-0 h-full bg-[#111319] border-r border-line/70 ${
           activeConversationId ? "hidden md:block" : "block"
         }`}
       >
@@ -111,7 +192,7 @@ export function MessagesView() {
 
       {/* RIGHT: Active Conversation Chat Window */}
       <div
-        className={`w-full md:w-[70%] lg:w-[68%] flex-1 h-full ${
+        className={`w-full md:w-[calc(100%-320px)] lg:w-[calc(100%-340px)] flex-1 h-full bg-[#0C0E12] ${
           activeConversationId ? "block" : "hidden md:block"
         }`}
       >
@@ -123,7 +204,7 @@ export function MessagesView() {
             onOpenIpoPage={handleOpenIpoPage}
           />
         ) : (
-          <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-surface-alt/30 text-ink-tertiary space-y-3 select-none">
+          <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-[#0C0E12] text-ink-tertiary space-y-3 select-none">
             <ChatCircleDots size={48} className="opacity-40 text-accent" />
             <h3 className="text-sm font-bold text-ink">Messages</h3>
             <p className="text-xs max-w-xs leading-relaxed">
