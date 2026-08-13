@@ -587,10 +587,19 @@ export function ApplicationsView() {
 
                   const currentUserName = (currentUser?.name || currentMember?.name || "").toLowerCase();
                   const currentUserId = currentUser?.id || currentMember?.id || "mem_1";
+                  const isAdmin = (currentUser?.role || currentMember?.role) === "ADMIN";
 
                   const isMine = Boolean(
+                    isAdmin ||
                     (app.memberId && app.memberId === currentUserId) ||
-                    (app.applicantName && currentUserName && app.applicantName.toLowerCase() === currentUserName)
+                    (app.applicantName && currentUserName && app.applicantName.toLowerCase().includes(currentUserName)) ||
+                    (displayNames && currentUserName && displayNames.toLowerCase().includes(currentUserName)) ||
+                    (Array.isArray(app.participants) &&
+                      app.participants.some(
+                        (p) =>
+                          p.memberId === currentUserId ||
+                          (p.memberName && currentUserName && p.memberName.toLowerCase().includes(currentUserName))
+                      ))
                   );
 
                   return Array.from({ length: lotCount }).map((_, lotIdx) => {
