@@ -83,6 +83,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "Profit distribution published." }, { headers: corsHeaders });
     }
 
+    // 2. Action: Add Application to IPO
+    if (body.action === "addApplication") {
+      const { ipoId, application } = body;
+      const updated = allIpos.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const existingApps = Array.isArray(ipo.applications) ? ipo.applications : [];
+          const mergedApps = [application, ...existingApps.filter((a: any) => a.id !== application.id)];
+          const totalCombined = mergedApps.reduce((sum: number, a: any) => sum + (a.totalContribution || 0), 0);
+          return {
+            ...ipo,
+            applications: mergedApps,
+            combinedCapital: totalCombined,
+          };
+        }
+        return ipo;
+      });
+      writeSharedIpos(updated);
+      return NextResponse.json({ success: true, message: "Application saved to IPO." }, { headers: corsHeaders });
+    }
+
     // 2. Action: Create New IPO Opportunity
     const name = body.name || body.company || "";
     const minInvestment = Number(body.minInvestment || body.minimumInvestment) || 15000;

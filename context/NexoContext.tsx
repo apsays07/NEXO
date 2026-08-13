@@ -211,11 +211,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       let extraLocal: IPOOpportunity[] = [];
       let hiddenLocal: string[] = [];
       let profitDists: Record<string, any> = {};
+      let localApps: Record<string, Application[]> = {};
 
       try {
         extraLocal = JSON.parse(localStorage.getItem("nexo_local_admin_ipos") || "[]");
         hiddenLocal = JSON.parse(localStorage.getItem("nexo_local_hidden_ipos") || "[]");
         profitDists = JSON.parse(localStorage.getItem("nexo_shared_profit_dists") || "{}");
+        localApps = JSON.parse(localStorage.getItem("nexo_local_applications") || "{}");
       } catch (e) {}
 
       const mergedMap = new Map<string, IPOOpportunity>();
@@ -231,8 +233,18 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
       const combined = Array.from(mergedMap.values()).map((ipo) => {
         const dist = profitDists[ipo.id] || ipo.profitDistribution;
+        const extraApps = localApps[ipo.id] || [];
+        const existingAppIds = new Set((ipo.applications || []).map((a) => a.id));
+        const mergedApps = [
+          ...(ipo.applications || []),
+          ...extraApps.filter((a) => !existingAppIds.has(a.id)),
+        ];
+
         return {
           ...ipo,
+          applications: mergedApps,
+          combinedCapital: mergedApps.reduce((sum, a) => sum + a.totalContribution, 0),
+          participantsCount: new Set(mergedApps.flatMap((a) => (a.participants || []).map((p) => p.memberId))).size,
           isHidden: hiddenLocal.includes(ipo.id) || ipo.isHidden === true,
           profitDistribution: dist || ipo.profitDistribution,
         };
@@ -777,6 +789,20 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         return ipo;
       })
     );
+
+    // Persist new application to local storage & shared IPO store so 2-sec polling cycle keeps it
+    try {
+      const storedApps = JSON.parse(localStorage.getItem("nexo_local_applications") || "{}");
+      const existing = storedApps[ipoId] || [];
+      storedApps[ipoId] = [newApplication, ...existing.filter((a: any) => a.id !== newApplication.id)];
+      localStorage.setItem("nexo_local_applications", JSON.stringify(storedApps));
+    } catch (e) {}
+
+    fetch("/api/ipos", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action: "addApplication", ipoId, application: newApplication }),
+    }).catch(() => {});
 
     // Sync application response to MongoDB
     fetch("/api/applications", {

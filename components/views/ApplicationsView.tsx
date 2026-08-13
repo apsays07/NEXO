@@ -66,31 +66,36 @@ export function ApplicationsView() {
   // Dynamically select the active IPO to display based on ipoFilter
   const selectedIpoList = useMemo(() => {
     if (!ipos || ipos.length === 0) return [];
-    if (ipoFilter === "ALL") return [ipos[0]];
+    if (ipoFilter === "ALL") return ipos;
     const found = ipos.find((i) => i.id === ipoFilter);
-    return found ? [found] : [ipos[0]];
+    return found ? [found] : ipos;
   }, [ipos, ipoFilter]);
 
   // Selected active IPO object
   const activeIpo = selectedIpoList[0];
 
-  // Calculate summary metrics for the selected active IPO
+  // Calculate summary metrics for the selected active IPOs
   const activeIpoMetrics = useMemo(() => {
-    if (!activeIpo) return null;
-    const totalApps = activeIpo.applications.length;
+    if (!selectedIpoList || selectedIpoList.length === 0) return null;
+    let totalApps = 0;
     let totalAmount = 0;
     let allottedAmount = 0;
     let awaitingAmount = 0;
     let notAllottedAmount = 0;
 
-    activeIpo.applications.forEach((app) => {
-      const amt = app.totalContribution || 0;
-      totalAmount += amt;
+    selectedIpoList.forEach((ipo) => {
+      if (Array.isArray(ipo.applications)) {
+        ipo.applications.forEach((app) => {
+          totalApps += 1;
+          const amt = app.totalContribution || 0;
+          totalAmount += amt;
 
-      const st = app.allotmentStatus || app.status || "AWAITING";
-      if (st === "ALLOTTED") allottedAmount += amt;
-      else if (st === "AWAITING") awaitingAmount += amt;
-      else if (st === "NOT_ALLOTTED") notAllottedAmount += amt;
+          const st = app.allotmentStatus || app.status || "AWAITING";
+          if (st === "ALLOTTED") allottedAmount += amt;
+          else if (st === "AWAITING") awaitingAmount += amt;
+          else if (st === "NOT_ALLOTTED") notAllottedAmount += amt;
+        });
+      }
     });
 
     return {
@@ -100,7 +105,7 @@ export function ApplicationsView() {
       awaitingAmount,
       notAllottedAmount,
     };
-  }, [activeIpo]);
+  }, [selectedIpoList]);
 
   // Helper renderer for read-only status pill
   const renderStatusControl = (currentStatus: AllotmentStatus) => {
