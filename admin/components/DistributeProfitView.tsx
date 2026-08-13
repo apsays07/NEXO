@@ -338,7 +338,6 @@ export function DistributeProfitView() {
                   <th className="p-3.5">PAN</th>
                   <th className="p-3.5 text-right">Money Applied (₹)</th>
                   <th className="p-3.5 text-center">Applied Lots</th>
-                  <th className="p-3.5 text-right">Per Lot Profit</th>
                   <th className="p-3.5 text-right rounded-r-xl">Individual Profit (₹)</th>
                 </tr>
               </thead>
@@ -362,9 +361,6 @@ export function DistributeProfitView() {
                           {m.lots % 1 === 0 ? m.lots : m.lots.toFixed(1)} Lot{m.lots > 1 ? "s" : ""}
                         </span>
                       </td>
-                      <td className="p-3.5 text-right font-mono font-bold text-slate-600">
-                        ₹{perLotProfit.toLocaleString("en-IN")}
-                      </td>
                       <td className="p-3.5 text-right font-mono font-black text-emerald-600 text-sm sm:text-base">
                         ₹{individualProfit.toLocaleString("en-IN")}
                       </td>
@@ -384,7 +380,6 @@ export function DistributeProfitView() {
                   <td className="p-3.5 text-center font-mono">
                     {totalAppliedLots % 1 === 0 ? totalAppliedLots : totalAppliedLots.toFixed(1)} Lots
                   </td>
-                  <td className="p-3.5 text-right font-mono">—</td>
                   <td className="p-3.5 text-right font-mono text-emerald-700 text-sm sm:text-base">
                     ₹{numProfit.toLocaleString("en-IN")}
                   </td>
