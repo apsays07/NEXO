@@ -328,9 +328,17 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         }
       });
 
+      // Deduplicate published cards by IPO name to keep only the latest uploaded card for each IPO
+      const cardMap = new Map<string, ListedIPO>();
+      publishedCards.forEach((card) => {
+        const key = card.name.trim().toLowerCase();
+        cardMap.set(key, card);
+      });
+      const uniquePublishedCards = Array.from(cardMap.values());
+
       setIpos(combined);
-      if (publishedCards.length > 0) {
-        setListedIpos(publishedCards);
+      if (uniquePublishedCards.length > 0) {
+        setListedIpos(uniquePublishedCards);
       }
     } catch (err) {
       console.warn("Failed to refresh IPOs from API in NexoContext:", err);
