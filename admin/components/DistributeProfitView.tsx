@@ -20,76 +20,81 @@ export function DistributeProfitView() {
   const numProfit = typeof totalProfit === "number" ? totalProfit : 0;
   const numAllottedLots = typeof allottedLots === "number" ? allottedLots : 0;
 
-  // ── Auto-fetch all applications matching Group Ledger view ──
+  // ── Auto-fetch individual member contributions & lots ──
   const memberApplications = useMemo(() => {
     if (!selectedIpo?.applications || selectedIpo.applications.length === 0) {
       return [];
     }
 
-    const apps = selectedIpo.applications;
+    const minInv = selectedIpo.metrics?.minInvestment || 15000;
+    const membersMap = new Map<string, { id: string; name: string; lots: number; pan: string }>();
 
-    // Count name frequencies across all applications to handle indexing (e.g. Ranveer 1, Ranveer 2)
-    const nameTotalCounts: Record<string, number> = {};
-    apps.forEach((app: any) => {
-      const name =
-        app.applicantName ||
-        (app.participants && app.participants.length > 0
-          ? app.participants.map((p: any) => p.memberName || p.name).join(", ")
-          : "Member");
-      const count = Math.max(1, app.lotCount || 1);
-      nameTotalCounts[name] = (nameTotalCounts[name] || 0) + count;
+    selectedIpo.applications.forEach((app: any) => {
+      // Combined pool application with multiple participants
+      if (Array.isArray(app.participants) && app.participants.length > 0) {
+        app.participants.forEach((p: any) => {
+          const pName = p.memberName || p.name || "Member";
+          const pKey = (p.memberId || pName).toLowerCase().trim();
+          const pPan = p.panMasked || p.panFull || app.panMasked || "XXXXXXXX41";
+          const lotVal = p.contribution ? p.contribution / minInv : (app.lotCount || 1) / app.participants.length;
+
+          if (membersMap.has(pKey)) {
+            const existing = membersMap.get(pKey)!;
+            existing.lots += lotVal;
+          } else {
+            membersMap.set(pKey, {
+              id: p.memberId || `mem_${Date.now()}_${Math.random()}`,
+              name: pName,
+              lots: lotVal,
+              pan: pPan,
+            });
+          }
+        });
+      } else {
+        // Single applicant or comma-separated names
+        const rawName = app.applicantName || "Member";
+        const lotVal = app.lotCount || 1;
+        const aPan = app.panMasked || "XXXXXXXX41";
+
+        if (rawName.includes(",")) {
+          const splitNames = rawName.split(",").map((s: string) => s.trim()).filter(Boolean);
+          const splitLot = lotVal / splitNames.length;
+          splitNames.forEach((sName: string) => {
+            const sKey = sName.toLowerCase();
+            if (membersMap.has(sKey)) {
+              membersMap.get(sKey)!.lots += splitLot;
+            } else {
+              membersMap.set(sKey, {
+                id: `mem_${sKey}`,
+                name: sName,
+                lots: splitLot,
+                pan: aPan,
+              });
+            }
+          });
+        } else {
+          const aKey = (app.memberId || rawName).toLowerCase().trim();
+          if (membersMap.has(aKey)) {
+            membersMap.get(aKey)!.lots += lotVal;
+          } else {
+            membersMap.set(aKey, {
+              id: app.memberId || app.id,
+              name: rawName,
+              lots: lotVal,
+              pan: aPan,
+            });
+          }
+        }
+      }
     });
 
-    const nameRunningIndex: Record<string, number> = {};
-    let globalIndex = 0;
-
-    return apps.flatMap((app: any) => {
-      const lotCount = Math.max(1, app.lotCount || 1);
-      const displayNames =
-        app.applicantName ||
-        (app.participants && app.participants.length > 0
-          ? app.participants.map((p: any) => p.memberName || p.name).join(", ")
-          : "Member");
-
-      return Array.from({ length: lotCount }).map((_, lotIdx) => {
-        globalIndex += 1;
-
-        const panFromApp =
-          app.panNumbers && app.panNumbers[lotIdx] && app.panNumbers[lotIdx].trim()
-            ? app.panNumbers[lotIdx].trim()
-            : app.participants &&
-              app.participants[lotIdx] &&
-              app.participants[lotIdx].panMasked &&
-              !app.participants[lotIdx].panMasked.includes("X")
-            ? app.participants[lotIdx].panMasked
-            : app.panMasked && !app.panMasked.includes("X")
-            ? app.panMasked
-            : `ABCDE${String(2741 + globalIndex).padStart(4, "0")}D`;
-
-        const panDisplay = panFromApp.toUpperCase();
-
-        const baseName = displayNames;
-        nameRunningIndex[baseName] = (nameRunningIndex[baseName] || 0) + 1;
-
-        const lotDisplayName =
-          (nameTotalCounts[baseName] || 0) > 1 && nameRunningIndex[baseName] > 1
-            ? `${baseName.split(",")[0].trim()} ${nameRunningIndex[baseName] - 1}`
-            : baseName;
-
-        return {
-          id: `${app.id}_lot_${lotIdx}`,
-          name: lotDisplayName,
-          pan: panDisplay,
-          lots: 1,
-        };
-      });
-    });
+    return Array.from(membersMap.values());
   }, [selectedIpo]);
 
   // ── Auto-calculated values ──
-  const totalApplications = memberApplications.length;
+  const totalApplicants = memberApplications.length;
   const totalAppliedLots = memberApplications.reduce((acc, m) => acc + m.lots, 0);
-  const perApplicationProfit = totalApplications > 0 ? Math.round(numProfit / totalApplications) : 0;
+  const perLotProfit = totalAppliedLots > 0 ? Math.round(numProfit / totalAppliedLots) : 0;
 
   const handlePublish = async () => {
     if (!selectedIpo || numProfit <= 0 || !hasApplicants) return;
@@ -192,8 +197,8 @@ export function DistributeProfitView() {
                 value={allottedLots}
                 onChange={(e) => {
                   const raw = e.target.value === "" ? "" : Number(e.target.value);
-                  if (typeof raw === "number" && raw > totalApplications) {
-                    setAllottedLots(totalApplications);
+                  if (typeof raw === "number" && raw > totalAppliedLots) {
+                    setAllottedLots(totalAppliedLots);
                   } else {
                     setAllottedLots(raw);
                   }
@@ -225,42 +230,54 @@ export function DistributeProfitView() {
           </div>
         </div>
 
-        {/* ── Row 2: Auto-calculated summary ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
-          {/* Total Applications (auto) */}
+        {/* ── Row 2: Auto-calculated summary cards ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          {/* Total Applicants (auto) */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-slate-500">
               <Users size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Total Applications</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Total Applicants</span>
             </div>
             <div className="text-xl font-black text-slate-900">
-              {totalApplications}
-              <span className="text-xs font-bold text-slate-400 ml-1">Applications</span>
+              {totalApplicants}
+              <span className="text-xs font-bold text-slate-400 ml-1">Members</span>
             </div>
           </div>
 
-          {/* Per Application Profit (auto) */}
+          {/* Total Applied Lots (auto) */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
+            <div className="flex items-center gap-2 text-slate-500">
+              <Package size={16} weight="bold" />
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Total Applied Lots</span>
+            </div>
+            <div className="text-xl font-black text-slate-900">
+              {totalAppliedLots % 1 === 0 ? totalAppliedLots : totalAppliedLots.toFixed(1)}
+              <span className="text-xs font-bold text-slate-400 ml-1">Lots</span>
+            </div>
+          </div>
+
+          {/* Per Lot Profit (auto) */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-emerald-600">
               <Calculator size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Application Profit</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Lot Profit</span>
             </div>
             <div className="text-xl font-mono font-black text-emerald-700">
-              ₹{perApplicationProfit.toLocaleString("en-IN")}
+              ₹{perLotProfit.toLocaleString("en-IN")}
             </div>
           </div>
         </div>
       </div>
 
-      {/* ═══ SECTION 2: Member Payout Table (auto-fetched) ═══ */}
+      {/* ═══ SECTION 2: Member Payout Table ═══ */}
       <div className="bg-white border border-slate-200 rounded-3xl p-6 sm:p-8 shadow-2xs space-y-5">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between border-b border-slate-100 pb-3 gap-3">
           <div>
             <h3 className="text-base font-extrabold text-slate-900">
-              Applicant Breakdown
+              Individual Payout Breakdown
             </h3>
             <p className="text-xs font-medium text-slate-500">
-              Auto-fetched from user-side applications for <strong className="text-slate-800">{selectedIpo?.name || "—"}</strong>.
+              Auto-calculated per individual member contribution for <strong className="text-slate-800">{selectedIpo?.name || "—"}</strong>.
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -268,7 +285,7 @@ export function DistributeProfitView() {
               Total Profit: <strong className="font-mono text-emerald-600 font-extrabold">₹{numProfit.toLocaleString("en-IN")}</strong>
             </span>
             <span className="text-xs font-bold text-slate-500">
-              Per Application: <strong className="font-mono text-blue-600 font-extrabold">₹{perApplicationProfit.toLocaleString("en-IN")}</strong>
+              Per Lot Profit: <strong className="font-mono text-blue-600 font-extrabold">₹{perLotProfit.toLocaleString("en-IN")}</strong>
             </span>
           </div>
         </div>
@@ -289,20 +306,20 @@ export function DistributeProfitView() {
                   <th className="p-3.5 rounded-l-xl">Member Name</th>
                   <th className="p-3.5">PAN</th>
                   <th className="p-3.5 text-center">Applied Lots</th>
-                  <th className="p-3.5 text-right">Per Application Profit</th>
+                  <th className="p-3.5 text-right">Per Lot Profit</th>
                   <th className="p-3.5 text-right rounded-r-xl">Individual Profit (₹)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {memberApplications.map((m, idx) => {
-                  const individualProfit = perApplicationProfit;
+                  const individualProfit = Math.round(m.lots * perLotProfit);
                   return (
                     <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
                       <td className="p-3.5 font-bold text-slate-900 flex items-center gap-2.5">
-                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs shrink-0 font-bold">
+                        <div className="w-8 h-8 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center text-xs shrink-0 font-bold uppercase">
                           <User size={16} />
                         </div>
-                        <span>{m.name}</span>
+                        <span className="capitalize">{m.name}</span>
                       </td>
                       <td className="p-3.5 font-mono text-xs text-slate-500">{m.pan}</td>
                       <td className="p-3.5 text-center">
@@ -311,7 +328,7 @@ export function DistributeProfitView() {
                         </span>
                       </td>
                       <td className="p-3.5 text-right font-mono font-bold text-slate-600">
-                        ₹{perApplicationProfit.toLocaleString("en-IN")}
+                        ₹{perLotProfit.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-right font-mono font-black text-emerald-600 text-sm sm:text-base">
                         ₹{individualProfit.toLocaleString("en-IN")}
@@ -324,7 +341,7 @@ export function DistributeProfitView() {
               <tfoot>
                 <tr className="border-t-2 border-slate-300 bg-slate-50/70 font-extrabold text-slate-900">
                   <td className="p-3.5" colSpan={2}>
-                    TOTAL
+                    TOTAL ({totalApplicants} Members)
                   </td>
                   <td className="p-3.5 text-center font-mono">
                     {totalAppliedLots % 1 === 0 ? totalAppliedLots : totalAppliedLots.toFixed(1)} Lots
