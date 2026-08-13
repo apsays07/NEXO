@@ -14,7 +14,7 @@ interface IPOSidebarProps {
 }
 
 export function IPOSidebar({ ipo, onManageClick }: IPOSidebarProps) {
-  const participants = ipo.applications.flatMap((a) => a.participants);
+  const participants = ipo.applications.flatMap((a) => a.participants || []).filter(Boolean);
 
   return (
     <div className="sticky top-28 space-y-4 font-sans">

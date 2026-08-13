@@ -19,7 +19,7 @@ export type ParticipationType = "INDIVIDUAL" | "COMBINED" | "SOLO" | "COMBO";
 
 export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
 
-export type MemberRole = "ADMIN" | "MEMBER";
+export type MemberRole = "SUPER_ADMIN" | "ADMIN" | "MEMBER";
 
 export interface Member {
   id: string;
@@ -69,7 +69,7 @@ export interface Application {
   applicationProofUrl?: string;
   applicationNumber?: string;
   panNumbers?: string[];
-  participants: ApplicationParticipant[];
+  participants?: ApplicationParticipant[];
   createdAt?: string;
 }
 
@@ -203,4 +203,76 @@ export interface Transaction {
   participants: string[]; // member names
   createdAt: string; // ISO string
   status: "SUBMITTED" | "ALLOTTED" | "REFUNDED" | "REJECTED";
+}
+
+/* ────────────────────────────────────────────────────────────────
+   CHAT SYSTEM TYPES
+──────────────────────────────────────────────────────────────── */
+export type ConversationType = "DIRECT" | "GROUP" | "IPO";
+export type ConversationMemberRole = "OWNER" | "MEMBER";
+export type MessageType = "TEXT" | "SYSTEM" | "IMAGE" | "FILE";
+export type UserPresenceStatus = "ONLINE" | "OFFLINE" | "AWAY";
+
+export interface Conversation {
+  id: string;
+  type: ConversationType;
+  title: string;
+  avatar?: string;
+  ipoId?: string;
+  createdBy: string;
+  directKey?: string;
+  lastMessage?: string;
+  lastMessageAt?: string;
+  lastMessageSenderId?: string;
+  createdAt: string;
+  updatedAt: string;
+  isArchived?: boolean;
+  unreadCount?: number;
+  members?: ConversationMember[];
+  otherMember?: Member;
+  participants?: Member[];
+}
+
+export interface ConversationMember {
+  id: string;
+  conversationId: string;
+  memberId: string;
+  role: ConversationMemberRole;
+  joinedAt: string;
+  lastReadAt?: string;
+  isMuted?: boolean;
+  isArchived?: boolean;
+}
+
+export interface Message {
+  id: string;
+  conversationId: string;
+  senderId: string;
+  senderName?: string;
+  senderUsername?: string;
+  senderAvatar?: string;
+  text: string;
+  type: MessageType;
+  replyToMessageId?: string;
+  createdAt: string;
+  updatedAt?: string;
+  isEdited?: boolean;
+  isDeleted?: boolean;
+  status?: "SENT" | "DELIVERED" | "READ";
+}
+
+export interface UserPresence {
+  memberId: string;
+  status: UserPresenceStatus;
+  lastSeenAt: string;
+  updatedAt: string;
+}
+
+export interface MemberSearchUser {
+  id: string;
+  name: string;
+  username: string;
+  avatar: string;
+  role: MemberRole;
+  verified: boolean;
 }

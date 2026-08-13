@@ -7,6 +7,8 @@ import { ObjectId } from "mongodb";
    keyed by userId when auth is added).
 ───────────────────────────────────────── */
 
+import { MemberRole } from "@/types/nexo";
+
 export interface ProfileDocument {
   _id?: ObjectId;
 
@@ -19,7 +21,7 @@ export interface ProfileDocument {
   avatar?: string;           // URL (uploaded to /public/uploads or CDN)
 
   /* ── Role & Access ── */
-  role: "ADMIN" | "MEMBER";
+  role: MemberRole;
   isVerified: boolean;
 
   /* ── Private Credentials ── */

@@ -10,6 +10,7 @@ import {
   ShieldCheck,
   Moon,
   Sun,
+  ChatCircleDots,
 } from "@phosphor-icons/react";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { formatINR } from "@/lib/mockData";
@@ -20,7 +21,7 @@ interface MoreDrawerProps {
 }
 
 export function MoreDrawer({ isOpen, onClose }: MoreDrawerProps) {
-  const { activeTab, setActiveTab, members, portfolioSummary } = useNexo();
+  const { activeTab, setActiveTab, members, portfolioSummary, unreadMessageCount } = useNexo();
   const { theme, toggleTheme } = useTheme();
 
   if (!isOpen) return null;
@@ -28,8 +29,8 @@ export function MoreDrawer({ isOpen, onClose }: MoreDrawerProps) {
   const adminMember = members[0];
 
   const handleNavClick = (tabId: string) => {
-    if (["dashboard", "ipos", "applications", "portfolio", "members"].includes(tabId)) {
-      setActiveTab(tabId as "dashboard" | "ipos" | "applications" | "portfolio" | "members");
+    if (["dashboard", "ipos", "applications", "portfolio", "messages", "members"].includes(tabId)) {
+      setActiveTab(tabId as any);
     }
     onClose();
   };
@@ -100,6 +101,27 @@ export function MoreDrawer({ isOpen, onClose }: MoreDrawerProps) {
           <span className="text-[11px] font-bold text-ink-muted uppercase tracking-wider px-2">
             Community & Management
           </span>
+
+          <button
+            onClick={() => handleNavClick("messages")}
+            className={`w-full flex items-center justify-between p-3 rounded-xl text-sm font-semibold transition-all ${
+              activeTab === "messages"
+                ? "bg-accent-soft text-accent border border-accent/30"
+                : "text-ink-secondary hover:bg-surface-hover"
+            }`}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-accent-soft text-accent flex items-center justify-center">
+                <ChatCircleDots size={18} />
+              </div>
+              <span>Messages</span>
+            </div>
+            {unreadMessageCount > 0 && (
+              <span className="text-xs font-mono font-extrabold bg-accent text-white px-2 py-0.5 rounded-full">
+                {unreadMessageCount}
+              </span>
+            )}
+          </button>
 
           <button
             onClick={() => handleNavClick("members")}
