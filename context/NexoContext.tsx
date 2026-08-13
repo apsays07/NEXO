@@ -1173,10 +1173,15 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         setActiveConversationId,
         openDirectChatWithUser: async (targetMemberId: string) => {
           try {
+            const activeId = currentUser?.id || "mem_1";
+            if (targetMemberId === activeId) {
+              setActiveTab("messages");
+              return;
+            }
+
             setActiveConversationId(targetMemberId);
             setActiveTab("messages");
 
-            const activeId = currentUser?.id || "mem_1";
             const res = await fetch("/api/conversations", {
               method: "POST",
               headers: { "Content-Type": "application/json" },

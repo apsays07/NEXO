@@ -376,15 +376,21 @@ export function MembersView() {
                   </span>
 
                   <div className="flex items-center gap-1.5">
-                    <button
-                      onClick={() => openDirectChatWithUser(member.id)}
-                      className="px-3.5 py-1.5 rounded-xl bg-accent text-white hover:bg-accent-hover font-bold text-xs shadow-xs shadow-accent/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
-                      title={`Message @${mUsername}`}
-                    >
-                      <ChatCircleDots size={14} weight="bold" />
-                      <span>Message</span>
-                      <span className="text-white/80 font-sans font-normal">→</span>
-                    </button>
+                    {member.id === currentUser?.id ? (
+                      <span className="px-3 py-1 rounded-xl bg-surface-alt/90 border border-line/80 text-ink-tertiary font-bold text-xs">
+                        You
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => openDirectChatWithUser(member.id)}
+                        className="px-3.5 py-1.5 rounded-xl bg-accent text-white hover:bg-accent-hover font-bold text-xs shadow-xs shadow-accent/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        title={`Message @${mUsername}`}
+                      >
+                        <ChatCircleDots size={14} weight="bold" />
+                        <span>Message</span>
+                        <span className="text-white/80 font-sans font-normal">→</span>
+                      </button>
+                    )}
 
                     {isCurrentUserAdmin && (
                       <button

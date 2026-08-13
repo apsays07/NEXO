@@ -185,8 +185,9 @@ export function MessagesView() {
     (() => {
       const targetMemberObj = members.find(
         (m) =>
-          m.id === activeConversationId ||
-          m.username?.toLowerCase() === activeConversationId?.toLowerCase()
+          m.id !== currentMemberId &&
+          (m.id === activeConversationId ||
+            m.username?.toLowerCase() === activeConversationId?.toLowerCase())
       );
       if (targetMemberObj) {
         return {
