@@ -38,7 +38,7 @@ export function DistributeProfitView() {
             pName = pName.split(",")[0].trim();
           }
           const pKey = (p.memberId || pName).toLowerCase().trim();
-          const pPan = p.panMasked || p.panFull || app.panMasked || "XXXXXXXX41";
+          const pPan = app.panMasked || p.panMasked || p.panFull || "UTRID8988P";
           const pContrib = p.contribution || (app.totalContribution ? app.totalContribution / app.participants.length : minInv);
           const lotVal = pContrib / minInv;
 
