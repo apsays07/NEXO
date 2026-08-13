@@ -45,6 +45,103 @@ export async function OPTIONS() {
   return NextResponse.json({}, { headers: corsHeaders });
 }
 
+/* ─────────────────────────────────────────────────────────────────
+   POST /api/registrar-sync
+   Admin-only manual actions:
+     - "updateStatus"   : Admin manually sets ALLOTTED / REFUNDED / AWAITING
+     - "checkRealPan"   : Admin checks a real PAN on registrar
+───────────────────────────────────────────────────────────────── */
+export async function GET() {
+  // Just return current data, no automatic updates
+  const allIpos = readSharedIpos();
+  return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
+}
+
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}));
+
+  // ── ACTION: Admin manually updates a single application status ──
+  if (body.action === "updateStatus") {
+    const { ipoId, applicationId, newStatus } = body;
+    if (!ipoId || !applicationId || !newStatus) {
+      return NextResponse.json(
+        { success: false, error: "Missing ipoId, applicationId, or newStatus." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const allIpos = readSharedIpos();
+    let found = false;
+
+    const updatedIpos = allIpos.map((ipo) => {
+      if (ipo.id === ipoId) {
+        const apps = Array.isArray(ipo.applications) ? ipo.applications : [];
+        const updatedApps = apps.map((app: any) => {
+          if (app.id === applicationId) {
+            found = true;
+            return {
+              ...app,
+              status: newStatus,
+              allotmentStatus: newStatus,
+              updatedAt: new Date().toISOString(),
+              updatedBy: "admin",
+            };
+          }
+          return app;
+        });
+        return { ...ipo, applications: updatedApps };
+      }
+      return ipo;
+    });
+
+    if (found) {
+      writeSharedIpos(updatedIpos);
+    }
+
+    return NextResponse.json(
+      {
+        success: true,
+        message: `✓ Application status updated to ${newStatus}.`,
+        newStatus,
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  // ── ACTION: Admin checks a real PAN on registrar website ──
+  if (body.action === "checkRealPan") {
+    const { pan, registrar, ipoName } = body;
+    if (!pan) {
+      return NextResponse.json(
+        { success: false, error: "Missing PAN card number." },
+        { status: 400, headers: corsHeaders }
+      );
+    }
+
+    const cleanPan = pan.trim().toUpperCase();
+    const reg = registrar || "Link Intime India";
+    const name = ipoName || "IPO Opportunity";
+
+    // Try to query registrar — returns AWAITING if we can't confirm
+    const result = await queryRealRegistrar(cleanPan, reg, name);
+
+    return NextResponse.json(
+      {
+        success: true,
+        status: result.status,
+        message: result.message,
+        pan: cleanPan,
+        registrar: reg,
+      },
+      { headers: corsHeaders }
+    );
+  }
+
+  // Default: return current data (no automatic changes)
+  const allIpos = readSharedIpos();
+  return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
+}
+
 async function queryRealRegistrar(
   pan: string,
   registrar: string,
@@ -68,9 +165,9 @@ async function queryRealRegistrar(
       if (res && res.ok) {
         const html = await res.text();
         if (html.toLowerCase().includes("allotted") && !html.toLowerCase().includes("non-allottee")) {
-          return { status: "ALLOTTED", message: `Link Intime Registrar: Shares ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
+          return { status: "ALLOTTED", message: `Link Intime: Shares ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
         } else if (html.toLowerCase().includes("non-allottee") || html.toLowerCase().includes("refund")) {
-          return { status: "REFUNDED", message: `Link Intime Registrar: NON-ALLOTTEE / REFUNDED for PAN ${cleanPan}` };
+          return { status: "REFUNDED", message: `Link Intime: NOT ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
         }
       }
     } else if (regName.includes("kfin") || regName.includes("kfintech")) {
@@ -87,9 +184,9 @@ async function queryRealRegistrar(
       if (res && res.ok) {
         const text = await res.text();
         if (text.toLowerCase().includes("allotted")) {
-          return { status: "ALLOTTED", message: `KFintech Registrar: Shares ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
+          return { status: "ALLOTTED", message: `KFintech: Shares ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
         } else if (text.toLowerCase().includes("refund") || text.toLowerCase().includes("not allotted")) {
-          return { status: "REFUNDED", message: `KFintech Registrar: NON-ALLOTTEE / REFUNDED for PAN ${cleanPan}` };
+          return { status: "REFUNDED", message: `KFintech: NOT ALLOTTED for PAN ${cleanPan} in ${ipoName}` };
         }
       }
     } else if (regName.includes("bigshare")) {
@@ -106,144 +203,19 @@ async function queryRealRegistrar(
       if (res && res.ok) {
         const text = await res.text();
         if (text.toLowerCase().includes("allotted") && !text.toLowerCase().includes("not allotted")) {
-          return { status: "ALLOTTED", message: `Bigshare Registrar: Shares ALLOTTED for PAN ${cleanPan}` };
-        } else {
-          return { status: "REFUNDED", message: `Bigshare Registrar: NON-ALLOTTEE / REFUNDED for PAN ${cleanPan}` };
+          return { status: "ALLOTTED", message: `Bigshare: Shares ALLOTTED for PAN ${cleanPan}` };
+        } else if (text.toLowerCase().includes("not allotted") || text.toLowerCase().includes("refund")) {
+          return { status: "REFUNDED", message: `Bigshare: NOT ALLOTTED for PAN ${cleanPan}` };
         }
       }
     }
   } catch (err) {
-    console.warn("Direct registrar HTTP query fallback:", err);
+    console.warn("Registrar query error:", err);
   }
 
-  // Unless explicitly confirmed allotted by registrar server, default status is REFUNDED (Not Allotted)
-  const resultStatus = "REFUNDED";
-
+  // Could not confirm from registrar — return AWAITING so admin decides manually
   return {
-    status: resultStatus,
-    message: `Registrar (${registrar}): Checked PAN ${cleanPan} for ${ipoName} -> NOT ALLOTTED / REFUNDED`,
+    status: "AWAITING",
+    message: `Could not confirm status from ${registrar} for PAN ${cleanPan}. Please check registrar website manually and update status.`,
   };
-}
-
-export async function GET() {
-  return handleRegistrarSync();
-}
-
-export async function POST(req: NextRequest) {
-  const body = await req.json().catch(() => ({}));
-
-  // Handle single real PAN check action
-  if (body.action === "checkRealPan") {
-    const { pan, registrar, ipoName, ipoId, applicationId } = body;
-    if (!pan) {
-      return NextResponse.json({ success: false, error: "Missing PAN card number." }, { status: 400, headers: corsHeaders });
-    }
-
-    const reg = registrar || "Link Intime India";
-    const name = ipoName || "IPO Opportunity";
-    const result = await queryRealRegistrar(pan, reg, name);
-
-    // If ipoId & applicationId are provided, update shared_ipos.json
-    if (ipoId && applicationId) {
-      const allIpos = readSharedIpos();
-      const updatedIpos = allIpos.map((ipo) => {
-        if (ipo.id === ipoId) {
-          const apps = Array.isArray(ipo.applications) ? ipo.applications : [];
-          const updatedApps = apps.map((app: any) => {
-            if (app.id === applicationId) {
-              return {
-                ...app,
-                status: result.status,
-                allotmentStatus: result.status,
-                verified: true,
-                registrarCheckedAt: new Date().toISOString(),
-                registrarMessage: result.message,
-              };
-            }
-            return app;
-          });
-          return { ...ipo, applications: updatedApps };
-        }
-        return ipo;
-      });
-      writeSharedIpos(updatedIpos);
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        status: result.status,
-        message: result.message,
-        pan,
-        registrar: reg,
-      },
-      { headers: corsHeaders }
-    );
-  }
-
-  return handleRegistrarSync();
-}
-
-async function handleRegistrarSync() {
-  try {
-    const allIpos = readSharedIpos();
-    let updatedCount = 0;
-
-    const updatedIpos = await Promise.all(
-      allIpos.map(async (ipo) => {
-        const apps = Array.isArray(ipo.applications) ? ipo.applications : [];
-        if (apps.length === 0) return ipo;
-
-        const regName = ipo.name.toLowerCase().includes("tech") || ipo.name.toLowerCase().includes("sme")
-          ? "KFin Technologies"
-          : ipo.name.toLowerCase().includes("energy")
-          ? "Bigshare Services"
-          : "Link Intime India";
-
-        const updatedApps = await Promise.all(
-          apps.map(async (app: any) => {
-            const currentStatus = app.allotmentStatus || app.status || "AWAITING";
-
-            if (currentStatus === "AWAITING" || currentStatus === "SUBMITTED" || currentStatus === "PENDING" || !currentStatus) {
-              const pan = app.panMasked || (app.panNumbers && app.panNumbers[0]) || "ABCDE1234F";
-              const result = await queryRealRegistrar(pan, regName, ipo.name);
-
-              updatedCount++;
-              return {
-                ...app,
-                status: result.status,
-                allotmentStatus: result.status,
-                verified: true,
-                registrarCheckedAt: new Date().toISOString(),
-                registrarMessage: result.message,
-              };
-            }
-            return app;
-          })
-        );
-
-        return { ...ipo, applications: updatedApps };
-      })
-    );
-
-    if (updatedCount > 0) {
-      writeSharedIpos(updatedIpos);
-    }
-
-    return NextResponse.json(
-      {
-        success: true,
-        message: `✓ Real Registrar Auto Sync Complete. ${updatedCount} applicant records verified with official registrars.`,
-        updatedCount,
-        ipos: updatedIpos,
-      },
-      { headers: corsHeaders }
-    );
-  } catch (err: any) {
-    console.error("Auto registrar sync error:", err);
-    return NextResponse.json(
-      { success: false, error: err.message },
-      { status: 500, headers: corsHeaders }
-    );
-  }
 }
