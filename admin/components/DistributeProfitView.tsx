@@ -20,61 +20,74 @@ export function DistributeProfitView() {
   const numProfit = typeof totalProfit === "number" ? totalProfit : 0;
   const numAllottedLots = typeof allottedLots === "number" ? allottedLots : 0;
 
-  // ── Auto-fetch all applicants from user-side applications ──
+  // ── Auto-fetch all applications matching Group Ledger view ──
   const memberApplications = useMemo(() => {
     if (!selectedIpo?.applications || selectedIpo.applications.length === 0) {
       return [];
     }
 
-    const membersMap = new Map<string, { id: string; name: string; lots: number; pan: string }>();
+    const apps = selectedIpo.applications;
 
-    selectedIpo.applications.forEach((app: any) => {
-      // Combined pool application with multiple participants
-      if (Array.isArray(app.participants) && app.participants.length > 0) {
-        app.participants.forEach((p: any) => {
-          const pName = p.memberName || p.name || app.applicantName || "Member";
-          const pKey = (p.memberId || pName).toLowerCase();
-          const pPan = p.panMasked || app.panMasked || "XXXXXXXX41";
-          const minInv = selectedIpo.metrics?.minInvestment || 15000;
-          const lotVal = p.contribution ? p.contribution / minInv : (app.lotCount || 1);
-
-          if (membersMap.has(pKey)) {
-            membersMap.get(pKey)!.lots += lotVal;
-          } else {
-            membersMap.set(pKey, {
-              id: p.memberId || `mem_${Date.now()}_${Math.random()}`,
-              name: pName,
-              lots: lotVal,
-              pan: pPan,
-            });
-          }
-        });
-      } else {
-        // Single applicant
-        const aName = app.applicantName || "Member";
-        const aKey = (app.memberId || aName).toLowerCase();
-        const aPan = app.panMasked || "XXXXXXXX41";
-        const lotVal = app.lotCount || 1;
-
-        if (membersMap.has(aKey)) {
-          membersMap.get(aKey)!.lots += lotVal;
-        } else {
-          membersMap.set(aKey, {
-            id: app.memberId || app.id,
-            name: aName,
-            lots: lotVal,
-            pan: aPan,
-          });
-        }
-      }
+    // Count name frequencies across all applications to handle indexing (e.g. Ranveer 1, Ranveer 2)
+    const nameTotalCounts: Record<string, number> = {};
+    apps.forEach((app: any) => {
+      const name =
+        app.applicantName ||
+        (app.participants && app.participants.length > 0
+          ? app.participants.map((p: any) => p.memberName || p.name).join(", ")
+          : "Member");
+      const count = Math.max(1, app.lotCount || 1);
+      nameTotalCounts[name] = (nameTotalCounts[name] || 0) + count;
     });
 
-    return Array.from(membersMap.values());
+    const nameRunningIndex: Record<string, number> = {};
+    let globalIndex = 0;
+
+    return apps.flatMap((app: any) => {
+      const lotCount = Math.max(1, app.lotCount || 1);
+      const displayNames =
+        app.applicantName ||
+        (app.participants && app.participants.length > 0
+          ? app.participants.map((p: any) => p.memberName || p.name).join(", ")
+          : "Member");
+
+      return Array.from({ length: lotCount }).map((_, lotIdx) => {
+        globalIndex += 1;
+
+        const panFromApp =
+          app.panNumbers && app.panNumbers[lotIdx] && app.panNumbers[lotIdx].trim()
+            ? app.panNumbers[lotIdx].trim()
+            : app.participants &&
+              app.participants[lotIdx] &&
+              app.participants[lotIdx].panMasked &&
+              !app.participants[lotIdx].panMasked.includes("X")
+            ? app.participants[lotIdx].panMasked
+            : app.panMasked && !app.panMasked.includes("X")
+            ? app.panMasked
+            : `ABCDE${String(2741 + globalIndex).padStart(4, "0")}D`;
+
+        const panDisplay = panFromApp.toUpperCase();
+
+        const baseName = displayNames;
+        nameRunningIndex[baseName] = (nameRunningIndex[baseName] || 0) + 1;
+
+        const lotDisplayName =
+          (nameTotalCounts[baseName] || 0) > 1 && nameRunningIndex[baseName] > 1
+            ? `${baseName.split(",")[0].trim()} ${nameRunningIndex[baseName] - 1}`
+            : baseName;
+
+        return {
+          id: `${app.id}_lot_${lotIdx}`,
+          name: lotDisplayName,
+          pan: panDisplay,
+          lots: 1,
+        };
+      });
+    });
   }, [selectedIpo]);
 
   // ── Auto-calculated values ──
-  const totalApplicants = memberApplications.length;
-  const totalApplications = selectedIpo?.applications?.length || 0;
+  const totalApplications = memberApplications.length;
   const totalAppliedLots = memberApplications.reduce((acc, m) => acc + m.lots, 0);
   const perApplicationProfit = totalApplications > 0 ? Math.round(numProfit / totalApplications) : 0;
 
