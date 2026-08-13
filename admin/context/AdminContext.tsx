@@ -38,7 +38,8 @@ interface AdminContextType {
   publishProfitDistribution: (
     ipoId: string,
     totalProfit: number,
-    totalLots: number
+    totalLots: number,
+    allottedLots?: number
   ) => Promise<{ success: boolean; message?: string }>;
   refreshIpos: () => Promise<void>;
 }
@@ -313,12 +314,14 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
   const publishProfitDistribution = async (
     ipoId: string,
     totalProfit: number,
-    totalLots: number
+    totalLots: number,
+    allottedLots: number = 1
   ) => {
     const oneLotProfit = totalLots > 0 ? Math.round(totalProfit / totalLots) : 0;
     const dist = {
       totalProfit,
       totalLots,
+      allottedLots,
       oneLotProfit,
       publishedAt: new Date().toISOString(),
     };
