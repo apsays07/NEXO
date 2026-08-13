@@ -168,16 +168,16 @@ export function PortfolioView() {
       )}
 
       {/* Portfolio Mode Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-blue-50/80 via-sky-50/60 to-emerald-50/60 dark:from-blue-950/30 dark:via-sky-950/20 dark:to-emerald-950/20 border border-blue-200/60 dark:border-blue-800/30 p-4 sm:p-5 rounded-2xl gap-3 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 dark:from-blue-900 dark:via-blue-800 dark:to-sky-800 border border-blue-500/40 dark:border-blue-700/40 p-4 sm:p-5 rounded-2xl gap-3 shadow-sm">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-blue-600 text-white rounded-xl shadow-xs shrink-0">
+          <div className="p-3 bg-white/20 text-white rounded-xl shadow-xs shrink-0">
             <Wallet size={24} weight="bold" />
           </div>
           <div>
-            <h2 className="text-base font-extrabold text-blue-900 dark:text-blue-200">
+            <h2 className="text-base font-extrabold text-white">
               Personal Fund &amp; Capital Management
             </h2>
-            <p className="text-xs text-blue-500 font-medium mt-0.5">
+            <p className="text-xs text-blue-100 dark:text-blue-200 font-medium mt-0.5">
               Manage your savings pool, monitor IPO application deductions, and check available funds in real-time.
             </p>
           </div>
@@ -217,7 +217,7 @@ export function PortfolioView() {
                 setSavingsInput(individualSavings.toString());
                 setIsEditSavingsModalOpen(true);
               }}
-              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-blue-200 dark:border-blue-800/60 cursor-pointer"
+              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-blue-300 dark:border-blue-700/60 cursor-pointer"
               title="Add funds or edit balance"
             >
               <Plus size={13} weight="bold" /> Add Funds
@@ -300,11 +300,11 @@ export function PortfolioView() {
                       </td>
                       <td className="py-3.5 px-3">
                         {txn.type === "SOLO" ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-700/60 px-2 py-0.5 rounded-full">
                             <Wallet size={10} weight="bold" /> Solo
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 border border-purple-300 dark:border-purple-700/60 px-2 py-0.5 rounded-full">
                             <Users size={10} weight="bold" /> Group
                           </span>
                         )}
@@ -316,7 +316,7 @@ export function PortfolioView() {
                               key={pIdx}
                               className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold ${
                                 p.toLowerCase().includes("ankit")
-                                  ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60"
+                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60"
                                   : "bg-surface-alt text-ink-secondary border border-line"
                               }`}
                             >
@@ -342,12 +342,12 @@ export function PortfolioView() {
                       </td>
                       <td className="py-3.5 px-3 text-center">
                         {txn.status === "SUBMITTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700/60 px-2 py-0.5 rounded-full">
                             <CheckCircle size={10} weight="fill" /> Submitted
                           </span>
                         )}
                         {txn.status === "ALLOTTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700/60 px-2 py-0.5 rounded-full">
                             <CheckCircle size={10} weight="fill" /> Allotted
                           </span>
                         )}
@@ -357,7 +357,7 @@ export function PortfolioView() {
                           </span>
                         )}
                         {txn.status === "REJECTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700/60 px-2 py-0.5 rounded-full">
                             Rejected
                           </span>
                         )}
@@ -372,7 +372,7 @@ export function PortfolioView() {
                               setEditTxnPan(txn.panMasked || "XXXXXXXX41");
                             }}
                             title="Edit application & transaction details"
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800/60 border border-blue-300 dark:border-blue-700/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
                           >
                             <PencilSimple size={12} weight="bold" />
                             Edit
@@ -397,7 +397,7 @@ export function PortfolioView() {
                             <button
                               onClick={() => setConfirmDeleteId(txn.id)}
                               title="Cancel application"
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-800/60 border border-red-300 dark:border-red-700/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
                             >
                               <Trash size={12} weight="bold" />
                               Cancel
