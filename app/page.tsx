@@ -11,6 +11,7 @@ import { PortfolioView } from "@/components/views/PortfolioView";
 import { MembersView } from "@/components/views/MembersView";
 import { ApplicationsView } from "@/components/views/ApplicationsView";
 import { ProfileView } from "@/components/views/ProfileView";
+import { MessagesView } from "@/components/views/MessagesView";
 import { IPODetailDrawer } from "@/components/views/IPODetailDrawer";
 import { ApplicationModal } from "@/components/application/ApplicationModal";
 import { AddIPOModal } from "@/components/ipo/AddIPOModal";
@@ -36,6 +37,7 @@ export default function Home() {
           {activeTab === "ipos" && <IPOWorkspaceView />}
           {activeTab === "applications" && <ApplicationsView />}
           {activeTab === "portfolio" && <PortfolioView />}
+          {activeTab === "messages" && <MessagesView />}
           {activeTab === "members" && <MembersView />}
           {activeTab === "profile" && <ProfileView />}
         </main>

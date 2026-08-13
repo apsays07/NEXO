@@ -12,6 +12,7 @@ import {
   Users,
   DotsThree,
   CaretUp,
+  ChatCircleDots,
 } from "@phosphor-icons/react";
 import { MoreDrawer } from "./MoreDrawer";
 import { ProfileAvatar } from "../profile/ProfileAvatar";
@@ -19,7 +20,7 @@ import { ProfilePopover } from "../profile/ProfilePopover";
 import { KeyboardShortcutsModal } from "../profile/KeyboardShortcutsModal";
 
 export function Sidebar() {
-  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, logout } = useNexo();
+  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, unreadMessageCount } = useNexo();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -32,6 +33,7 @@ export function Sidebar() {
     { id: "ipos", label: "IPO Workspace", icon: TrendUp, badge: ipos.length },
     { id: "applications", label: "Applications", icon: Files },
     { id: "portfolio", label: "Portfolio", icon: ChartPie },
+    { id: "messages", label: "Messages", icon: ChatCircleDots, badge: unreadMessageCount },
   ];
 
   const groupNav = [

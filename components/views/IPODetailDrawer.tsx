@@ -7,12 +7,12 @@ import { Button } from "../ui/Button";
 import { LifecycleBar } from "../ui/LifecycleBar";
 import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR, formatDate } from "@/lib/mockData";
-import { X, UserPlus, ShieldCheck, PencilSimple, Archive } from "@phosphor-icons/react";
+import { X, UserPlus, ShieldCheck, PencilSimple, Archive, ChatCircleDots } from "@phosphor-icons/react";
 import { EditIPOModal } from "../ipo/EditIPOModal";
 import { ArchiveIPOModal } from "../ipo/ArchiveIPOModal";
 
 export function IPODetailDrawer() {
-  const { selectedIpo, closeIpoDetail, openApplicationModal, currentUserRole, currentUser, currentMember } = useNexo();
+  const { selectedIpo, closeIpoDetail, openApplicationModal, currentUserRole, currentUser, currentMember, openIpoGroupChat } = useNexo();
 
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isArchiveOpen, setIsArchiveOpen] = useState(false);
@@ -23,10 +23,12 @@ export function IPODetailDrawer() {
   if (!selectedIpo) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex justify-end bg-slate-900/30 backdrop-blur-xs animate-fade-in font-sans">
-      <div className="w-full max-w-2xl bg-surface border-l border-line h-full overflow-y-auto flex flex-col justify-between shadow-2xl">
+    <div className="fixed inset-0 z-50 flex items-center justify-end bg-overlay backdrop-blur-xs animate-fade-in font-sans">
+      <div className="absolute inset-0" onClick={closeIpoDetail} />
+
+      <div className="relative z-10 w-full max-w-xl h-full bg-surface border-l border-line shadow-2xl overflow-y-auto animate-slide-left flex flex-col justify-between">
         <div>
-          {/* HEADER */}
+          {/* DRAWER HEADER */}
           <div className="p-5 border-b border-line sticky top-0 bg-surface/95 backdrop-blur-md z-10 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-accent-soft border border-[#BFDBFE] flex items-center justify-center font-semibold text-base text-accent">
@@ -45,12 +47,26 @@ export function IPODetailDrawer() {
               </div>
             </div>
 
-            <button
-              onClick={closeIpoDetail}
-              className="p-1.5 rounded-lg text-ink-secondary hover:text-ink hover:bg-page transition-colors cursor-pointer"
-            >
-              <X size={18} />
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => {
+                  openIpoGroupChat(selectedIpo.id, selectedIpo.name);
+                  closeIpoDetail();
+                }}
+                className="px-2.5 py-1 rounded-lg bg-accent-soft text-accent border border-accent/30 text-xs font-semibold hover:bg-accent-soft/80 transition-colors flex items-center gap-1.5 cursor-pointer"
+                title="Open Group Chat for this IPO"
+              >
+                <ChatCircleDots size={15} />
+                <span>Group Chat →</span>
+              </button>
+
+              <button
+                onClick={closeIpoDetail}
+                className="p-1.5 rounded-lg text-ink-secondary hover:text-ink hover:bg-page transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
           </div>
 
           <div className="p-6 space-y-6">
@@ -172,7 +188,7 @@ export function IPODetailDrawer() {
 
                       {/* Participant List */}
                       <div className="space-y-2">
-                        {app.participants.map((p, idx) => (
+                        {(app.participants || []).map((p, idx) => (
                           <div
                             key={idx}
                             className="flex items-center justify-between p-2.5 rounded-lg bg-page border border-line text-xs"

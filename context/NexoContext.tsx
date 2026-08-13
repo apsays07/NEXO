@@ -26,7 +26,7 @@ import {
 import { getProfile, updateProfile } from "@/src/features/profile/api";
 import { mapIPOToOpportunity } from "@/src/features/ipo/mappers";
 
-type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members" | "profile";
+type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "messages" | "members" | "profile" | "admin";
 
 export interface NexoContextType {
   isAuthenticated: boolean;
@@ -83,7 +83,9 @@ export interface NexoContextType {
     type: ParticipationType | ApplicationType,
     participantContributions: { memberId: string; contribution: number }[],
     proofUrl?: string,
-    applicantMemberId?: string
+    applicantMemberId?: string,
+    applicantName?: string,
+    panNumbers?: string[]
   ) => void;
   addApplicationToIpo: (
     ipoId: string,
@@ -118,6 +120,7 @@ export interface NexoContextType {
       allotmentStatus?: AllotmentStatus;
       status?: AllotmentStatus;
       participants?: import("@/types/nexo").ApplicationParticipant[];
+      panNumbers?: string[];
     }
   ) => void;
   deleteApplication: (ipoId: string, applicationId: string) => void;
@@ -148,6 +151,9 @@ export interface NexoContextType {
   updateCurrentUser: (patch: Partial<Member>) => void;
   addMember: (memberData: Partial<Member> & { name: string; username: string; password: string }) => Promise<void>;
   updateMember: (id: string, patch: Partial<Member>) => Promise<void>;
+  unreadMessageCount: number;
+  openDirectChatWithUser: (targetMemberId: string) => Promise<void>;
+  openIpoGroupChat: (ipoId: string, ipoTitle?: string) => Promise<void>;
 }
 
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
@@ -219,7 +225,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       if (typeof window !== "undefined") {
         const hashTab = window.location.hash.replace("#", "").toLowerCase() as ViewTab;
         const storedTab = localStorage.getItem("nexo_active_tab") as ViewTab;
-        const validTabs: ViewTab[] = ["dashboard", "ipos", "applications", "portfolio", "members", "profile", "admin"];
+        const validTabs: ViewTab[] = ["dashboard", "ipos", "applications", "portfolio", "messages", "members", "profile", "admin"];
         const targetTab = validTabs.includes(hashTab) ? hashTab : validTabs.includes(storedTab) ? storedTab : "dashboard";
         setActiveTabState(targetTab);
         window.history.replaceState(null, "", `#${targetTab}`);
@@ -719,7 +725,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           );
           const uniqueParticipants = new Set(
             updatedApps.flatMap((a) =>
-              a.participants.map((p: { memberId: string }) => p.memberId)
+              (a.participants || []).map((p: { memberId: string }) => p.memberId)
             )
           ).size;
 
@@ -749,7 +755,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         numberOfPanCards: newApplication.lotCount,
         panNumbers: newApplication.panNumbers,
         totalContribution: newApplication.totalContribution,
-        contributors: newApplication.participants.map((p) => ({
+        contributors: (newApplication.participants || []).map((p) => ({
           memberId: p.memberId,
           memberName: p.memberName,
           amount: p.contribution,
@@ -1142,6 +1148,33 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateCurrentUser,
         addMember,
         updateMember,
+        unreadMessageCount: 3,
+        openDirectChatWithUser: async (targetMemberId: string) => {
+          try {
+            const activeId = currentUser?.id || "mem_1";
+            await fetch("/api/conversations", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ currentMemberId: activeId, targetMemberId, type: "DIRECT" }),
+            });
+            setActiveTab("messages");
+          } catch (err) {
+            console.error("Failed to open direct chat:", err);
+          }
+        },
+        openIpoGroupChat: async (ipoId: string, ipoTitle?: string) => {
+          try {
+            const activeId = currentUser?.id || "mem_1";
+            await fetch("/api/conversations", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ currentMemberId: activeId, ipoId, title: ipoTitle || "IPO Chat", type: "IPO" }),
+            });
+            setActiveTab("messages");
+          } catch (err) {
+            console.error("Failed to open IPO group chat:", err);
+          }
+        },
       }}
     >
       {children}

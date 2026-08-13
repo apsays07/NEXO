@@ -18,11 +18,12 @@ import {
   Crown,
   Sparkle,
   Phone,
+  ChatCircleDots,
 } from "@phosphor-icons/react";
 import { Member } from "@/types/nexo";
 
 export function MembersView() {
-  const { members, ipos, addMember, updateMember, currentUser } = useNexo();
+  const { members, ipos, addMember, updateMember, currentUser, openDirectChatWithUser } = useNexo();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
@@ -370,14 +371,24 @@ export function MembersView() {
                     <ShieldCheck size={14} className="text-emerald-400" /> Verified Member
                   </span>
 
-                  {isCurrentUserAdmin && (
+                  <div className="flex items-center gap-1">
                     <button
-                      onClick={() => openEditModal(member)}
-                      className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-surface-hover transition-all border border-transparent hover:border-line"
+                      onClick={() => openDirectChatWithUser(member.id)}
+                      className="text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent-soft/40 hover:bg-accent-soft transition-all border border-accent/20"
+                      title={`Message @${mUsername}`}
                     >
-                      <Pencil size={13} /> Edit
+                      <ChatCircleDots size={14} /> Message →
                     </button>
-                  )}
+
+                    {isCurrentUserAdmin && (
+                      <button
+                        onClick={() => openEditModal(member)}
+                        className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-surface-hover transition-all border border-transparent hover:border-line"
+                      >
+                        <Pencil size={13} /> Edit
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             );
