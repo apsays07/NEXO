@@ -30,10 +30,10 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
           isOpen
             ? "bg-gradient-to-b from-surface via-surface-alt/70 to-surface border-2 border-emerald-500/40 dark:border-emerald-500/35 shadow-xl shadow-emerald-500/5"
             : isPending
-            ? "bg-surface-alt/60 dark:bg-[#121118] border border-amber-500/30 opacity-90 hover:opacity-100"
+            ? "bg-surface border border-amber-500/30 opacity-90 hover:opacity-100"
             : isAllotted
-            ? "bg-surface-alt/60 dark:bg-[#13111C] border border-purple-500/30 opacity-90 hover:opacity-100"
-            : "bg-surface-alt/50 dark:bg-[#101218] border border-line/70 opacity-85 hover:opacity-100"
+            ? "bg-surface border border-purple-500/30 opacity-90 hover:opacity-100"
+            : "bg-surface border border-line/70 opacity-85 hover:opacity-100"
         }`}
       >
         <div>
@@ -90,7 +90,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
                 </span>
               )}
               {isListed && (
-                <span className="px-2.5 py-1 rounded-full bg-slate-500/15 text-slate-300 border border-slate-500/30 text-[11px] font-sans font-bold flex items-center gap-1.5">
+                <span className="px-2.5 py-1 rounded-full bg-slate-500/15 text-slate-500 dark:text-slate-300 border border-slate-500/30 text-[11px] font-sans font-bold flex items-center gap-1.5">
                   📈 LISTED & HOLDING
                 </span>
               )}
