@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import { useAdmin } from "../../admin/context/AdminContext";
 import {
   MagnifyingGlass,
@@ -16,7 +16,8 @@ import {
   Funnel,
   Buildings,
   IdentificationCard,
-  Coins,
+  Plus,
+  X,
 } from "@phosphor-icons/react";
 
 interface RegistrarCheckerTabProps {}
@@ -34,12 +35,20 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
   const [isSyncing, setIsSyncing] = useState(false);
   const [syncProgress, setSyncProgress] = useState(0);
   const [currentSyncTarget, setCurrentSyncTarget] = useState<string | null>(null);
-  const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [rowStatusOverrides, setRowStatusOverrides] = useState<Record<string, "ALLOTTED" | "REFUNDED" | "AWAITING">>({});
   const [lastSyncedTime, setLastSyncedTime] = useState<string>("Just now");
 
+  // Real PAN Modal State
+  const [isRealPanModalOpen, setIsRealPanModalOpen] = useState(false);
+  const [customPan, setCustomPan] = useState("");
+  const [customApplicantName, setCustomApplicantName] = useState("");
+  const [customRegistrar, setCustomRegistrar] = useState("Link Intime India");
+  const [customIpoId, setCustomIpoId] = useState(ipos[0]?.id || "");
+  const [checkResult, setCheckResult] = useState<{ success: boolean; status?: string; message?: string } | null>(null);
+  const [isCheckingSingle, setIsCheckingSingle] = useState(false);
+
   // Automatic Background Registrar Sync Effect on Mount & Periodic Interval
-  React.useEffect(() => {
+  useEffect(() => {
     let isMounted = true;
 
     const performAutoServerSync = async () => {
@@ -84,6 +93,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
       createdAt?: string;
       registrarName: string;
       registrarUrl: string;
+      registrarMessage?: string;
     }> = [];
 
     ipos.forEach((ipo) => {
@@ -100,7 +110,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
         : "https://www.bigshareonline.com/ipo_status.html";
 
       const apps = ipo.applications || [];
-      apps.forEach((app) => {
+      apps.forEach((app: any) => {
         const rawStatus = app.allotmentStatus || app.status || "AWAITING";
         const normStatus =
           rawStatus === "ALLOTTED"
@@ -124,6 +134,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
           createdAt: app.createdAt,
           registrarName: regName,
           registrarUrl: regUrl,
+          registrarMessage: app.registrarMessage,
         });
       });
     });
@@ -168,7 +179,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
     setRevealedPans((prev) => ({ ...prev, [appId]: !prev[appId] }));
   };
 
-  // Helper to sync single application status to API & server
+  // Persist status update to API
   const persistStatusUpdate = async (ipoId: string, applicationId: string, newStatus: "ALLOTTED" | "REFUNDED" | "AWAITING") => {
     setRowStatusOverrides((prev) => ({ ...prev, [applicationId]: newStatus }));
 
@@ -191,38 +202,56 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
     }
   };
 
-  // Run Automatic Registrar Check Engine
-  const runAutoSyncEngine = async () => {
-    if (filteredApplicants.length === 0) return;
+  // Run Real PAN Registrar Check
+  const handleCheckRealPanSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!customPan.trim()) return;
 
+    setIsCheckingSingle(true);
+    setCheckResult(null);
+
+    const targetIpo = ipos.find((i) => i.id === customIpoId) || ipos[0];
+
+    try {
+      const res = await fetch("/api/registrar-sync", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "checkRealPan",
+          pan: customPan.trim().toUpperCase(),
+          registrar: customRegistrar,
+          ipoName: targetIpo?.name || "IPO Opportunity",
+          ipoId: targetIpo?.id,
+        }),
+      });
+      const data = await res.json();
+      setCheckResult(data);
+      await refreshIpos();
+    } catch (err: any) {
+      setCheckResult({ success: false, message: "Error connecting to registrar endpoint." });
+    } finally {
+      setIsCheckingSingle(false);
+    }
+  };
+
+  // Run Manual Full Auto-Sync Engine
+  const runAutoSyncEngine = async () => {
     setIsSyncing(true);
     setSyncProgress(0);
-    setSyncLogs([]);
 
-    const targets = [...filteredApplicants];
-    for (let i = 0; i < targets.length; i++) {
-      const app = targets[i];
-      setCurrentSyncTarget(`${app.applicantName} (${app.panMasked})`);
-
-      const logMsg = `Connecting to ${app.registrarName}... Querying PAN ${app.panMasked} for ${app.ipoName}`;
-      setSyncLogs((prev) => [logMsg, ...prev]);
-
-      // Simulate registrar network query delay (400ms per record)
-      await new Promise((r) => setTimeout(r, 450));
-
-      // Deterministic auto-allotment logic based on PAN / lotCount
-      const charCode = app.panMasked.charCodeAt(app.panMasked.length - 1) || 0;
-      const isAllotted = charCode % 2 === 0 || app.lotCount > 1;
-      const targetStatus: "ALLOTTED" | "REFUNDED" = isAllotted ? "ALLOTTED" : "REFUNDED";
-
-      await persistStatusUpdate(app.ipoId, app.appId, targetStatus);
-
-      const percent = Math.round(((i + 1) / targets.length) * 100);
-      setSyncProgress(percent);
+    try {
+      const res = await fetch("/api/registrar-sync", { method: "POST" });
+      const data = await res.json();
+      if (data.success) {
+        setLastSyncedTime(new Date().toLocaleTimeString());
+        await refreshIpos();
+      }
+    } catch (err) {
+      console.warn("Manual sync error:", err);
+    } finally {
+      setIsSyncing(false);
+      setSyncProgress(100);
     }
-
-    setCurrentSyncTarget(null);
-    setIsSyncing(false);
   };
 
   return (
@@ -239,47 +268,36 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
               </span>
               <span className="flex items-center gap-1 text-[11px] font-bold text-emerald-400">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
-                Live Registrar API Connected
+                Live Registrar API Connected (Last Synced: {lastSyncedTime})
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
               Registrar Allotment Auto-Checker
             </h1>
             <p className="text-xs text-slate-400 max-w-xl font-medium leading-relaxed">
-              Fetch applicant records, query registrar databases (Link Intime, KFintech, Bigshare), and automatically update allotment statuses across the system.
+              Fetch real applicant PAN card records, query registrar servers (Link Intime, KFintech, Bigshare), and automatically update allotment statuses in real-time.
             </p>
           </div>
 
           <div className="flex items-center gap-3 shrink-0">
             <button
+              onClick={() => setIsRealPanModalOpen(true)}
+              className="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer"
+            >
+              <IdentificationCard size={16} className="text-amber-400" />
+              <span>Check Real PAN Card</span>
+            </button>
+
+            <button
               onClick={runAutoSyncEngine}
-              disabled={isSyncing || filteredApplicants.length === 0}
+              disabled={isSyncing}
               className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
               <ArrowClockwise size={16} className={isSyncing ? "animate-spin" : ""} weight="bold" />
-              <span>{isSyncing ? `Checking (${syncProgress}%)...` : "Auto Sync Allotments"}</span>
+              <span>{isSyncing ? "Syncing..." : "Auto Sync Allotments"}</span>
             </button>
           </div>
         </div>
-
-        {/* Sync Progress Bar overlay */}
-        {isSyncing && (
-          <div className="mt-5 pt-4 border-t border-slate-800 space-y-2">
-            <div className="flex items-center justify-between text-xs font-bold text-slate-300">
-              <span className="flex items-center gap-2">
-                <Sparkle size={14} className="text-amber-400 animate-spin" />
-                <span>Checking Registrar: <strong className="text-white">{currentSyncTarget}</strong></span>
-              </span>
-              <span className="text-blue-400 font-mono">{syncProgress}% Complete</span>
-            </div>
-            <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden p-0.5 border border-slate-700">
-              <div
-                className="h-full bg-gradient-to-r from-blue-500 to-emerald-400 rounded-full transition-all duration-300"
-                style={{ width: `${syncProgress}%` }}
-              />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* ── METRICS COUNTER CARDS ── */}
@@ -335,7 +353,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search by Applicant Name, PAN Card, or Application No..."
+              placeholder="Search by Applicant Name, Real PAN Card, or App No..."
               className="w-full h-10 pl-10 pr-4 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 focus:bg-white transition-all"
             />
             {searchQuery && (
@@ -390,7 +408,7 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
           </h2>
 
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-            <span>Official Portals:</span>
+            <span>Official Registrar Search:</span>
             <a
               href="https://linkintime.co.in/initial_offer/public-issues.html"
               target="_blank"
@@ -553,6 +571,124 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
           </div>
         )}
       </div>
+
+      {/* ── REAL PAN CHECK MODAL ── */}
+      {isRealPanModalOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white border border-slate-200 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5 animate-fade-in relative">
+            <button
+              onClick={() => setIsRealPanModalOpen(false)}
+              className="absolute right-5 top-5 p-1 rounded-full text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+            >
+              <X size={18} />
+            </button>
+
+            <div className="space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
+                <h3 className="text-lg font-black text-slate-900">Check Real PAN Card on Registrar</h3>
+              </div>
+              <p className="text-xs text-slate-500 font-medium">
+                Enter any real Indian PAN card number and select the registrar endpoint to verify allotment status live.
+              </p>
+            </div>
+
+            <form onSubmit={handleCheckRealPanSubmit} className="space-y-4">
+              {/* PAN Input */}
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Real PAN Card Number <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  maxLength={10}
+                  value={customPan}
+                  onChange={(e) => setCustomPan(e.target.value.toUpperCase())}
+                  placeholder="e.g. ABCDE1234F"
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-all"
+                />
+              </div>
+
+              {/* Registrar Selection */}
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Target Registrar Service <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={customRegistrar}
+                  onChange={(e) => setCustomRegistrar(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                >
+                  <option value="Link Intime India">Link Intime India Pvt Ltd</option>
+                  <option value="KFin Technologies">KFin Technologies (KFintech)</option>
+                  <option value="Bigshare Services">Bigshare Services Pvt Ltd</option>
+                  <option value="Cameo Corporate Services">Cameo Corporate Services</option>
+                </select>
+              </div>
+
+              {/* Target IPO */}
+              <div className="space-y-1">
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
+                  Target IPO Opportunity
+                </label>
+                <select
+                  value={customIpoId}
+                  onChange={(e) => setCustomIpoId(e.target.value)}
+                  className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer"
+                >
+                  {ipos.map((ipo) => (
+                    <option key={ipo.id} value={ipo.id}>
+                      {ipo.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Result display */}
+              {checkResult && (
+                <div
+                  className={`p-3.5 rounded-xl border text-xs font-bold space-y-1 ${
+                    checkResult.status === "ALLOTTED"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+                      : "bg-slate-100 border-slate-300 text-slate-800"
+                  }`}
+                >
+                  <div className="flex items-center gap-2">
+                    {checkResult.status === "ALLOTTED" ? (
+                      <CheckCircle size={16} className="text-emerald-600" weight="fill" />
+                    ) : (
+                      <XCircle size={16} className="text-rose-600" weight="fill" />
+                    )}
+                    <span className="font-extrabold uppercase">
+                      Status: {checkResult.status || "CHECK COMPLETE"}
+                    </span>
+                  </div>
+                  <p className="text-[11px] text-slate-600 font-medium">{checkResult.message}</p>
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isCheckingSingle || !customPan.trim()}
+                className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer"
+              >
+                {isCheckingSingle ? (
+                  <>
+                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                    Querying Registrar API...
+                  </>
+                ) : (
+                  <>
+                    <Sparkle size={16} />
+                    <span>Verify Allotment on Registrar</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

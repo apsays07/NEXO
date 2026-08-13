@@ -1,5 +1,68 @@
 [
   {
+    "id": "ipo_1786627119777",
+    "name": "ardee",
+    "company": "ardee",
+    "logo": "AR",
+    "category": "Mainboard",
+    "status": "APPLICATION_OPEN",
+    "recommendation": "APPLY",
+    "thesis": "xcc",
+    "isHidden": false,
+    "metrics": {
+      "issueSize": "₹2,400 Cr",
+      "priceBand": {
+        "min": 0,
+        "max": 0
+      },
+      "lotSize": 1,
+      "minInvestment": 15000,
+      "gmpPercent": 18.5,
+      "openDate": "18 Aug 2026",
+      "closeDate": "28 Aug 2026",
+      "allotmentDate": "01 Sep 2026",
+      "listingDate": "04 Sep 2026",
+      "fundUnblockDate": "02 Sep 2026"
+    },
+    "createdBy": "Shivam Prasad",
+    "participantsCount": 0,
+    "combinedCapital": 15000,
+    "applications": [
+      {
+        "id": "app_1786627138644",
+        "ipoId": "ipo_1786627119777",
+        "type": "INDIVIDUAL",
+        "applicantName": "User",
+        "memberId": "mem_user",
+        "panMasked": "IKXPP8988P",
+        "panNumbers": [
+          "IKXPP8988P"
+        ],
+        "totalContribution": 15000,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
+        "createdAt": "2026-08-13T13:18:58.644Z",
+        "applicationNumber": "NEXO-APP-9736",
+        "participants": [
+          {
+            "memberId": "mem_user",
+            "memberName": "User",
+            "avatar": "/jack.png",
+            "contribution": 15000,
+            "percentage": 100,
+            "panMasked": "IKXPP8988P",
+            "panFull": "IKXPP8988P",
+            "status": "SUBMITTED"
+          }
+        ],
+        "registrarCheckedAt": "2026-08-13T13:19:20.848Z",
+        "registrarMessage": "Registrar (Link Intime India): Verified PAN IKXPP8988P status -> ALLOTTED"
+      }
+    ]
+  },
+  {
     "id": "ipo_1786623010222",
     "name": "gtr",
     "company": "gtr",
