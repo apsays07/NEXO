@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { MaskedPAN } from "../ui/MaskedPAN";
 import { formatINR } from "@/lib/mockData";
 import {
   UserPlus,
@@ -190,10 +189,6 @@ export function MembersView() {
                 {/* Attributes */}
                 <div className="mt-3 p-3 rounded-xl bg-page border border-line space-y-2 text-xs">
                   <div className="flex justify-between items-center">
-                    <span className="text-ink-secondary font-medium">Registered PAN</span>
-                    <MaskedPAN panMasked={member.panMasked} panFull={member.panFull} />
-                  </div>
-                  <div className="flex justify-between items-center">
                     <span className="text-ink-secondary font-medium">Default Lot Allocation</span>
                     <span className="font-semibold text-ink num-tabular">
                       {formatINR(member.defaultContribution)}
@@ -287,30 +282,16 @@ export function MembersView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">Role</label>
-                  <select
-                    value={role}
-                    onChange={(e) => setRole(e.target.value as any)}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
-                  >
-                    <option value="MEMBER">Member</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">PAN Card</label>
-                  <input
-                    type="text"
-                    value={pan}
-                    onChange={(e) => setPan(e.target.value.toUpperCase())}
-                    placeholder="e.g. ABCDE1234F"
-                    maxLength={10}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
-                  />
-                </div>
+              <div>
+                <label className="block text-caption font-semibold text-ink mb-1">Role</label>
+                <select
+                  value={role}
+                  onChange={(e) => setRole(e.target.value as any)}
+                  className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
               </div>
 
               <div>
@@ -332,7 +313,7 @@ export function MembersView() {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
-                <Button type="button" variant="tertiary" size="sm" onClick={() => setIsAddModalOpen(false)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" size="sm">
@@ -401,33 +382,20 @@ export function MembersView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">Role</label>
-                  <select
-                    value={editRole}
-                    onChange={(e) => setEditRole(e.target.value as any)}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
-                  >
-                    <option value="MEMBER">Member</option>
-                    <option value="ADMIN">Admin</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">PAN Card</label>
-                  <input
-                    type="text"
-                    value={editPan}
-                    onChange={(e) => setEditPan(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
-                  />
-                </div>
+              <div>
+                <label className="block text-caption font-semibold text-ink mb-1">Role</label>
+                <select
+                  value={editRole}
+                  onChange={(e) => setEditRole(e.target.value as any)}
+                  className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
+                >
+                  <option value="MEMBER">Member</option>
+                  <option value="ADMIN">Admin</option>
+                </select>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
-                <Button type="button" variant="tertiary" size="sm" onClick={() => setEditingMember(null)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditingMember(null)}>
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" size="sm">
