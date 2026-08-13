@@ -159,6 +159,11 @@ export function MessagesView() {
   }, [fetchConversations]);
 
   const handleSelectTargetMember = async (targetMemberId: string) => {
+    if (!targetMemberId || targetMemberId === currentMemberId) return;
+
+    // Immediately switch active conversation view
+    setActiveConversationId(targetMemberId);
+
     try {
       const res = await fetch("/api/conversations", {
         method: "POST",
