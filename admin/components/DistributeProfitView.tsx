@@ -208,8 +208,8 @@ export function DistributeProfitView() {
           </div>
         </div>
 
-        {/* ── Row 2: Auto-calculated summary cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+        {/* ── Row 2: Auto-calculated summary ── */}
+        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 max-w-xs">
           {/* Total Applications (auto) */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-slate-500">
@@ -219,41 +219,6 @@ export function DistributeProfitView() {
             <div className="text-xl font-black text-slate-900">
               {totalApplications}
               <span className="text-xs font-bold text-slate-400 ml-1">Applications</span>
-            </div>
-          </div>
-
-          {/* Total Applied Lots (auto) */}
-          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
-            <div className="flex items-center gap-2 text-slate-500">
-              <Package size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Total Applied Lots</span>
-            </div>
-            <div className="text-xl font-black text-slate-900">
-              {totalAppliedLots % 1 === 0 ? totalAppliedLots : totalAppliedLots.toFixed(1)}
-              <span className="text-xs font-bold text-slate-400 ml-1">Lots</span>
-            </div>
-          </div>
-
-          {/* Per Application Profit (auto) */}
-          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1 shadow-2xs">
-            <div className="flex items-center gap-2 text-emerald-600">
-              <Calculator size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Application Profit</span>
-            </div>
-            <div className="text-xl font-mono font-black text-emerald-700">
-              ₹{perApplicationProfit.toLocaleString("en-IN")}
-            </div>
-          </div>
-
-          {/* Allotted Lots (admin entered) */}
-          <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 space-y-1 shadow-2xs">
-            <div className="flex items-center gap-2 text-blue-600">
-              <Coins size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Allotted Lots</span>
-            </div>
-            <div className="text-xl font-mono font-black text-blue-700">
-              {numAllottedLots % 1 === 0 ? numAllottedLots : numAllottedLots.toFixed(1)}
-              <span className="text-xs font-bold text-blue-400 ml-1">Lots</span>
             </div>
           </div>
         </div>
