@@ -341,13 +341,16 @@ export function IPOWorkspaceView() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-7">
           {filteredListedIpos.map((ipo) => {
-            // Find User Profit for active member
-            const myProfitEntry = ipo.userProfits?.find(
+            // Find total User Profit for active member across all applications
+            const myProfits = ipo.userProfits?.filter(
               (u) =>
                 u.memberId === activeUserId ||
-                u.memberName?.toLowerCase() === activeUserName.toLowerCase()
+                (u.memberName && activeUserName && u.memberName.toLowerCase().trim() === activeUserName.toLowerCase().trim())
             );
-            const myProfitAmount = myProfitEntry ? myProfitEntry.profit : ipo.oneLotProfit;
+            const myProfitAmount =
+              myProfits && myProfits.length > 0
+                ? myProfits.reduce((sum, u) => sum + u.profit, 0)
+                : ipo.oneLotProfit;
 
             return (
               <div

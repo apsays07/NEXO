@@ -278,7 +278,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
               ? Math.round(dist.totalProfit / totalAppliedLots)
               : dist.oneLotProfit || 0;
 
-          const userProfits = (ipo.applications || []).flatMap((app) => {
+          const rawUserProfits = (ipo.applications || []).flatMap((app) => {
             if (Array.isArray(app.participants) && app.participants.length > 0) {
               return app.participants.map((p: any) => {
                 let pName = p.memberName || p.name || app.applicantName || "Member";
@@ -301,6 +301,19 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
               },
             ];
           });
+
+          // Aggregate profits by member so members with multiple applications get their full sum
+          const aggregatedMap = new Map<string, { memberId: string; memberName: string; profit: number }>();
+          rawUserProfits.forEach((item) => {
+            const key = (item.memberName || item.memberId).toLowerCase().trim();
+            if (aggregatedMap.has(key)) {
+              const existing = aggregatedMap.get(key)!;
+              existing.profit += item.profit;
+            } else {
+              aggregatedMap.set(key, { ...item });
+            }
+          });
+          const userProfits = Array.from(aggregatedMap.values());
 
           publishedCards.push({
             id: `pub_${ipo.id}`,
