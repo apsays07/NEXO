@@ -90,8 +90,8 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
                 </span>
               )}
               {isListed && (
-                <span className="px-2.5 py-1 rounded-full bg-slate-500/15 text-slate-500 dark:text-slate-300 border border-slate-500/30 text-[11px] font-sans font-bold flex items-center gap-1.5">
-                  📈 LISTED & HOLDING
+                <span className="px-2.5 py-1 rounded-full bg-indigo-500/15 text-indigo-600 dark:text-indigo-300 border border-indigo-500/35 text-[11px] font-sans font-bold flex items-center gap-1.5">
+                  📈 LISTED &amp; HOLDING
                 </span>
               )}
 
