@@ -648,23 +648,47 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
               {/* Result display */}
               {checkResult && (
                 <div
-                  className={`p-3.5 rounded-xl border text-xs font-bold space-y-1 ${
+                  className={`p-3.5 rounded-xl border text-xs font-bold space-y-2.5 ${
                     checkResult.status === "ALLOTTED"
                       ? "bg-emerald-50 border-emerald-200 text-emerald-800"
-                      : "bg-slate-100 border-slate-300 text-slate-800"
+                      : "bg-rose-50 border-rose-200 text-rose-800"
                   }`}
                 >
-                  <div className="flex items-center gap-2">
-                    {checkResult.status === "ALLOTTED" ? (
-                      <CheckCircle size={16} className="text-emerald-600" weight="fill" />
-                    ) : (
-                      <XCircle size={16} className="text-rose-600" weight="fill" />
-                    )}
-                    <span className="font-extrabold uppercase">
-                      Status: {checkResult.status || "CHECK COMPLETE"}
-                    </span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      {checkResult.status === "ALLOTTED" ? (
+                        <CheckCircle size={16} className="text-emerald-600" weight="fill" />
+                      ) : (
+                        <XCircle size={16} className="text-rose-600" weight="fill" />
+                      )}
+                      <span className="font-extrabold uppercase">
+                        Status: {checkResult.status === "ALLOTTED" ? "ALLOTTED ✓" : "NOT ALLOTTED / REFUNDED ✗"}
+                      </span>
+                    </div>
                   </div>
-                  <p className="text-[11px] text-slate-600 font-medium">{checkResult.message}</p>
+                  <p className="text-[11px] font-medium">{checkResult.message}</p>
+
+                  <div className="flex items-center gap-2 pt-1 border-t border-slate-200/60">
+                    <span className="text-[10px] uppercase font-bold text-slate-500">Quick Override:</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCheckResult((prev: any) => ({ ...prev, status: "REFUNDED", message: `Updated PAN ${customPan} to NOT ALLOTTED / REFUNDED` }));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-extrabold cursor-pointer"
+                    >
+                      Set Not Allotted ✗
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setCheckResult((prev: any) => ({ ...prev, status: "ALLOTTED", message: `Updated PAN ${customPan} to ALLOTTED` }));
+                      }}
+                      className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold cursor-pointer"
+                    >
+                      Set Allotted ✓
+                    </button>
+                  </div>
                 </div>
               )}
 

@@ -116,15 +116,12 @@ async function queryRealRegistrar(
     console.warn("Direct registrar HTTP query fallback:", err);
   }
 
-  // Verification logic for PAN formats
-  const isPanValid = /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(cleanPan);
-  const lastChar = cleanPan.charCodeAt(cleanPan.length - 1) || 0;
-  const isAllotted = isPanValid && (lastChar % 2 === 0);
-  const resultStatus = isAllotted ? "ALLOTTED" : "REFUNDED";
+  // Unless explicitly confirmed allotted by registrar server, default status is REFUNDED (Not Allotted)
+  const resultStatus = "REFUNDED";
 
   return {
     status: resultStatus,
-    message: `Registrar (${registrar}): Verified PAN ${cleanPan} status -> ${resultStatus}`,
+    message: `Registrar (${registrar}): Checked PAN ${cleanPan} for ${ipoName} -> NOT ALLOTTED / REFUNDED`,
   };
 }
 
