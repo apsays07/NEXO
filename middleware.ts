@@ -77,32 +77,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // ── /admin/login ─────────────────────────────────────────────
-  // Always accessible — role check is done client-side after the
-  // session check in the page itself; server enforces in the API.
-  if (pathname === ADMIN_LOGIN_PAGE) {
-    // Note: if already admin, the client page will redirect to /admin.
-    // Middleware cannot read role from the JWT — that's a server-only check.
-    return NextResponse.next();
-  }
-
-  // ── /login ───────────────────────────────────────────────────
-  if (pathname === USER_LOGIN_PAGE) {
-    if (isAuthenticated) {
-      // Already logged in → send to workspace
-      return NextResponse.redirect(new URL(USER_DEFAULT_REDIRECT, request.url));
-    }
-    return NextResponse.next();
-  }
-
-  // ── Protected admin routes (/admin, /admin/*) ─────────────────
+  // ── Admin routes (/admin, /admin/*) ─────────────────
   if (pathname === "/admin" || pathname.startsWith("/admin/")) {
-    if (!isAuthenticated) {
-      const loginUrl = new URL(ADMIN_LOGIN_PAGE, request.url);
-      loginUrl.searchParams.set("next", pathname);
-      return NextResponse.redirect(loginUrl);
-    }
-    // Authenticated — let the page/API handle role enforcement
     return NextResponse.next();
   }
 

@@ -1,5 +1,35 @@
 [
   {
+    "id": "ipo_1786623010222",
+    "name": "gtr",
+    "company": "gtr",
+    "logo": "GT",
+    "category": "Mainboard",
+    "status": "APPLICATION_OPEN",
+    "recommendation": "APPLY",
+    "thesis": "cjdncjdnc",
+    "isHidden": true,
+    "metrics": {
+      "issueSize": "₹2,400 Cr",
+      "priceBand": {
+        "min": 0,
+        "max": 0
+      },
+      "lotSize": 1,
+      "minInvestment": 15000,
+      "gmpPercent": 230,
+      "openDate": "18 Aug 2026",
+      "closeDate": "28 Aug 2026",
+      "allotmentDate": "01 Sep 2026",
+      "listingDate": "04 Sep 2026",
+      "fundUnblockDate": "02 Sep 2026"
+    },
+    "createdBy": "Shivam Prasad",
+    "participantsCount": 0,
+    "combinedCapital": 0,
+    "applications": []
+  },
+  {
     "id": "ipo_1786618696311",
     "name": "holy",
     "company": "holy",
@@ -17,7 +47,7 @@
       },
       "lotSize": 1,
       "minInvestment": 15000,
-      "gmpPercent": 18.5,
+      "gmpPercent": 10,
       "openDate": "18 Aug 2026",
       "closeDate": "28 Aug 2026",
       "allotmentDate": "01 Sep 2026",
@@ -26,8 +56,78 @@
     },
     "createdBy": "Shivam Prasad",
     "participantsCount": 0,
-    "combinedCapital": 45000,
+    "combinedCapital": 75000,
     "applications": [
+      {
+        "id": "app_1786623197490",
+        "ipoId": "ipo_1786618696311",
+        "type": "COMBINED",
+        "applicantName": "User1, User2",
+        "memberId": "mem_super_admin",
+        "panMasked": "HDGDS9878M",
+        "panNumbers": [
+          "HDGDS9878M"
+        ],
+        "totalContribution": 15000,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
+        "createdAt": "2026-08-13T12:13:17.490Z",
+        "applicationNumber": "NEXO-APP-5506",
+        "participants": [
+          {
+            "memberId": "mem_user",
+            "memberName": "User1, User2",
+            "avatar": "/jack.png",
+            "contribution": 7500,
+            "percentage": 50,
+            "panMasked": "HDGDS9878M",
+            "panFull": "HDGDS9878M",
+            "status": "SUBMITTED"
+          },
+          {
+            "memberId": "mem_user",
+            "memberName": "User",
+            "avatar": "/jack.png",
+            "contribution": 7500,
+            "percentage": 50,
+            "panMasked": "BCDEF2345G",
+            "panFull": "BCDEF2345G",
+            "status": "SUBMITTED"
+          }
+        ]
+      },
+      {
+        "id": "app_1786623102957",
+        "ipoId": "ipo_1786618696311",
+        "type": "INDIVIDUAL",
+        "applicantName": "User",
+        "memberId": "mem_user",
+        "panMasked": "IKXPP8988P",
+        "panNumbers": [
+          "IKXPP8988P"
+        ],
+        "totalContribution": 15000,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
+        "createdAt": "2026-08-13T12:11:42.957Z",
+        "applicationNumber": "NEXO-APP-4580",
+        "participants": [
+          {
+            "memberId": "mem_user",
+            "memberName": "User",
+            "avatar": "/jack.png",
+            "contribution": 15000,
+            "percentage": 100,
+            "panMasked": "IKXPP8988P",
+            "panFull": "IKXPP8988P",
+            "status": "SUBMITTED"
+          }
+        ]
+      },
       {
         "id": "app_1786619040328",
         "ipoId": "ipo_1786618696311",
@@ -130,11 +230,11 @@
       }
     ],
     "profitDistribution": {
-      "totalProfit": 20000,
-      "totalLots": 3,
+      "totalProfit": 30000,
+      "totalLots": 5,
       "allottedLots": 1,
-      "oneLotProfit": 6667,
-      "publishedAt": "2026-08-13T11:04:11.849Z"
+      "oneLotProfit": 6000,
+      "publishedAt": "2026-08-13T12:15:23.314Z"
     }
   },
   {
