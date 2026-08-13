@@ -53,7 +53,7 @@ export function Sidebar() {
       <aside className="hidden lg:flex w-[230px] bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
         <div>
           {/* Brand Header */}
-          <div className="p-4 border-b border-line/80 bg-surface/40 flex items-center justify-between">
+          <div className="h-16 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0">
             <div className="flex items-center gap-1.5">
               <span className="text-xl font-black tracking-tight text-ink font-sans">
                 NEXO
@@ -191,11 +191,13 @@ export function Sidebar() {
       />
 
       {/* TABLET COLLAPSED SIDEBAR (Visible on md screens 768px - 1023px) */}
-      <aside className="hidden md:flex lg:hidden w-16 bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans py-3 items-center">
-        <div className="space-y-6 flex flex-col items-center">
-          {/* Logo */}
-          <div className="flex items-center gap-1 font-black text-ink text-sm">
-            N<span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
+      <aside className="hidden md:flex lg:hidden w-16 bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans pb-3 items-center">
+        <div className="w-full flex flex-col items-center gap-6">
+          {/* Logo Header */}
+          <div className="h-16 w-full border-b border-line flex items-center justify-center shrink-0">
+            <div className="flex items-center gap-1 font-black text-ink text-sm">
+              N<span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
+            </div>
           </div>
 
           {/* Icons Nav */}
