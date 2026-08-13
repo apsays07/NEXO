@@ -1173,6 +1173,9 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         setActiveConversationId,
         openDirectChatWithUser: async (targetMemberId: string) => {
           try {
+            setActiveConversationId(targetMemberId);
+            setActiveTab("messages");
+
             const activeId = currentUser?.id || "mem_1";
             const res = await fetch("/api/conversations", {
               method: "POST",
@@ -1182,12 +1185,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
             const data = await res.json();
             if (data?.success && data.conversation) {
               setActiveConversationId(data.conversation.id);
-            } else {
-              const minId = activeId < targetMemberId ? activeId : targetMemberId;
-              const maxId = activeId < targetMemberId ? targetMemberId : activeId;
-              setActiveConversationId(`conv_dir_${minId}_${maxId}`);
             }
-            setActiveTab("messages");
           } catch (err) {
             console.error("Failed to open direct chat:", err);
             setActiveTab("messages");

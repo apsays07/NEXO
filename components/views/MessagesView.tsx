@@ -175,7 +175,37 @@ export function MessagesView() {
     }
   };
 
-  const activeConversation = conversations.find((c) => c.id === activeConversationId);
+  const activeConversation =
+    conversations.find(
+      (c) =>
+        c.id === activeConversationId ||
+        c.otherMember?.id === activeConversationId ||
+        c.otherMember?.username?.toLowerCase() === activeConversationId?.toLowerCase()
+    ) ||
+    (() => {
+      const targetMemberObj = members.find(
+        (m) =>
+          m.id === activeConversationId ||
+          m.username?.toLowerCase() === activeConversationId?.toLowerCase()
+      );
+      if (targetMemberObj) {
+        return {
+          id: `conv_dir_${currentMemberId}_${targetMemberObj.id}`,
+          type: "DIRECT" as const,
+          title: targetMemberObj.name,
+          avatar: targetMemberObj.avatar,
+          createdBy: currentMemberId,
+          lastMessage: "Start a conversation",
+          lastMessageAt: new Date().toISOString(),
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          unreadCount: 0,
+          otherMember: targetMemberObj,
+          participants: [activeUser, targetMemberObj],
+        };
+      }
+      return conversations[0];
+    })();
 
   const handleOpenIpoPage = (ipoId: string) => {
     const foundIpo = ipos.find((i) => i.id === ipoId);
