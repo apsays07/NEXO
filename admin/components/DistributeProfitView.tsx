@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Coins, CheckCircle, ArrowRight, User, Users, Calculator, Package } from "@phosphor-icons/react";
+import { Coins, CheckCircle, ArrowRight, User, Users, Calculator, Package, Wallet } from "@phosphor-icons/react";
 import { useAdmin } from "../context/AdminContext";
 
 export function DistributeProfitView() {
@@ -27,7 +27,7 @@ export function DistributeProfitView() {
     }
 
     const minInv = selectedIpo.metrics?.minInvestment || 15000;
-    const membersMap = new Map<string, { id: string; name: string; lots: number; pan: string }>();
+    const membersMap = new Map<string, { id: string; name: string; lots: number; contribution: number; pan: string }>();
 
     selectedIpo.applications.forEach((app: any) => {
       // Combined pool application with multiple participants
@@ -39,16 +39,19 @@ export function DistributeProfitView() {
           }
           const pKey = (p.memberId || pName).toLowerCase().trim();
           const pPan = p.panMasked || p.panFull || app.panMasked || "XXXXXXXX41";
-          const lotVal = p.contribution ? (p.contribution / minInv) : (app.lotCount || 1) / app.participants.length;
+          const pContrib = p.contribution || (app.totalContribution ? app.totalContribution / app.participants.length : minInv);
+          const lotVal = pContrib / minInv;
 
           if (membersMap.has(pKey)) {
             const existing = membersMap.get(pKey)!;
             existing.lots += lotVal;
+            existing.contribution += pContrib;
           } else {
             membersMap.set(pKey, {
               id: p.memberId || `mem_${Date.now()}_${Math.random()}`,
               name: pName,
               lots: lotVal,
+              contribution: pContrib,
               pan: pPan,
             });
           }
@@ -57,20 +60,25 @@ export function DistributeProfitView() {
         // Single applicant or comma-separated names
         const rawName = app.applicantName || "Member";
         const lotVal = app.lotCount || 1;
+        const appContrib = app.totalContribution || (lotVal * minInv);
         const aPan = app.panMasked || "XXXXXXXX41";
 
         if (rawName.includes(",")) {
           const splitNames = rawName.split(",").map((s: string) => s.trim()).filter(Boolean);
           const splitLot = lotVal / splitNames.length;
+          const splitContrib = appContrib / splitNames.length;
           splitNames.forEach((sName: string) => {
             const sKey = sName.toLowerCase();
             if (membersMap.has(sKey)) {
-              membersMap.get(sKey)!.lots += splitLot;
+              const existing = membersMap.get(sKey)!;
+              existing.lots += splitLot;
+              existing.contribution += splitContrib;
             } else {
               membersMap.set(sKey, {
                 id: `mem_${sKey}`,
                 name: sName,
                 lots: splitLot,
+                contribution: splitContrib,
                 pan: aPan,
               });
             }
@@ -78,12 +86,15 @@ export function DistributeProfitView() {
         } else {
           const aKey = (app.memberId || rawName).toLowerCase().trim();
           if (membersMap.has(aKey)) {
-            membersMap.get(aKey)!.lots += lotVal;
+            const existing = membersMap.get(aKey)!;
+            existing.lots += lotVal;
+            existing.contribution += appContrib;
           } else {
             membersMap.set(aKey, {
               id: app.memberId || app.id,
               name: rawName,
               lots: lotVal,
+              contribution: appContrib,
               pan: aPan,
             });
           }
@@ -97,6 +108,7 @@ export function DistributeProfitView() {
   // ── Auto-calculated values ──
   const totalApplicants = memberApplications.length;
   const totalAppliedLots = memberApplications.reduce((acc, m) => acc + m.lots, 0);
+  const totalAppliedAmount = memberApplications.reduce((acc, m) => acc + m.contribution, 0);
   const perLotProfit = totalAppliedLots > 0 ? Math.round(numProfit / totalAppliedLots) : 0;
 
   const handlePublish = async () => {
@@ -234,7 +246,7 @@ export function DistributeProfitView() {
         </div>
 
         {/* ── Row 2: Auto-calculated summary cards ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           {/* Total Applicants (auto) */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-slate-500">
@@ -244,6 +256,17 @@ export function DistributeProfitView() {
             <div className="text-xl font-black text-slate-900">
               {totalApplicants}
               <span className="text-xs font-bold text-slate-400 ml-1">Members</span>
+            </div>
+          </div>
+
+          {/* Total Money Applied (auto) */}
+          <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
+            <div className="flex items-center gap-2 text-slate-500">
+              <Wallet size={16} weight="bold" />
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Total Money Applied</span>
+            </div>
+            <div className="text-xl font-mono font-black text-slate-900">
+              ₹{totalAppliedAmount.toLocaleString("en-IN")}
             </div>
           </div>
 
@@ -308,6 +331,7 @@ export function DistributeProfitView() {
                 <tr className="border-b border-slate-200 bg-slate-50 text-slate-500 uppercase text-[10px] font-extrabold tracking-wider">
                   <th className="p-3.5 rounded-l-xl">Member Name</th>
                   <th className="p-3.5">PAN</th>
+                  <th className="p-3.5 text-right">Money Applied (₹)</th>
                   <th className="p-3.5 text-center">Applied Lots</th>
                   <th className="p-3.5 text-right">Per Lot Profit</th>
                   <th className="p-3.5 text-right rounded-r-xl">Individual Profit (₹)</th>
@@ -325,6 +349,9 @@ export function DistributeProfitView() {
                         <span className="capitalize">{m.name}</span>
                       </td>
                       <td className="p-3.5 font-mono text-xs text-slate-500">{m.pan}</td>
+                      <td className="p-3.5 text-right font-mono font-bold text-slate-900">
+                        ₹{m.contribution.toLocaleString("en-IN")}
+                      </td>
                       <td className="p-3.5 text-center">
                         <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-extrabold font-mono text-xs border border-blue-200">
                           {m.lots % 1 === 0 ? m.lots : m.lots.toFixed(1)} Lot{m.lots > 1 ? "s" : ""}
@@ -345,6 +372,9 @@ export function DistributeProfitView() {
                 <tr className="border-t-2 border-slate-300 bg-slate-50/70 font-extrabold text-slate-900">
                   <td className="p-3.5" colSpan={2}>
                     TOTAL ({totalApplicants} Members)
+                  </td>
+                  <td className="p-3.5 text-right font-mono text-slate-900 font-black">
+                    ₹{totalAppliedAmount.toLocaleString("en-IN")}
                   </td>
                   <td className="p-3.5 text-center font-mono">
                     {totalAppliedLots % 1 === 0 ? totalAppliedLots : totalAppliedLots.toFixed(1)} Lots
