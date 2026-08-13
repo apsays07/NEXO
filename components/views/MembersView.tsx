@@ -314,7 +314,7 @@ export function MembersView() {
                         </div>
 
                         {/* Username Pill */}
-                        <div className="inline-flex items-center gap-1 text-xs font-mono font-semibold text-accent bg-accent-soft/40 px-2.5 py-0.5 rounded-lg border border-accent/20">
+                        <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/50 hover:bg-accent-soft px-2.5 py-0.5 rounded-md border border-accent/20 transition-colors">
                           @{mUsername}
                         </div>
                       </div>
@@ -416,7 +416,7 @@ export function MembersView() {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="e.g. ashay"
                     required
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
                   />
                 </div>
                 <div>
@@ -517,7 +517,7 @@ export function MembersView() {
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
                   />
                 </div>
                 <div>
