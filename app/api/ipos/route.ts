@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
 
-const SHARED_FILE_PATH = path.join(process.cwd(), "..", "shared_ipos.json");
+const SHARED_FILE_PATH_PARENT = path.join(process.cwd(), "..", "shared_ipos.json");
+const SHARED_FILE_PATH_LOCAL = path.join(process.cwd(), "shared_ipos.json");
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -12,8 +13,13 @@ const corsHeaders = {
 
 function readSharedIpos(): any[] {
   try {
-    if (fs.existsSync(SHARED_FILE_PATH)) {
-      const data = fs.readFileSync(SHARED_FILE_PATH, "utf-8");
+    if (fs.existsSync(SHARED_FILE_PATH_LOCAL)) {
+      const data = fs.readFileSync(SHARED_FILE_PATH_LOCAL, "utf-8");
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    if (fs.existsSync(SHARED_FILE_PATH_PARENT)) {
+      const data = fs.readFileSync(SHARED_FILE_PATH_PARENT, "utf-8");
       const parsed = JSON.parse(data);
       if (Array.isArray(parsed)) return parsed;
     }
@@ -25,7 +31,11 @@ function readSharedIpos(): any[] {
 
 function writeSharedIpos(ipos: any[]) {
   try {
-    fs.writeFileSync(SHARED_FILE_PATH, JSON.stringify(ipos, null, 2), "utf-8");
+    const jsonStr = JSON.stringify(ipos, null, 2);
+    fs.writeFileSync(SHARED_FILE_PATH_LOCAL, jsonStr, "utf-8");
+    try {
+      fs.writeFileSync(SHARED_FILE_PATH_PARENT, jsonStr, "utf-8");
+    } catch (_e) {}
   } catch (err) {
     console.error("Error writing shared_ipos.json:", err);
   }
@@ -130,16 +140,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "IPO updated successfully." }, { headers: corsHeaders });
     }
 
-    // 2. Action: Create New IPO Opportunity
-    const name = body.name || body.company || "";
-    const minInvestment = Number(body.minInvestment || body.minimumInvestment) || 15000;
-    const issueSize = Number(body.issueSize) || 2400;
-    const description = body.description || body.thesis || "";
-    const closeDate = body.closeDate || "28 Aug 2026";
+    // 4. Action: Create New IPO Opportunity
+    const name = String(body.name || body.company || body.data?.name || "").trim();
+    const minInvestment = Number(body.minInvestment || body.minimumInvestment || body.data?.minInvestment) || 15000;
+    const issueSize = Number(body.issueSize || body.data?.issueSize) || 2400;
+    const description = String(body.description || body.thesis || body.data?.description || "").trim() || "Strong operating profile and growth prospects.";
+    const closeDate = String(body.closeDate || body.data?.closeDate || "").trim() || "28 Aug 2026";
 
-    if (!name || !description) {
+    if (!name) {
       return NextResponse.json(
-        { success: false, message: "Missing required fields (name, description)." },
+        { success: false, message: "Missing required field: name." },
         { status: 400, headers: corsHeaders }
       );
     }

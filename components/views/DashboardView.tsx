@@ -11,16 +11,23 @@ export function DashboardView() {
 
   const visibleIpos = ipos.filter((i) => !i.isHidden);
 
-  // 1. Current Open IPOs (APPLICATION_OPEN or APPLYING)
-  const openIpos = [
-    ...visibleIpos.filter((i) => i.isFeatured && ["APPLICATION_OPEN", "APPLYING"].includes(i.status)),
-    ...visibleIpos.filter((i) => !i.isFeatured && ["APPLICATION_OPEN", "APPLYING"].includes(i.status)),
-  ];
+  const isOpenStatus = (st?: string) => {
+    if (!st) return true;
+    const s = String(st).toUpperCase().trim();
+    return (
+      s === "APPLICATION_OPEN" ||
+      s === "APPLYING" ||
+      s === "OPEN" ||
+      s === "APPLICATION OPEN" ||
+      s === "UPCOMING"
+    );
+  };
 
-  // 2. Previous & Closed IPOs (ALLOTMENT_PENDING, CLOSED, ALLOTMENT_OUT, HOLDING, LISTED)
-  const previousIpos = visibleIpos.filter(
-    (i) => !["APPLICATION_OPEN", "APPLYING"].includes(i.status)
-  );
+  // 1. Current Open IPOs
+  const openIpos = visibleIpos.filter((i) => isOpenStatus(i.status));
+
+  // 2. Previous & Closed IPOs
+  const previousIpos = visibleIpos.filter((i) => !isOpenStatus(i.status));
 
   return (
     <div className="space-y-8 max-w-5xl mx-auto animate-fade-in pb-8 font-sans select-none">
