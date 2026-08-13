@@ -1,7 +1,7 @@
 import React from "react";
 
 interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: "primary" | "secondary" | "ghost" | "outline" | "success" | "danger";
+  variant?: "primary" | "secondary" | "ghost" | "outline" | "success" | "danger" | "tertiary";
   size?: "sm" | "md" | "lg";
   children: React.ReactNode;
 }
@@ -20,6 +20,8 @@ export function Button({
     primary:
       "bg-accent hover:opacity-90 text-white font-semibold focus:ring-accent/15 shadow-2xs",
     secondary:
+      "bg-surface-alt hover:bg-surface-hover text-ink font-medium border border-line focus:ring-line-strong",
+    tertiary:
       "bg-surface-alt hover:bg-surface-hover text-ink font-medium border border-line focus:ring-line-strong",
     ghost:
       "bg-transparent hover:bg-surface-hover text-ink-secondary hover:text-ink font-medium focus:ring-line",

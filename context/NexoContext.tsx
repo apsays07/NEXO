@@ -26,7 +26,7 @@ import {
 import { getProfile, updateProfile } from "@/src/features/profile/api";
 import { mapIPOToOpportunity } from "@/src/features/ipo/mappers";
 
-type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members" | "profile";
+type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members" | "profile" | "admin";
 
 export interface NexoContextType {
   isAuthenticated: boolean;
@@ -83,7 +83,9 @@ export interface NexoContextType {
     type: ParticipationType | ApplicationType,
     participantContributions: { memberId: string; contribution: number }[],
     proofUrl?: string,
-    applicantMemberId?: string
+    applicantMemberId?: string,
+    applicantNameInput?: string,
+    panNumbersInput?: string[]
   ) => void;
   addApplicationToIpo: (
     ipoId: string,
@@ -118,6 +120,7 @@ export interface NexoContextType {
       allotmentStatus?: AllotmentStatus;
       status?: AllotmentStatus;
       participants?: import("@/types/nexo").ApplicationParticipant[];
+      panNumbers?: string[];
     }
   ) => void;
   deleteApplication: (ipoId: string, applicationId: string) => void;
@@ -198,18 +201,46 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       let ipoRes = await fetch("/api/ipos");
       let ipoData = await ipoRes.json();
 
-      if (Array.isArray(ipoData?.ipos) && ipoData.ipos.length === 0) {
-        await fetch("/api/seed-ipos", { method: "POST" });
-        ipoRes = await fetch("/api/ipos");
-        ipoData = await ipoRes.json();
+      let apiIpos: IPOOpportunity[] = [];
+      if (Array.isArray(ipoData?.ipos)) {
+        apiIpos = ipoData.ipos.map((raw: any) => (raw.metrics ? raw : mapIPOToOpportunity(raw)));
+      } else if (Array.isArray(ipoData)) {
+        apiIpos = ipoData.map((raw: any) => (raw.metrics ? raw : mapIPOToOpportunity(raw)));
       }
 
-      if (Array.isArray(ipoData?.ipos) && ipoData.ipos.length > 0) {
-        const mapped = ipoData.ipos.map((raw: any) => mapIPOToOpportunity(raw));
-        setIpos(mapped);
-      }
+      let extraLocal: IPOOpportunity[] = [];
+      let hiddenLocal: string[] = [];
+      let profitDists: Record<string, any> = {};
+
+      try {
+        extraLocal = JSON.parse(localStorage.getItem("nexo_local_admin_ipos") || "[]");
+        hiddenLocal = JSON.parse(localStorage.getItem("nexo_local_hidden_ipos") || "[]");
+        profitDists = JSON.parse(localStorage.getItem("nexo_shared_profit_dists") || "{}");
+      } catch (e) {}
+
+      const mergedMap = new Map<string, IPOOpportunity>();
+      apiIpos.forEach((ipo: IPOOpportunity) => mergedMap.set(ipo.id, ipo));
+      extraLocal.forEach((ipo) => {
+        if (!mergedMap.has(ipo.id)) {
+          mergedMap.set(ipo.id, ipo);
+        } else if (ipo.isHidden) {
+          const existing = mergedMap.get(ipo.id)!;
+          mergedMap.set(ipo.id, { ...existing, isHidden: true });
+        }
+      });
+
+      const combined = Array.from(mergedMap.values()).map((ipo) => {
+        const dist = profitDists[ipo.id] || ipo.profitDistribution;
+        return {
+          ...ipo,
+          isHidden: hiddenLocal.includes(ipo.id) || ipo.isHidden === true,
+          profitDistribution: dist || ipo.profitDistribution,
+        };
+      });
+
+      setIpos(combined);
     } catch (err) {
-      console.error("Failed to refresh IPOs from MongoDB:", err);
+      console.warn("Failed to refresh IPOs from API in NexoContext:", err);
     }
   };
 
@@ -280,7 +311,14 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     };
 
     window.addEventListener("hashchange", handleHashChange);
-    return () => window.removeEventListener("hashchange", handleHashChange);
+    window.addEventListener("storage", refreshIpos);
+    const ipoInterval = setInterval(refreshIpos, 2000);
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange);
+      window.removeEventListener("storage", refreshIpos);
+      clearInterval(ipoInterval);
+    };
   }, []);
 
   const refreshMembers = async () => {

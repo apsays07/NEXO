@@ -69,6 +69,8 @@ export interface Application {
   applicationProofUrl?: string;
   applicationNumber?: string;
   panNumbers?: string[];
+  participants: ApplicationParticipant[];
+  createdAt?: string;
 }
 
 export interface FinancialMetrics {
@@ -113,6 +115,12 @@ export interface IPOOpportunity {
   isHidden?: boolean;
   isFeatured?: boolean;
   closeCountdown?: string;
+  profitDistribution?: {
+    totalProfit: number;
+    totalLots: number;
+    oneLotProfit: number;
+    publishedAt?: string;
+  };
 }
 
 export interface ListedIPOUserProfit {
