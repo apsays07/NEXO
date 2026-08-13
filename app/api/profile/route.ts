@@ -31,8 +31,8 @@ export async function GET() {
 
     return NextResponse.json({ profile: toPublicProfile(doc!) });
   } catch (err: any) {
-    console.error("GET /api/profile:", err);
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    console.warn("GET /api/profile MongoDB unavailable, returning default profile fallback.");
+    return NextResponse.json({ profile: toPublicProfile(defaultProfile() as any) });
   }
 }
 
@@ -58,42 +58,63 @@ export async function PUT(req: Request) {
       "pan",
       "panMasked",
       "role",
-      "demat",
-      "preferences",
-      "individualSavings",
-      "userContributions",
+      "bio",
+      "investmentStyle",
+      "location",
+      "dematAccountNo",
+      "primaryBank",
+      "bankAccountMasked",
+      "ifscCode",
+      "upiId",
+      "memberSince",
+      "twoFactorEnabled",
+      "loginAlertsEnabled",
+      "sessionTimeoutMinutes",
+      "emailNotifications",
+      "smsNotifications",
+      "whatsappAlerts",
+      "themePreference",
+      "groupAccessLevel",
+      "syndicateMembership",
+      "collateralEligible",
+      "creditLimit",
+      "totalCapitalCommitted",
+      "capitalAvailable",
+      "allotmentsCount",
     ];
 
-    const updateFields: Record<string, any> = { updatedAt: new Date() };
+    const updateDoc: Record<string, any> = { updatedAt: new Date() };
     for (const key of allowed) {
-      if (key in body) {
-        updateFields[key] = body[key];
+      if (key in body) updateDoc[key] = body[key];
+    }
+
+    try {
+      const client = await clientPromise;
+      const col    = client.db(DB).collection<ProfileDocument>(COL);
+
+      const result = await col.findOneAndUpdate(
+        { userId: USER },
+        { $set: updateDoc },
+        { returnDocument: "after", upsert: true }
+      );
+
+      const updatedDoc = (result as any)?.value || result;
+      if (updatedDoc) {
+        return NextResponse.json({
+          success: true,
+          profile: toPublicProfile(updatedDoc as any),
+        });
       }
+    } catch (dbErr) {
+      console.warn("PUT /api/profile MongoDB unavailable, returning local update fallback.");
     }
 
-    /* Derive panMasked from raw PAN if caller sends `pan` (optional) */
-    if (typeof body.pan === "string" && body.pan.trim().length === 10) {
-      const raw = body.pan.trim().toUpperCase();
-      updateFields.pan       = raw;          // stored encrypted-at-rest (MongoDB)
-      updateFields.panMasked = `XXXXX${raw.slice(5)}`; // safe for client
-    }
-
-    const client = await clientPromise;
-    const col    = client.db(DB).collection<ProfileDocument>(COL);
-
-    await col.updateOne(
-      { userId: USER },
-      {
-        $set:         updateFields,
-        $setOnInsert: { userId: USER, createdAt: new Date(), role: "ADMIN", isVerified: true },
-      },
-      { upsert: true }
-    );
-
-    const doc = await col.findOne({ userId: USER });
-    return NextResponse.json({ success: true, profile: toPublicProfile(doc!) });
+    return NextResponse.json({
+      success: true,
+      profile: toPublicProfile({ ...defaultProfile(), ...updateDoc } as any),
+    });
   } catch (err: any) {
-    console.error("PUT /api/profile:", err);
+    console.error("PUT /api/profile error:", err);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
 }

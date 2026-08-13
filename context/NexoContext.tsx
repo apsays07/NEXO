@@ -324,12 +324,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const refreshMembers = async () => {
     try {
       const res = await fetch("/api/members");
-      const data = await res.json();
+      if (!res.ok) return;
+      const data = await res.json().catch(() => null);
       if (data?.success && Array.isArray(data.members) && data.members.length > 0) {
         setMembers(data.members);
       }
     } catch (err) {
-      console.error("Failed to fetch members from MongoDB:", err);
+      console.warn("Failed to fetch members from API:", err);
     }
   };
 
@@ -383,69 +384,73 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const refreshApplications = async () => {
     try {
       const res = await fetch("/api/applications");
-      const data = await res.json();
+      if (res.ok) {
+        const data = await res.json().catch(() => null);
 
-      if (data?.success && Array.isArray(data.applications) && data.applications.length > 0) {
-        setIpos((prevIpos) =>
-          prevIpos.map((ipo) => {
-            const dbAppsForIpo = data.applications.filter(
-              (doc: any) => doc.ipoId === ipo.id || doc.ipoName?.toLowerCase() === ipo.name?.toLowerCase()
-            );
+        if (data?.success && Array.isArray(data.applications) && data.applications.length > 0) {
+          setIpos((prevIpos) =>
+            prevIpos.map((ipo) => {
+              const dbAppsForIpo = data.applications.filter(
+                (doc: any) => doc.ipoId === ipo.id || doc.ipoName?.toLowerCase() === ipo.name?.toLowerCase()
+              );
 
-            if (dbAppsForIpo.length === 0) return ipo;
+              if (dbAppsForIpo.length === 0) return ipo;
 
-            const mappedApps: Application[] = dbAppsForIpo.map((doc: any) => ({
-              id: doc.id,
-              ipoId: ipo.id,
-              type: doc.fundingStructure === "MULTI_FRIEND" ? "COMBINED" : "INDIVIDUAL",
-              applicantName: doc.applicantName || "Member",
-              memberId: doc.memberId || "mem_1",
-              panMasked: doc.panNumbers?.[0] || "ABCDE2741D",
-              panNumbers: doc.panNumbers || [doc.panMasked || "ABCDE2741D"],
-              totalContribution: doc.totalContribution || 15000,
-              lotCount: doc.numberOfPanCards || doc.lotCount || 1,
-              verified: true,
-              allotmentStatus: doc.allotmentStatus || "AWAITING",
-              status: doc.status || "AWAITING",
-              createdAt: typeof doc.createdAt === "string" ? doc.createdAt : new Date().toISOString(),
-              participants: (doc.contributors || []).map((c: any) => ({
-                memberId: c.memberId || "mem_1",
-                memberName: c.memberName || "Member",
-                avatar: "/oggy.png",
-                contribution: c.amount || 15000,
-                percentage: c.percentage || 100,
+              const mappedApps: Application[] = dbAppsForIpo.map((doc: any) => ({
+                id: doc.id,
+                ipoId: ipo.id,
+                type: doc.fundingStructure === "MULTI_FRIEND" ? "COMBINED" : "INDIVIDUAL",
+                applicantName: doc.applicantName || "Member",
+                memberId: doc.memberId || "mem_1",
                 panMasked: doc.panNumbers?.[0] || "ABCDE2741D",
-                panFull: doc.panNumbers?.[0] || "ABCDE2741D",
-                status: "SUBMITTED" as const,
-              })),
-            }));
+                panNumbers: doc.panNumbers || [doc.panMasked || "ABCDE2741D"],
+                totalContribution: doc.totalContribution || 15000,
+                lotCount: doc.numberOfPanCards || doc.lotCount || 1,
+                verified: true,
+                allotmentStatus: doc.allotmentStatus || "AWAITING",
+                status: doc.status || "AWAITING",
+                createdAt: typeof doc.createdAt === "string" ? doc.createdAt : new Date().toISOString(),
+                participants: (doc.contributors || []).map((c: any) => ({
+                  memberId: c.memberId || "mem_1",
+                  memberName: c.memberName || "Member",
+                  avatar: "/oggy.png",
+                  contribution: c.amount || 15000,
+                  percentage: c.percentage || 100,
+                  panMasked: doc.panNumbers?.[0] || "ABCDE2741D",
+                  panFull: doc.panNumbers?.[0] || "ABCDE2741D",
+                  status: "SUBMITTED" as const,
+                })),
+              }));
 
-            const existingIds = new Set(mappedApps.map((a) => a.id));
-            const remainingApps = ipo.applications.filter((a) => !existingIds.has(a.id));
-            const mergedApps = [...mappedApps, ...remainingApps];
-            const totalCombined = mergedApps.reduce((sum, a) => sum + a.totalContribution, 0);
+              const existingIds = new Set(mappedApps.map((a) => a.id));
+              const remainingApps = ipo.applications.filter((a) => !existingIds.has(a.id));
+              const mergedApps = [...mappedApps, ...remainingApps];
+              const totalCombined = mergedApps.reduce((sum, a) => sum + a.totalContribution, 0);
 
-            return {
-              ...ipo,
-              applications: mergedApps,
-              combinedCapital: totalCombined,
-            };
-          })
-        );
+              return {
+                ...ipo,
+                applications: mergedApps,
+                combinedCapital: totalCombined,
+              };
+            })
+          );
+        }
       }
 
-      // Fetch transactions from MongoDB
+      // Fetch transactions
       const txnRes = await fetch("/api/transactions");
-      const txnData = await txnRes.json();
-      if (txnData?.success && Array.isArray(txnData.transactions) && txnData.transactions.length > 0) {
-        setTransactions((prev) => {
-          const existing = new Set(prev.map((t) => t.id));
-          const newTxns = txnData.transactions.filter((t: any) => !existing.has(t.id));
-          return [...newTxns, ...prev];
-        });
+      if (txnRes.ok) {
+        const txnData = await txnRes.json().catch(() => null);
+        if (txnData?.success && Array.isArray(txnData.transactions) && txnData.transactions.length > 0) {
+          setTransactions((prev) => {
+            const existing = new Set(prev.map((t) => t.id));
+            const newTxns = txnData.transactions.filter((t: any) => !existing.has(t.id));
+            return [...newTxns, ...prev];
+          });
+        }
       }
     } catch (err) {
-      console.error("Failed to fetch applications and transactions from MongoDB:", err);
+      console.warn("Failed to fetch applications and transactions from API:", err);
     }
   };
 
