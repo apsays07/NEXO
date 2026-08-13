@@ -53,30 +53,36 @@ export function Sidebar() {
     <>
       {/* DESKTOP SIDEBAR (Visible on lg screens >= 1024px) */}
       <aside
-        className={`hidden lg:flex bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans transition-all duration-300 ease-in-out ${
-          isSidebarCollapsed
-            ? "w-0 opacity-0 overflow-hidden pointer-events-none p-0 border-r-0"
-            : "w-[230px]"
+        className={`hidden lg:flex bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans transition-all duration-300 ease-in-out overflow-hidden ${
+          isSidebarCollapsed ? "w-[60px]" : "w-[230px]"
         }`}
       >
         <div>
           {/* Brand Header */}
-          <div className="h-16 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1.5">
-              <span className="text-xl font-black tracking-tight text-ink font-sans">
-                NEXO
-              </span>
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shadow-2xs shadow-blue-500/40" />
-            </div>
+          <div className="h-16 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0 overflow-hidden">
+            {isSidebarCollapsed ? (
+              <div className="w-full flex items-center justify-center gap-1 font-black text-ink text-sm">
+                N<span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
+              </div>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-xl font-black tracking-tight text-ink font-sans">
+                  NEXO
+                </span>
+                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shadow-2xs shadow-blue-500/40" />
+              </div>
+            )}
           </div>
 
           {/* Navigation Sections */}
           <nav className="p-3 space-y-4">
             {/* WORKSPACE */}
             <div className="space-y-1">
-              <div className="px-2 py-1 text-[11px] font-medium text-ink-secondary uppercase tracking-wider">
-                WORKSPACE
-              </div>
+              {!isSidebarCollapsed && (
+                <div className="px-2 py-1 text-[11px] font-medium text-ink-secondary uppercase tracking-wider">
+                  WORKSPACE
+                </div>
+              )}
               {workspaceNav.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -85,23 +91,28 @@ export function Sidebar() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
+                    title={isSidebarCollapsed ? item.label : undefined}
+                    className={`w-full h-8.5 flex items-center rounded-lg text-sm transition-colors group cursor-pointer ${
+                      isSidebarCollapsed
+                        ? "justify-center px-0"
+                        : "justify-between px-2.5"
+                    } ${
                       isActive
                         ? "bg-accent-soft text-accent font-semibold"
                         : "text-ink-secondary hover:text-ink hover:bg-surface-hover font-medium"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className={`flex items-center ${isSidebarCollapsed ? "" : "gap-2.5"}`}>
                       <Icon
-                        size={16}
+                        size={isSidebarCollapsed ? 20 : 16}
                         className={
                           isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"
                         }
                       />
-                      <span>{item.label}</span>
+                      {!isSidebarCollapsed && <span>{item.label}</span>}
                     </div>
 
-                    {item.badge !== undefined && (
+                    {!isSidebarCollapsed && item.badge !== undefined && (
                       <span
                         className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
                           isActive
@@ -112,16 +123,22 @@ export function Sidebar() {
                         {item.badge}
                       </span>
                     )}
+
+                    {isSidebarCollapsed && item.badge !== undefined && (item.badge as number) > 0 && (
+                      <span className="absolute top-0 right-0 w-1.5 h-1.5 rounded-full bg-accent" />
+                    )}
                   </button>
                 );
               })}
             </div>
 
             {/* GROUP MANAGEMENT */}
-            <div className="space-y-1 pt-2 border-t border-line">
-              <div className="px-2 py-1 text-[11px] font-medium text-ink-secondary uppercase tracking-wider">
-                COMMUNITY
-              </div>
+            <div className={`space-y-1 pt-2 border-t border-line`}>
+              {!isSidebarCollapsed && (
+                <div className="px-2 py-1 text-[11px] font-medium text-ink-secondary uppercase tracking-wider">
+                  COMMUNITY
+                </div>
+              )}
               {groupNav.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeTab === item.id;
@@ -130,23 +147,28 @@ export function Sidebar() {
                   <button
                     key={item.id}
                     onClick={() => setActiveTab(item.id as any)}
-                    className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
+                    title={isSidebarCollapsed ? item.label : undefined}
+                    className={`w-full h-8.5 flex items-center rounded-lg text-sm transition-colors group cursor-pointer ${
+                      isSidebarCollapsed
+                        ? "justify-center px-0"
+                        : "justify-between px-2.5"
+                    } ${
                       isActive
                         ? "bg-accent-soft text-accent font-semibold"
                         : "text-ink-secondary hover:text-ink hover:bg-surface-hover font-medium"
                     }`}
                   >
-                    <div className="flex items-center gap-2.5">
+                    <div className={`flex items-center ${isSidebarCollapsed ? "" : "gap-2.5"}`}>
                       <Icon
-                        size={16}
+                        size={isSidebarCollapsed ? 20 : 16}
                         className={
                           isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"
                         }
                       />
-                      <span>{item.label}</span>
+                      {!isSidebarCollapsed && <span>{item.label}</span>}
                     </div>
 
-                    {item.badge !== undefined && (
+                    {!isSidebarCollapsed && item.badge !== undefined && (
                       <span
                         className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${
                           isActive
@@ -166,24 +188,34 @@ export function Sidebar() {
 
         {/* User Footer Profile */}
         <div className="p-3 border-t border-line bg-surface relative" ref={popoverRef}>
-          <button
-            onClick={() => setIsPopoverOpen(!isPopoverOpen)}
-            className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-surface-alt/70 border border-line hover:border-line-strong transition-all cursor-pointer text-left group"
-          >
-            <ProfileAvatar src={adminMember?.avatar} name={adminMember?.name || "Member"} size="md" />
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1">
-                <p className="text-small font-semibold text-ink truncate">
-                  {adminMember?.name || "Member"}
+          {isSidebarCollapsed ? (
+            <button
+              onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+              className="w-full flex items-center justify-center p-1.5 rounded-xl hover:bg-surface-hover transition-all cursor-pointer"
+              title={adminMember?.name || "Profile"}
+            >
+              <ProfileAvatar src={adminMember?.avatar} name={adminMember?.name || "Member"} size="md" />
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+              className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-surface-alt/70 border border-line hover:border-line-strong transition-all cursor-pointer text-left group"
+            >
+              <ProfileAvatar src={adminMember?.avatar} name={adminMember?.name || "Member"} size="md" />
+              <div className="min-w-0 flex-1">
+                <div className="flex items-center gap-1">
+                  <p className="text-small font-semibold text-ink truncate">
+                    {adminMember?.name || "Member"}
+                  </p>
+                  <span className="w-1.5 h-1.5 rounded-full bg-positive shrink-0" />
+                </div>
+                <p className="text-caption text-ink-tertiary font-medium uppercase tracking-wider truncate">
+                  {adminMember?.role || "ADMIN"}
                 </p>
-                <span className="w-1.5 h-1.5 rounded-full bg-positive shrink-0" />
               </div>
-              <p className="text-caption text-ink-tertiary font-medium uppercase tracking-wider truncate">
-                {adminMember?.role || "ADMIN"}
-              </p>
-            </div>
-            <CaretUp size={14} className="text-ink-tertiary group-hover:text-ink transition-transform shrink-0" />
-          </button>
+              <CaretUp size={14} className="text-ink-tertiary group-hover:text-ink transition-transform shrink-0" />
+            </button>
+          )}
 
           <ProfilePopover
             isOpen={isPopoverOpen}
