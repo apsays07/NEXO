@@ -5,6 +5,7 @@ import {
   SquaresFour,
   TrendUp,
   Coins,
+  CheckCircle,
   Users,
   ChartLineUp,
   ListChecks,
@@ -26,6 +27,7 @@ export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSi
     { id: "overview", label: "Overview", icon: SquaresFour },
     { id: "ipos", label: "IPO Management", icon: TrendUp },
     { id: "distribute-profit", label: "Distribute Profit", icon: Coins },
+    { id: "registrar-checker", label: "Registrar Allotments", icon: CheckCircle },
     { id: "members", label: "Members", icon: Users },
   ];
 

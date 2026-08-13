@@ -6,6 +6,7 @@ import { AdminSidebar } from "../../admin/components/AdminSidebar";
 import { AdminIPOManagement } from "../../admin/components/AdminIPOManagement";
 import { DistributeProfitView } from "../../admin/components/DistributeProfitView";
 import { AddIPODrawer } from "../../admin/components/AddIPODrawer";
+import { RegistrarCheckerTab } from "./RegistrarCheckerTab";
 
 function AdminDashboardContent() {
   const [activeTab, setActiveTab] = useState("ipos");
@@ -58,13 +59,14 @@ function AdminDashboardContent() {
         <main className="p-4 sm:p-6 md:p-8 flex-1 max-w-6xl w-full mx-auto">
           {activeTab === "ipos" && <AdminIPOManagement />}
           {activeTab === "distribute-profit" && <DistributeProfitView />}
-          {activeTab !== "ipos" && activeTab !== "distribute-profit" && (
+          {activeTab === "registrar-checker" && <RegistrarCheckerTab />}
+          {activeTab !== "ipos" && activeTab !== "distribute-profit" && activeTab !== "registrar-checker" && (
             <div className="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-2xs space-y-2">
               <h3 className="text-base font-extrabold text-slate-800">
                 {activeTab.toUpperCase()} Section
               </h3>
               <p className="text-xs font-medium text-slate-500">
-                Use <strong className="text-blue-600">IPO Management</strong> or <strong className="text-amber-600">Distribute Profit</strong> in the sidebar.
+                Use <strong className="text-blue-600">IPO Management</strong>, <strong className="text-amber-600">Distribute Profit</strong>, or <strong className="text-emerald-600">Registrar Allotments</strong> in the sidebar.
               </p>
             </div>
           )}
