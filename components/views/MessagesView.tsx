@@ -174,7 +174,7 @@ export function MessagesView() {
   };
 
   return (
-    <div className="h-[calc(100vh-6rem)] flex flex-col md:flex-row overflow-hidden bg-[#0C0E12] border border-line/70 rounded-2xl shadow-2xl font-sans relative select-none">
+    <div className="h-full flex-1 max-h-full flex flex-col md:flex-row overflow-hidden bg-[#0C0E12] border border-line/70 rounded-2xl shadow-2xl font-sans relative select-none">
       {/* LEFT: Conversation List (Fixed 320px width on desktop) */}
       <div
         className={`w-full md:w-[320px] lg:w-[340px] shrink-0 h-full bg-[#111319] border-r border-line/70 ${
