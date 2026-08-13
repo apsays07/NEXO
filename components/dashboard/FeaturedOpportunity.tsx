@@ -152,8 +152,8 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
         {/* Footer */}
         <div className="pt-4 border-t border-line/70 flex items-center justify-between gap-3 font-sans">
           {isOpen ? (
-            <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5 bg-emerald-500/10 px-3 py-1.5 rounded-xl border border-emerald-500/25 shadow-2xs">
-              <Clock size={14} className="text-emerald-400" /> Closes {formatDate(ipo.metrics.closeDate)}
+            <span className="text-xs text-amber-400 font-bold flex items-center gap-1.5 bg-amber-500/10 px-3 py-1.5 rounded-xl border border-amber-500/25 shadow-2xs">
+              <Clock size={14} className="text-amber-400" /> Closes {formatDate(ipo.metrics.closeDate)}
             </span>
           ) : (
             <span className="text-xs text-ink-tertiary font-semibold flex items-center gap-1.5 bg-surface-alt px-3 py-1.5 rounded-xl border border-line/60">
