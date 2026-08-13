@@ -588,7 +588,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           });
         }
       }
-      }
     } catch (err) {
       console.warn("Failed to fetch applications and transactions from API:", err);
     }
