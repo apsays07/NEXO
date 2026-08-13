@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { MagnifyingGlass, SidebarSimple } from "@phosphor-icons/react";
 import { NotificationPopover } from "./NotificationPopover";
 import { CommandPalette } from "../ui/CommandPalette";
 import { ProfileAvatar } from "../profile/ProfileAvatar";
@@ -10,7 +10,7 @@ import { ProfilePopover } from "../profile/ProfilePopover";
 import { KeyboardShortcutsModal } from "../profile/KeyboardShortcutsModal";
 
 export function TopBar() {
-  const { activeTab, searchQuery, setSearchQuery, portfolioSummary, members, currentUser: sessionUser } = useNexo();
+  const { activeTab, searchQuery, setSearchQuery, portfolioSummary, members, currentUser: sessionUser, isSidebarCollapsed, toggleSidebar } = useNexo();
   const currentUser = sessionUser || members[0];
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
@@ -32,6 +32,7 @@ export function TopBar() {
     ipos: "IPO Workspace",
     applications: "Applications",
     portfolio: "Portfolio",
+    messages: "Messages",
     members: "Group Members",
     premium: "Nexo Premium",
     profile: "Profile & Identity",
@@ -39,9 +40,17 @@ export function TopBar() {
 
   return (
     <>
-      <header className="h-16 border-b border-line bg-surface/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-line/20">
-        {/* Page Title */}
-        <div className="flex items-center gap-3 text-sm font-semibold text-ink-tertiary">
+      <header className="h-16 border-b border-line bg-surface/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-line/20 font-sans">
+        {/* Page Title & Sidebar Toggle */}
+        <div className="flex items-center gap-2.5 text-sm font-semibold text-ink-tertiary">
+          <button
+            onClick={toggleSidebar}
+            className="p-2 rounded-xl bg-surface-alt/80 hover:bg-surface-hover border border-line text-ink-tertiary hover:text-ink transition-all cursor-pointer hidden lg:flex items-center gap-1"
+            title="Toggle Left Sidebar (Ctrl + B)"
+          >
+            <SidebarSimple size={18} />
+          </button>
+
           <h1 className="text-ink font-extrabold text-base sm:text-lg tracking-tight select-none">
             {titles[activeTab] || "Dashboard"}
           </h1>

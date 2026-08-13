@@ -20,7 +20,7 @@ import { ProfilePopover } from "../profile/ProfilePopover";
 import { KeyboardShortcutsModal } from "../profile/KeyboardShortcutsModal";
 
 export function Sidebar() {
-  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, unreadMessageCount } = useNexo();
+  const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, unreadMessageCount, isSidebarCollapsed } = useNexo();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -52,7 +52,13 @@ export function Sidebar() {
   return (
     <>
       {/* DESKTOP SIDEBAR (Visible on lg screens >= 1024px) */}
-      <aside className="hidden lg:flex w-[230px] bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans">
+      <aside
+        className={`hidden lg:flex bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans transition-all duration-300 ease-in-out ${
+          isSidebarCollapsed
+            ? "w-0 opacity-0 overflow-hidden pointer-events-none p-0 border-r-0"
+            : "w-[230px]"
+        }`}
+      >
         <div>
           {/* Brand Header */}
           <div className="h-16 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0">

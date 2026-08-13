@@ -154,6 +154,8 @@ export interface NexoContextType {
   unreadMessageCount: number;
   openDirectChatWithUser: (targetMemberId: string) => Promise<void>;
   openIpoGroupChat: (ipoId: string, ipoTitle?: string) => Promise<void>;
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
 }
 
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
@@ -521,6 +523,21 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [isPremiumUser, setIsPremiumUser] = useState(false);
   const [activePlan, setActivePlan] = useState("Free");
   const [isPremiumModalOpen, setIsPremiumModalOpen] = useState(false);
+
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const toggleSidebar = () => setIsSidebarCollapsed((prev) => !prev);
+
+  // Global Ctrl + B hotkey to toggle left sidebar
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "b") {
+        e.preventDefault();
+        toggleSidebar();
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const openPremiumModal = (_ipo?: IPOOpportunity | null) => setIsPremiumModalOpen(true);
   const closePremiumModal = () => setIsPremiumModalOpen(false);
@@ -1175,6 +1192,8 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
             console.error("Failed to open IPO group chat:", err);
           }
         },
+        isSidebarCollapsed,
+        toggleSidebar,
       }}
     >
       {children}
