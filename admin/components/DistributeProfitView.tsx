@@ -115,7 +115,12 @@ export function DistributeProfitView() {
     if (!selectedIpo || numProfit <= 0 || !hasApplicants) return;
 
     if (publishProfitDistribution) {
-      await publishProfitDistribution(selectedIpo.id, numProfit, numAllottedLots);
+      await publishProfitDistribution(
+        selectedIpo.id,
+        numProfit,
+        totalAppliedLots,
+        typeof numAllottedLots === "number" ? numAllottedLots : 1
+      );
     }
 
     setIsSuccessToast(true);

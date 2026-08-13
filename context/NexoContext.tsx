@@ -255,19 +255,49 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       combined.forEach((ipo) => {
         if (ipo.profitDistribution) {
           const dist = ipo.profitDistribution;
+          const minInv = ipo.metrics?.minInvestment || 15000;
+
+          // Compute total applied lots across all applications for this IPO
+          const totalAppliedLots = (ipo.applications || []).reduce((sum, app) => {
+            if (Array.isArray(app.participants) && app.participants.length > 0) {
+              return (
+                sum +
+                app.participants.reduce(
+                  (pSum: number, p: any) =>
+                    pSum + (p.contribution ? p.contribution / minInv : 1),
+                  0
+                )
+              );
+            }
+            return sum + (app.lotCount || 1);
+          }, 0) || dist.totalLots || 1;
+
+          // Per lot profit = totalProfit / totalAppliedLots
+          const oneLotProfit =
+            dist.totalProfit && totalAppliedLots > 0
+              ? Math.round(dist.totalProfit / totalAppliedLots)
+              : dist.oneLotProfit || 0;
+
           const userProfits = (ipo.applications || []).flatMap((app) => {
             if (Array.isArray(app.participants) && app.participants.length > 0) {
-              return app.participants.map((p: any) => ({
-                memberId: p.memberId,
-                memberName: p.memberName || p.name,
-                profit: Math.round(((p.contribution || 15000) / (ipo.metrics?.minInvestment || 15000)) * dist.oneLotProfit),
-              }));
+              return app.participants.map((p: any) => {
+                let pName = p.memberName || p.name || app.applicantName || "Member";
+                if (pName.includes(",")) pName = pName.split(",")[0].trim();
+                const lotVal = p.contribution ? p.contribution / minInv : 1;
+                return {
+                  memberId: p.memberId || app.memberId,
+                  memberName: pName,
+                  profit: Math.round(lotVal * oneLotProfit),
+                };
+              });
             }
+            let aName = app.applicantName || "Member";
+            if (aName.includes(",")) aName = aName.split(",")[0].trim();
             return [
               {
                 memberId: app.memberId,
-                memberName: app.applicantName,
-                profit: Math.round((app.lotCount || 1) * dist.oneLotProfit),
+                memberName: aName,
+                profit: Math.round((app.lotCount || 1) * oneLotProfit),
               },
             ];
           });
@@ -277,10 +307,15 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
             name: ipo.name,
             category: ipo.category || "Mainboard",
             logo: ipo.logo || ipo.name.substring(0, 2).toUpperCase(),
-            lotsAllotted: dist.totalLots || 1,
+            lotsAllotted: dist.allottedLots || 1,
             totalProfit: dist.totalProfit || 0,
-            applicantsCount: new Set((ipo.applications || []).map((a) => a.memberId || a.applicantName)).size || 1,
-            oneLotProfit: dist.oneLotProfit || 0,
+            applicantsCount:
+              new Set(
+                (ipo.applications || []).flatMap((a) =>
+                  (a.participants || []).map((p: any) => p.memberName || p.memberId || a.applicantName)
+                )
+              ).size || (ipo.applications || []).length || 1,
+            oneLotProfit: oneLotProfit,
             listingDate: dist.publishedAt
               ? new Date(dist.publishedAt).toLocaleDateString("en-GB", {
                   day: "2-digit",
