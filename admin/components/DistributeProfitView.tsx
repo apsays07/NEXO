@@ -75,10 +75,10 @@ export function DistributeProfitView() {
   // ── Auto-calculated values ──
   const totalApplicants = memberApplications.length;
   const totalAppliedLots = memberApplications.reduce((acc, m) => acc + m.lots, 0);
-  const perLotProfit = numAllottedLots > 0 ? Math.round(numProfit / numAllottedLots) : 0;
+  const perApplicantProfit = totalApplicants > 0 ? Math.round(numProfit / totalApplicants) : 0;
 
   const handlePublish = async () => {
-    if (!selectedIpo || numProfit <= 0 || numAllottedLots <= 0) return;
+    if (!selectedIpo || numProfit <= 0 || !hasApplicants) return;
 
     if (publishProfitDistribution) {
       await publishProfitDistribution(selectedIpo.id, numProfit, numAllottedLots);
@@ -125,9 +125,9 @@ export function DistributeProfitView() {
           <button
             type="button"
             onClick={handlePublish}
-            disabled={!selectedIpo || numProfit <= 0 || numAllottedLots <= 0 || !hasApplicants}
+            disabled={!selectedIpo || numProfit <= 0 || !hasApplicants}
             className={`inline-flex items-center gap-2.5 px-6 py-3 rounded-xl text-xs sm:text-sm font-extrabold transition-all cursor-pointer shadow-md ${
-              selectedIpo && numProfit > 0 && numAllottedLots > 0 && hasApplicants
+              selectedIpo && numProfit > 0 && hasApplicants
                 ? "bg-emerald-600 hover:bg-emerald-700 text-white active:scale-[0.98]"
                 : "bg-slate-200 text-slate-400 cursor-not-allowed shadow-none"
             }`}
@@ -233,14 +233,14 @@ export function DistributeProfitView() {
             </div>
           </div>
 
-          {/* Per Lot Profit (auto) */}
+          {/* Per Applicant Profit (auto) */}
           <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-emerald-600">
               <Calculator size={16} weight="bold" />
-              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Lot Profit</span>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Applicant Profit</span>
             </div>
             <div className="text-xl font-mono font-black text-emerald-700">
-              ₹{perLotProfit.toLocaleString("en-IN")}
+              ₹{perApplicantProfit.toLocaleString("en-IN")}
             </div>
           </div>
 
@@ -274,7 +274,7 @@ export function DistributeProfitView() {
               Total Profit: <strong className="font-mono text-emerald-600 font-extrabold">₹{numProfit.toLocaleString("en-IN")}</strong>
             </span>
             <span className="text-xs font-bold text-slate-500">
-              Per Lot: <strong className="font-mono text-blue-600 font-extrabold">₹{perLotProfit.toLocaleString("en-IN")}</strong>
+              Per Applicant: <strong className="font-mono text-blue-600 font-extrabold">₹{perApplicantProfit.toLocaleString("en-IN")}</strong>
             </span>
           </div>
         </div>
@@ -295,13 +295,13 @@ export function DistributeProfitView() {
                   <th className="p-3.5 rounded-l-xl">Member Name</th>
                   <th className="p-3.5">PAN</th>
                   <th className="p-3.5 text-center">Applied Lots</th>
-                  <th className="p-3.5 text-right">Per Lot Profit</th>
+                  <th className="p-3.5 text-right">Per Applicant Profit</th>
                   <th className="p-3.5 text-right rounded-r-xl">Individual Profit (₹)</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
                 {memberApplications.map((m, idx) => {
-                  const individualProfit = Math.round(m.lots * perLotProfit);
+                  const individualProfit = perApplicantProfit;
                   return (
                     <tr key={idx} className="hover:bg-slate-50/70 transition-colors">
                       <td className="p-3.5 font-bold text-slate-900 flex items-center gap-2.5">
@@ -317,7 +317,7 @@ export function DistributeProfitView() {
                         </span>
                       </td>
                       <td className="p-3.5 text-right font-mono font-bold text-slate-600">
-                        ₹{perLotProfit.toLocaleString("en-IN")}
+                        ₹{perApplicantProfit.toLocaleString("en-IN")}
                       </td>
                       <td className="p-3.5 text-right font-mono font-black text-emerald-600 text-sm sm:text-base">
                         ₹{individualProfit.toLocaleString("en-IN")}
