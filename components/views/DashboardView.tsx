@@ -4,47 +4,86 @@ import React from "react";
 import { useNexo } from "@/context/NexoContext";
 import { DashboardHeader } from "../dashboard/DashboardHeader";
 import { FeaturedOpportunity } from "../dashboard/FeaturedOpportunity";
+import { Sparkle, Hourglass } from "@phosphor-icons/react";
 
 export function DashboardView() {
   const { ipos, openIpoDetail, openApplicationModal } = useNexo();
 
-  // Show all open/active non-hidden IPOs; featured one comes first
   const visibleIpos = ipos.filter((i) => !i.isHidden);
-  const activeIpos = [
-    ...visibleIpos.filter((i) => i.isFeatured),
-    ...visibleIpos.filter(
-      (i) =>
-        !i.isFeatured &&
-        ["APPLICATION_OPEN", "APPLYING", "RESEARCHING", "WATCHLIST"].includes(i.status)
-    ),
+
+  // 1. Current Open IPOs (APPLICATION_OPEN or APPLYING)
+  const openIpos = [
+    ...visibleIpos.filter((i) => i.isFeatured && ["APPLICATION_OPEN", "APPLYING"].includes(i.status)),
+    ...visibleIpos.filter((i) => !i.isFeatured && ["APPLICATION_OPEN", "APPLYING"].includes(i.status)),
   ];
 
+  // 2. Previous & Closed IPOs (ALLOTMENT_PENDING, CLOSED, ALLOTMENT_OUT, HOLDING, LISTED)
+  const previousIpos = visibleIpos.filter(
+    (i) => !["APPLICATION_OPEN", "APPLYING"].includes(i.status)
+  );
+
   return (
-    <div className="space-y-4 max-w-5xl mx-auto animate-fade-in pb-6 font-sans">
+    <div className="space-y-8 max-w-5xl mx-auto animate-fade-in pb-8 font-sans select-none">
       {/* GREETING HEADER */}
       <DashboardHeader />
 
-      {/* ACTIVE IPO OPPORTUNITIES */}
-      {activeIpos.length > 0 && (
-        <div className="space-y-4">
-          {activeIpos.length > 1 && (
-            <div className="flex items-center justify-between">
-              <h2 className="text-[15px] font-semibold text-ink">
-                Open Opportunities
-                <span className="ml-2 text-[12px] font-medium text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-full">
-                  {activeIpos.length}
+      {/* SECTION 1: CURRENT OPEN IPOS (TOP) */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-line/70">
+          <div className="flex items-center gap-2">
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+            <h2 className="text-base sm:text-lg font-black text-ink tracking-tight flex items-center gap-2">
+              <span>Current Open IPOs</span>
+              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 rounded-full">
+                {openIpos.length} Active
+              </span>
+            </h2>
+          </div>
+        </div>
+
+        {openIpos.length === 0 ? (
+          <div className="p-8 text-center bg-surface-alt/40 border border-line/70 rounded-2xl text-ink-tertiary text-xs">
+            No active open IPO applications right now.
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 gap-4">
+            {openIpos.map((ipo) => (
+              <FeaturedOpportunity
+                key={ipo.id}
+                ipo={ipo}
+                onInspect={openIpoDetail}
+                onApply={openApplicationModal}
+              />
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* SECTION 2: PREVIOUS & CLOSED IPOS (BOTTOM - DIFFERENT COLOR) */}
+      {previousIpos.length > 0 && (
+        <div className="space-y-4 pt-4 border-t border-line/70">
+          <div className="flex items-center justify-between pb-2 border-b border-line/70">
+            <div className="flex items-center gap-2">
+              <Hourglass size={18} className="text-amber-400" />
+              <h2 className="text-base sm:text-lg font-black text-ink tracking-tight flex items-center gap-2">
+                <span>Previous & Closed IPOs</span>
+                <span className="text-xs font-bold text-ink-secondary bg-surface-alt px-2.5 py-0.5 rounded-full border border-line/70">
+                  {previousIpos.length} Previous
                 </span>
               </h2>
             </div>
-          )}
-          {activeIpos.map((ipo) => (
-            <FeaturedOpportunity
-              key={ipo.id}
-              ipo={ipo}
-              onInspect={openIpoDetail}
-              onApply={openApplicationModal}
-            />
-          ))}
+          </div>
+
+          <div className="grid grid-cols-1 gap-4">
+            {previousIpos.map((ipo) => (
+              <FeaturedOpportunity
+                key={ipo.id}
+                ipo={ipo}
+                onInspect={openIpoDetail}
+                onApply={openApplicationModal}
+              />
+            ))}
+          </div>
         </div>
       )}
     </div>
