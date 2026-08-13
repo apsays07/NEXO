@@ -4,7 +4,6 @@ import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { formatINR } from "@/lib/mockData";
 import {
   UserPlus,
   ShieldCheck,
@@ -184,12 +183,6 @@ export function MembersView() {
                     <span className="text-ink-secondary font-medium">IPOs Applied Till Date</span>
                     <span className="font-bold text-accent bg-accent-soft px-2.5 py-0.5 rounded-full text-[11px] font-mono border border-accent/20">
                       {appliedCount} {appliedCount === 1 ? "IPO" : "IPOs"}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-ink-secondary font-medium">Default Lot Allocation</span>
-                    <span className="font-semibold text-ink num-tabular">
-                      {formatINR(member.defaultContribution)}
                     </span>
                   </div>
                   <div className="flex justify-between items-center">
