@@ -12,7 +12,7 @@ export type IPOLifecycleStage =
   | "SOLD"
   | "CLOSED";
 
-export type AllotmentStatus = "AWAITING" | "ALLOTTED" | "NOT_ALLOTTED";
+export type AllotmentStatus = "AWAITING" | "ALLOTTED" | "NOT_ALLOTTED" | "REFUNDED" | "SUBMITTED" | "PENDING";
 
 export type ApplicationType = "INDIVIDUAL" | "COMBINED";
 export type ParticipationType = "INDIVIDUAL" | "COMBINED" | "SOLO" | "COMBO";

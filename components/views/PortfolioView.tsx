@@ -375,19 +375,14 @@ export function PortfolioView() {
                             <CheckCircle size={12} weight="fill" className="text-emerald-500" /> Allotted
                           </span>
                         )}
-                        {statusStr === "REFUNDED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-secondary bg-surface-alt border border-line px-2.5 py-0.5 rounded-full shadow-2xs">
-                            Refunded
-                          </span>
-                        )}
-                        {(statusStr === "REJECTED" || statusStr === "NOT_ALLOTTED") && (
+                        {(statusStr === "REFUNDED" || statusStr === "NOT_ALLOTTED" || statusStr === "REJECTED") && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full shadow-2xs">
-                            <X size={12} weight="bold" className="text-rose-500" /> Rejected
+                            <X size={12} weight="bold" className="text-rose-500" /> Not Allotted
                           </span>
                         )}
                         {statusStr !== "ALLOTTED" && statusStr !== "REFUNDED" && statusStr !== "REJECTED" && statusStr !== "NOT_ALLOTTED" && (
                           <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full shadow-2xs">
-                            <CheckCircle size={12} weight="fill" className="text-amber-500" /> Submitted
+                            <CheckCircle size={12} weight="fill" className="text-amber-500" /> Awaiting
                           </span>
                         )}
                       </td>

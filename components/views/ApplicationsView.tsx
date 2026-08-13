@@ -90,8 +90,8 @@ export function ApplicationsView() {
 
           const st = app.allotmentStatus || app.status || "AWAITING";
           if (st === "ALLOTTED") allottedAmount += amt;
-          else if (st === "AWAITING") awaitingAmount += amt;
-          else if (st === "NOT_ALLOTTED") notAllottedAmount += amt;
+          else if (st === "AWAITING" || st === "SUBMITTED" || st === "PENDING") awaitingAmount += amt;
+          else if (st === "NOT_ALLOTTED" || st === "REFUNDED") notAllottedAmount += amt;
         });
       }
     });
@@ -107,7 +107,9 @@ export function ApplicationsView() {
 
   // Helper renderer for read-only status pill
   const renderStatusControl = (currentStatus: AllotmentStatus) => {
-    const status = currentStatus || "AWAITING";
+    const rawStatus = currentStatus || "AWAITING";
+    // Normalize: REFUNDED from admin → NOT_ALLOTTED for user display
+    const status = rawStatus === "REFUNDED" ? "NOT_ALLOTTED" : rawStatus;
 
     return (
       <span
@@ -443,7 +445,9 @@ export function ApplicationsView() {
         const filteredApps = ipo.applications.filter((app) => {
           // Status filter
           if (statusFilter !== "ALL") {
-            const st = app.allotmentStatus || app.status || "AWAITING";
+            const rawSt = app.allotmentStatus || app.status || "AWAITING";
+            // Normalize REFUNDED from admin → NOT_ALLOTTED for user display
+            const st = rawSt === "REFUNDED" ? "NOT_ALLOTTED" : rawSt;
             if (st !== statusFilter) return false;
           }
 
