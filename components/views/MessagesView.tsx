@@ -93,14 +93,19 @@ const STATIC_FALLBACK_CONVERSATIONS: Conversation[] = [
 ];
 
 export function MessagesView() {
-  const { currentMember, currentUser, members, openIpoDetail, ipos } = useNexo();
+  const {
+    currentMember,
+    currentUser,
+    members,
+    openIpoDetail,
+    ipos,
+    activeConversationId,
+    setActiveConversationId,
+  } = useNexo();
   const activeUser = currentUser || currentMember || members[0];
   const currentMemberId = activeUser?.id || "mem_1";
 
   const [conversations, setConversations] = useState<Conversation[]>(STATIC_FALLBACK_CONVERSATIONS);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(
-    STATIC_FALLBACK_CONVERSATIONS[0].id
-  );
   const [isNewMessageModalOpen, setIsNewMessageModalOpen] = useState(false);
 
   // Connect to real-time service
@@ -125,11 +130,17 @@ export function MessagesView() {
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
     }
-  }, [currentMemberId, activeConversationId]);
+  }, [currentMemberId, activeConversationId, setActiveConversationId]);
 
   useEffect(() => {
     fetchConversations();
   }, [fetchConversations]);
+
+  useEffect(() => {
+    if (!activeConversationId && conversations.length > 0) {
+      setActiveConversationId(conversations[0].id);
+    }
+  }, [activeConversationId, conversations, setActiveConversationId]);
 
   // Listen to real-time conversation updates & new messages
   useEffect(() => {

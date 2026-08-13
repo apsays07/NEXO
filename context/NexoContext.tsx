@@ -152,6 +152,8 @@ export interface NexoContextType {
   addMember: (memberData: Partial<Member> & { name: string; username: string; password: string }) => Promise<void>;
   updateMember: (id: string, patch: Partial<Member>) => Promise<void>;
   unreadMessageCount: number;
+  activeConversationId: string | null;
+  setActiveConversationId: (id: string | null) => void;
   openDirectChatWithUser: (targetMemberId: string) => Promise<void>;
   openIpoGroupChat: (ipoId: string, ipoTitle?: string) => Promise<void>;
   isSidebarCollapsed: boolean;
@@ -517,6 +519,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [activeApplicationIpo, setActiveApplicationIpo] = useState<IPOOpportunity | null>(null);
   const [isAddIpoModalOpen, setIsAddIpoModalOpen] = useState(false);
 
+  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [revealedPans, setRevealedPans] = useState<Record<string, boolean>>({});
   const [isLoading] = useState(false);
@@ -1166,30 +1169,48 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         addMember,
         updateMember,
         unreadMessageCount: 3,
+        activeConversationId,
+        setActiveConversationId,
         openDirectChatWithUser: async (targetMemberId: string) => {
           try {
             const activeId = currentUser?.id || "mem_1";
-            await fetch("/api/conversations", {
+            const res = await fetch("/api/conversations", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ currentMemberId: activeId, targetMemberId, type: "DIRECT" }),
             });
+            const data = await res.json();
+            if (data?.success && data.conversation) {
+              setActiveConversationId(data.conversation.id);
+            } else {
+              const minId = activeId < targetMemberId ? activeId : targetMemberId;
+              const maxId = activeId < targetMemberId ? targetMemberId : activeId;
+              setActiveConversationId(`conv_dir_${minId}_${maxId}`);
+            }
             setActiveTab("messages");
           } catch (err) {
             console.error("Failed to open direct chat:", err);
+            setActiveTab("messages");
           }
         },
         openIpoGroupChat: async (ipoId: string, ipoTitle?: string) => {
           try {
             const activeId = currentUser?.id || "mem_1";
-            await fetch("/api/conversations", {
+            const res = await fetch("/api/conversations", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ currentMemberId: activeId, ipoId, title: ipoTitle || "IPO Chat", type: "IPO" }),
             });
+            const data = await res.json();
+            if (data?.success && data.conversation) {
+              setActiveConversationId(data.conversation.id);
+            } else {
+              setActiveConversationId(`conv_ipo_${ipoId}`);
+            }
             setActiveTab("messages");
           } catch (err) {
             console.error("Failed to open IPO group chat:", err);
+            setActiveTab("messages");
           }
         },
         isSidebarCollapsed,
