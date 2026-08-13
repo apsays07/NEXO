@@ -289,7 +289,7 @@ export function MembersView() {
             return (
               <div
                 key={member.id}
-                className="group relative bg-gradient-to-b from-surface to-surface-alt/90 border border-line hover:border-accent/40 rounded-2xl p-5 transition-all duration-300 hover:shadow-xl hover:shadow-accent/5 hover:-translate-y-1 flex flex-col justify-between overflow-hidden"
+                className="group relative bg-gradient-to-b from-surface via-surface-alt/60 to-surface-alt/90 dark:from-[#11131A] dark:to-[#0D0E14] border border-line/80 hover:border-accent/40 rounded-2xl p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-accent/10 hover:-translate-y-1 flex flex-col justify-between overflow-hidden font-sans"
               >
                 {/* Glowing Top Edge Accent */}
                 <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent/0 via-accent/60 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
@@ -303,18 +303,18 @@ export function MembersView() {
                         <img
                           src={member.avatar}
                           alt={member.name}
-                          className="w-13 h-13 rounded-2xl object-cover ring-2 ring-accent/30 group-hover:ring-accent/60 bg-surface-alt transition-all duration-300 shadow-sm"
+                          className="w-13 h-13 rounded-2xl object-cover ring-2 ring-accent/30 group-hover:ring-accent/60 bg-surface-alt transition-all duration-300 shadow-md"
                         />
                         <span
-                          className="w-3 h-3 rounded-full bg-emerald-500 ring-2 ring-surface absolute -bottom-0.5 -right-0.5 shadow-2xs"
+                          className="w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-surface absolute -bottom-0.5 -right-0.5 shadow-xs"
                           title="Active Member"
                         />
                       </div>
 
                       {/* Name, Username & Phone */}
-                      <div className="space-y-1 min-w-0">
+                      <div className="space-y-1.5 min-w-0">
                         <div className="flex items-center gap-2">
-                          <h3 className="text-base font-extrabold text-ink group-hover:text-accent transition-colors truncate">
+                          <h3 className="text-base font-black text-ink group-hover:text-accent transition-colors truncate tracking-tight">
                             {member.name}
                           </h3>
                           {member.role === "ADMIN" && (
@@ -326,11 +326,11 @@ export function MembersView() {
 
                         {/* Username Tag & Phone Badge */}
                         <div className="flex flex-wrap items-center gap-1.5">
-                          <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/50 hover:bg-accent-soft px-2.5 py-0.5 rounded-md border border-accent/20 transition-colors">
+                          <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/40 hover:bg-accent-soft px-2.5 py-0.5 rounded-lg border border-accent/25 transition-all shadow-2xs">
                             @{mUsername}
                           </div>
 
-                          <div className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md border border-line">
+                          <div className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-ink-secondary bg-surface-alt/90 px-2.5 py-0.5 rounded-lg border border-line/80 shadow-2xs">
                             <Phone size={11} className="text-ink-tertiary" /> {mPhone}
                           </div>
                         </div>
@@ -340,25 +340,25 @@ export function MembersView() {
 
                   {/* Clean Stats Grid */}
                   <div className="grid grid-cols-2 gap-2.5 pt-1">
-                    <div className="p-3 rounded-xl bg-surface-alt/70 border border-line-subtle group-hover:border-line transition-colors">
-                      <div className="flex items-center gap-1.5 text-caption font-medium text-ink-tertiary mb-1">
+                    <div className="p-3 rounded-xl bg-surface-alt/80 dark:bg-[#141721] border border-line/70 group-hover:border-line transition-all space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-ink-tertiary uppercase tracking-wider">
                         <TrendUp size={13} className="text-accent" />
                         <span>IPOs Applied</span>
                       </div>
-                      <p className="text-base font-extrabold font-mono text-ink">
+                      <p className="text-base font-black font-sans text-ink">
                         {appliedCount}{" "}
-                        <span className="text-caption text-ink-tertiary font-sans font-normal">
+                        <span className="text-xs text-ink-tertiary font-sans font-normal">
                           {appliedCount === 1 ? "IPO" : "IPOs"}
                         </span>
                       </p>
                     </div>
 
-                    <div className="p-3 rounded-xl bg-surface-alt/70 border border-line-subtle group-hover:border-line transition-colors">
-                      <div className="flex items-center gap-1.5 text-caption font-medium text-ink-tertiary mb-1">
+                    <div className="p-3 rounded-xl bg-surface-alt/80 dark:bg-[#141721] border border-line/70 group-hover:border-line transition-all space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-ink-tertiary uppercase tracking-wider">
                         <CalendarBlank size={13} className="text-ink-secondary" />
                         <span>Member Since</span>
                       </div>
-                      <p className="text-xs font-bold text-ink truncate mt-1">
+                      <p className="text-xs font-bold text-ink truncate mt-0.5">
                         {member.joinedAt || "Jan 2025"}
                       </p>
                     </div>
@@ -367,23 +367,25 @@ export function MembersView() {
 
                 {/* Footer Controls */}
                 <div className="pt-4 mt-4 border-t border-line/80 flex items-center justify-between text-xs">
-                  <span className="text-emerald-400 font-semibold flex items-center gap-1.5 text-caption">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 shadow-2xs">
                     <ShieldCheck size={14} className="text-emerald-400" /> Verified Member
                   </span>
 
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1.5">
                     <button
                       onClick={() => openDirectChatWithUser(member.id)}
-                      className="text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-lg bg-accent-soft/40 hover:bg-accent-soft transition-all border border-accent/20"
+                      className="px-3.5 py-1.5 rounded-xl bg-accent text-white hover:bg-accent-hover font-bold text-xs shadow-xs shadow-accent/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
                       title={`Message @${mUsername}`}
                     >
-                      <ChatCircleDots size={14} /> Message →
+                      <ChatCircleDots size={14} weight="bold" />
+                      <span>Message</span>
+                      <span className="text-white/80 font-sans font-normal">→</span>
                     </button>
 
                     {isCurrentUserAdmin && (
                       <button
                         onClick={() => openEditModal(member)}
-                        className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1 rounded-lg hover:bg-surface-hover transition-all border border-transparent hover:border-line"
+                        className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-surface-hover transition-all border border-transparent hover:border-line"
                       >
                         <Pencil size={13} /> Edit
                       </button>
