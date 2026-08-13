@@ -38,13 +38,13 @@ export function MessageBubble({
 
   return (
     <div
-      className={`group relative flex gap-2.5 max-w-[80%] md:max-w-[72%] ${
+      className={`group relative flex gap-2.5 max-w-[85%] md:max-w-[72%] ${
         isSelf ? "ml-auto flex-row-reverse" : "mr-auto flex-row"
-      } ${showSenderHeader ? "mt-3" : "mt-1"}`}
+      } ${showSenderHeader ? "mt-3.5" : "mt-1"}`}
     >
-      {/* Avatar (only shown when sender header is enabled and not self) */}
+      {/* Avatar */}
       {!isSelf && (
-        <div className="w-7 h-7 rounded-full shrink-0 overflow-hidden bg-surface-alt self-end mb-0.5">
+        <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden bg-surface-alt self-start mt-0.5 ring-1 ring-line">
           {showSenderHeader ? (
             <img
               src={message.senderAvatar || "/oggy.png"}
@@ -52,20 +52,20 @@ export function MessageBubble({
               className="w-full h-full object-cover"
             />
           ) : (
-            <div className="w-7 h-7" />
+            <div className="w-8 h-8" />
           )}
         </div>
       )}
 
       <div className="flex flex-col min-w-0">
-        {/* Sender Name (for group chats when header enabled) */}
+        {/* Sender Header */}
         {!isSelf && showSenderHeader && (
-          <div className="flex items-center gap-1.5 mb-1 px-1">
-            <span className="text-[11px] font-bold text-ink-secondary">
+          <div className="flex items-center gap-1.5 mb-1 px-0.5">
+            <span className="text-xs font-extrabold text-ink font-sans">
               {message.senderName}
             </span>
             {message.senderUsername && (
-              <span className="text-[10px] font-mono text-ink-tertiary">
+              <span className="text-[10px] font-sans font-semibold tracking-tight text-accent bg-accent-soft/40 px-1.5 py-0.2 rounded-md border border-accent/20">
                 @{message.senderUsername}
               </span>
             )}
@@ -74,20 +74,20 @@ export function MessageBubble({
 
         {/* Bubble Container */}
         <div
-          className={`relative px-3.5 py-2.5 rounded-[12px] text-xs font-sans leading-relaxed shadow-3xs break-words ${
+          className={`relative px-4 py-2.5 rounded-2xl text-xs font-sans leading-relaxed shadow-xs break-words transition-all ${
             isSelf
-              ? "bg-accent/15 dark:bg-[#17233D] text-ink border border-accent/25 rounded-br-2xs"
-              : "bg-surface-alt dark:bg-[#14161A] text-ink border border-line/80 rounded-bl-2xs"
+              ? "bg-gradient-to-br from-accent/20 via-accent/15 to-accent/10 dark:from-[#1E2E4A] dark:to-[#16233B] text-ink border border-accent/30 rounded-tr-xs"
+              : "bg-surface-alt/90 dark:bg-[#141720] text-ink border border-line/80 rounded-tl-xs"
           }`}
         >
           {message.isDeleted ? (
             <span className="italic text-ink-tertiary">Message deleted</span>
           ) : isEditing ? (
-            <form onSubmit={handleSaveEdit} className="space-y-2 min-w-[200px]">
+            <form onSubmit={handleSaveEdit} className="space-y-2 min-w-[220px]">
               <textarea
                 value={editText}
                 onChange={(e) => setEditText(e.target.value)}
-                className="w-full p-2 text-xs bg-surface border border-line rounded-lg text-ink focus:outline-none focus:border-accent"
+                className="w-full p-2 text-xs bg-surface border border-line rounded-lg text-ink focus:outline-none focus:border-accent font-sans"
                 rows={2}
                 autoFocus
               />
@@ -95,13 +95,13 @@ export function MessageBubble({
                 <button
                   type="button"
                   onClick={() => setIsEditing(false)}
-                  className="px-2 py-0.5 text-[11px] font-semibold text-ink-tertiary hover:text-ink"
+                  className="px-2 py-0.5 text-[11px] font-semibold text-ink-tertiary hover:text-ink cursor-pointer"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-2 py-0.5 text-[11px] font-bold text-white bg-accent rounded-md"
+                  className="px-2.5 py-1 text-[11px] font-bold text-white bg-accent rounded-md shadow-2xs cursor-pointer"
                 >
                   Save
                 </button>
@@ -109,7 +109,7 @@ export function MessageBubble({
             </form>
           ) : (
             <>
-              <span>{message.text}</span>
+              <span className="font-sans text-[13px]">{message.text}</span>
               {message.isEdited && (
                 <span className="text-[10px] text-ink-tertiary ml-1.5 italic font-sans">
                   (edited)
@@ -118,13 +118,13 @@ export function MessageBubble({
             </>
           )}
 
-          {/* Time & Read Receipts Footer */}
+          {/* Timestamp & Read Status */}
           <div
-            className={`flex items-center justify-end gap-1 mt-1 text-[10px] ${
-              isSelf ? "text-accent/80" : "text-ink-tertiary"
+            className={`flex items-center justify-end gap-1 mt-1 text-[10px] select-none ${
+              isSelf ? "text-accent/90" : "text-ink-tertiary"
             }`}
           >
-            <span className="font-mono">{formattedTime}</span>
+            <span className="font-sans font-medium">{formattedTime}</span>
             {isSelf && !message.isDeleted && (
               <span>
                 {message.status === "READ" ? (
@@ -138,7 +138,7 @@ export function MessageBubble({
         </div>
       </div>
 
-      {/* Hover Action Menu trigger for author */}
+      {/* Context Menu for Author */}
       {isSelf && !message.isDeleted && !isEditing && (
         <div className="opacity-0 group-hover:opacity-100 transition-opacity self-center relative shrink-0">
           <button

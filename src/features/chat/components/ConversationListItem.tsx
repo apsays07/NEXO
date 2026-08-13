@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Conversation, Member } from "@/types/nexo";
-import { TrendUp, Users, Check, Checks } from "@phosphor-icons/react";
+import { TrendUp, Users } from "@phosphor-icons/react";
 
 interface ConversationListItemProps {
   conversation: Conversation;
@@ -21,7 +21,6 @@ export function ConversationListItem({
   const isDirect = conversation.type === "DIRECT";
   const isIpo = conversation.type === "IPO";
 
-  // Compute display title and avatar
   let title = conversation.title;
   let avatar = conversation.avatar || "/oggy.png";
 
@@ -30,7 +29,6 @@ export function ConversationListItem({
     avatar = conversation.otherMember.avatar || "/oggy.png";
   }
 
-  // Format relative timestamp (e.g. 2m, 14m, 1h, 12 Aug)
   const formatRelativeTime = (rawDate?: string | Date) => {
     if (!rawDate) return "";
     const date = new Date(rawDate);
@@ -49,22 +47,22 @@ export function ConversationListItem({
   return (
     <button
       onClick={onClick}
-      className={`w-full h-[68px] px-3.5 flex items-center gap-3 transition-all duration-150 border-b border-line/60 cursor-pointer select-none text-left relative ${
+      className={`w-full h-[68px] px-3.5 flex items-center gap-3 transition-all duration-150 border-b border-line/50 cursor-pointer select-none text-left relative ${
         isActive
-          ? "bg-accent-soft/70 border-accent/30 font-medium"
-          : "hover:bg-surface-hover bg-surface/40"
+          ? "bg-accent/10 dark:bg-accent/15 border-accent/40 font-medium"
+          : "hover:bg-surface-hover/80 bg-surface/30"
       }`}
     >
       {/* Active Indicator Bar */}
       {isActive && (
-        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-accent" />
+        <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 rounded-r-full bg-accent shadow-xs" />
       )}
 
       {/* Avatar Container */}
       <div className="relative shrink-0">
         {isIpo ? (
-          <div className="w-11 h-11 rounded-xl bg-accent-soft text-accent border border-accent/20 flex items-center justify-center font-bold text-sm shadow-2xs">
-            <TrendUp size={20} className="text-accent" />
+          <div className="w-11 h-11 rounded-xl bg-accent-soft text-accent border border-accent/25 flex items-center justify-center font-bold text-sm shadow-xs">
+            <TrendUp size={20} />
           </div>
         ) : (
           <img
@@ -79,8 +77,8 @@ export function ConversationListItem({
         )}
       </div>
 
-      {/* Conversation Details */}
-      <div className="min-w-0 flex-1 space-y-0.5">
+      {/* Details */}
+      <div className="min-w-0 flex-1 space-y-0.5 font-sans">
         <div className="flex items-center justify-between gap-1.5">
           <h4
             className={`text-xs truncate tracking-tight ${
@@ -92,14 +90,14 @@ export function ConversationListItem({
             {title}
           </h4>
 
-          <span className="text-[11px] font-mono text-ink-tertiary shrink-0">
+          <span className="text-[11px] font-sans text-ink-tertiary shrink-0 font-medium">
             {formattedTime}
           </span>
         </div>
 
         <div className="flex items-center justify-between gap-2">
           <p
-            className={`text-xs truncate leading-snug ${
+            className={`text-xs truncate leading-snug font-sans ${
               isUnread ? "font-bold text-ink" : "text-ink-tertiary font-normal"
             }`}
           >
@@ -108,7 +106,7 @@ export function ConversationListItem({
 
           {/* Unread Counter Badge */}
           {isUnread && (
-            <span className="shrink-0 min-w-[18px] h-4.5 px-1.5 rounded-full bg-accent text-white text-[10px] font-extrabold font-mono flex items-center justify-center shadow-xs">
+            <span className="shrink-0 min-w-[18px] h-4.5 px-1.5 rounded-full bg-accent text-white text-[10px] font-extrabold font-sans flex items-center justify-center shadow-xs">
               {conversation.unreadCount}
             </span>
           )}

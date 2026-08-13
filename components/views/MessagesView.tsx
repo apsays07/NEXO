@@ -66,7 +66,6 @@ export function MessagesView() {
     };
   }, [fetchConversations]);
 
-  // Handle selecting or creating a direct conversation by target member ID
   const handleSelectTargetMember = async (targetMemberId: string) => {
     try {
       const res = await fetch("/api/conversations", {
@@ -94,8 +93,8 @@ export function MessagesView() {
   };
 
   return (
-    <div className="h-[calc(100vh-4rem)] md:h-[calc(100vh-5rem)] flex flex-col md:flex-row overflow-hidden bg-surface border border-line rounded-2xl shadow-xl font-sans relative">
-      {/* LEFT: Conversation List (30% Desktop, 35% Tablet, 100% Mobile when no active selection on mobile) */}
+    <div className="h-[calc(100vh-5.5rem)] flex flex-col md:flex-row overflow-hidden bg-surface/90 backdrop-blur-md border border-line/80 rounded-2xl shadow-xl font-sans relative">
+      {/* LEFT: Conversation List */}
       <div
         className={`w-full md:w-[30%] lg:w-[32%] shrink-0 h-full ${
           activeConversationId ? "hidden md:block" : "block"
@@ -110,7 +109,7 @@ export function MessagesView() {
         />
       </div>
 
-      {/* RIGHT: Active Conversation Chat Window (70% Desktop, 65% Tablet, 100% Mobile) */}
+      {/* RIGHT: Active Conversation Chat Window */}
       <div
         className={`w-full md:w-[70%] lg:w-[68%] flex-1 h-full ${
           activeConversationId ? "block" : "hidden md:block"
@@ -125,14 +124,14 @@ export function MessagesView() {
           />
         ) : (
           <div className="h-full flex flex-col items-center justify-center p-8 text-center bg-surface-alt/30 text-ink-tertiary space-y-3 select-none">
-            <ChatCircleDots size={48} className="opacity-40" />
+            <ChatCircleDots size={48} className="opacity-40 text-accent" />
             <h3 className="text-sm font-bold text-ink">Messages</h3>
             <p className="text-xs max-w-xs leading-relaxed">
               Select a conversation from the left or start a new private message with a group member.
             </p>
             <button
               onClick={() => setIsNewMessageModalOpen(true)}
-              className="px-3.5 py-1.5 rounded-xl bg-accent text-white font-bold text-xs shadow-xs hover:bg-accent-hover transition-colors cursor-pointer"
+              className="px-4 py-2 rounded-xl bg-accent text-white font-bold text-xs shadow-xs hover:bg-accent-hover transition-colors cursor-pointer"
             >
               + New Message
             </button>

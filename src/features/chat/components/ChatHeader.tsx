@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Conversation, Member, UserPresenceStatus } from "@/types/nexo";
-import { ArrowLeft, TrendUp, Users, DotsThreeVertical, ShieldCheck } from "@phosphor-icons/react";
+import { ArrowLeft, TrendUp, Users, ArrowUpRight } from "@phosphor-icons/react";
 
 interface ChatHeaderProps {
   conversation: Conversation;
@@ -34,31 +34,33 @@ export function ChatHeader({
     subtitle = `IPO Group Chat • ${conversation.participants?.length || 3} participants`;
   }
 
+  const participantsList = conversation.participants || [];
+
   return (
-    <div className="h-16 px-4 bg-surface border-b border-line flex items-center justify-between shrink-0 select-none z-10">
+    <div className="h-16 px-4 sm:px-5 bg-surface/90 backdrop-blur-md border-b border-line/70 flex items-center justify-between shrink-0 select-none z-10 font-sans">
       <div className="flex items-center gap-3 min-w-0">
         {/* Mobile Back Button */}
         {onBackMobile && (
           <button
             onClick={onBackMobile}
-            className="md:hidden p-1.5 -ml-1.5 rounded-lg text-ink-tertiary hover:text-ink hover:bg-surface-hover transition-colors cursor-pointer"
+            className="md:hidden p-1.5 -ml-1.5 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-hover transition-colors cursor-pointer"
             title="Back to Messages"
           >
             <ArrowLeft size={18} />
           </button>
         )}
 
-        {/* Avatar */}
-        <div className="relative shrink-0">
+        {/* Avatar / Icon Stack */}
+        <div className="relative shrink-0 flex items-center">
           {isIpo ? (
-            <div className="w-10 h-10 rounded-xl bg-accent-soft text-accent border border-accent/20 flex items-center justify-center font-bold text-sm">
+            <div className="w-10 h-10 rounded-xl bg-accent-soft text-accent border border-accent/25 flex items-center justify-center font-bold text-sm shadow-xs">
               <TrendUp size={18} />
             </div>
           ) : (
             <img
               src={avatar}
               alt={title}
-              className="w-10 h-10 rounded-full object-cover ring-1 ring-line bg-surface-alt"
+              className="w-10 h-10 rounded-full object-cover ring-2 ring-line bg-surface-alt"
             />
           )}
 
@@ -71,44 +73,61 @@ export function ChatHeader({
           )}
         </div>
 
-        {/* Title & Presence */}
+        {/* Title & Details */}
         <div className="min-w-0">
-          <div className="flex items-center gap-1.5">
-            <h3 className="text-sm font-extrabold text-ink truncate leading-tight">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-black text-ink tracking-tight truncate leading-snug">
               {title}
             </h3>
             {isDirect && conversation.otherMember?.role === "ADMIN" && (
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-amber-500/15 text-amber-400 font-mono font-bold uppercase tracking-wider">
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-amber-500/15 text-amber-400 font-mono font-bold uppercase tracking-wider border border-amber-500/30">
                 Admin
               </span>
             )}
           </div>
 
-          <div className="flex items-center gap-1.5 text-xs text-ink-tertiary font-medium leading-none mt-0.5">
+          <div className="flex items-center gap-2 text-xs text-ink-tertiary font-medium leading-none mt-0.5">
             {isDirect ? (
-              <span className="flex items-center gap-1">
+              <span className="flex items-center gap-1.5">
                 <span
                   className={`w-1.5 h-1.5 rounded-full ${
-                    presenceStatus === "ONLINE" ? "bg-emerald-500" : "bg-ink-tertiary"
+                    presenceStatus === "ONLINE" ? "bg-emerald-500 animate-pulse" : "bg-ink-tertiary"
                   }`}
                 />
-                {presenceStatus === "ONLINE" ? "Online" : "Offline"}
+                <span className="text-[11px] font-sans">
+                  {presenceStatus === "ONLINE" ? "Online" : "Offline"}
+                </span>
               </span>
             ) : (
-              <span className="truncate">{subtitle}</span>
+              <span className="truncate text-[11px] font-sans">{subtitle}</span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Right Actions */}
-      <div className="flex items-center gap-2">
+      {/* Right Action & Participant Avatars */}
+      <div className="flex items-center gap-3">
+        {!isDirect && participantsList.length > 0 && (
+          <div className="hidden sm:flex items-center -space-x-2 mr-1">
+            {participantsList.slice(0, 3).map((p, idx) => (
+              <img
+                key={p.id || idx}
+                src={p.avatar || "/oggy.png"}
+                alt={p.name}
+                title={p.name}
+                className="w-6 h-6 rounded-full border-2 border-surface object-cover shadow-2xs"
+              />
+            ))}
+          </div>
+        )}
+
         {isIpo && conversation.ipoId && onOpenIpoPage && (
           <button
             onClick={() => onOpenIpoPage(conversation.ipoId!)}
-            className="px-2.5 py-1 rounded-lg bg-surface-alt hover:bg-surface-hover border border-line text-xs font-semibold text-accent transition-colors flex items-center gap-1 cursor-pointer"
+            className="px-3 py-1.5 rounded-xl bg-accent-soft/70 hover:bg-accent-soft border border-accent/25 text-xs font-bold text-accent transition-all flex items-center gap-1 cursor-pointer shadow-2xs active:scale-95"
           >
-            <TrendUp size={13} /> View IPO Details →
+            <span>View IPO Details</span>
+            <ArrowUpRight size={13} weight="bold" />
           </button>
         )}
       </div>

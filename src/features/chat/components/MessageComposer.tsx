@@ -19,12 +19,12 @@ export function MessageComposer({
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Auto-resize textarea height between 44px and 140px
+  // Auto-resize textarea height between 40px and 140px
   useEffect(() => {
     if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
+      textareaRef.current.style.height = "40px";
       const scrollHeight = textareaRef.current.scrollHeight;
-      textareaRef.current.style.height = `${Math.min(Math.max(scrollHeight, 44), 140)}px`;
+      textareaRef.current.style.height = `${Math.min(Math.max(scrollHeight, 40), 140)}px`;
     }
   }, [text]);
 
@@ -59,14 +59,14 @@ export function MessageComposer({
     }
 
     if (textareaRef.current) {
-      textareaRef.current.style.height = "44px";
+      textareaRef.current.style.height = "40px";
     }
   };
 
   return (
-    <div className="p-3 bg-surface border-t border-line shrink-0 pb-safe z-10">
-      <div className="flex items-end gap-2 bg-surface-alt/70 border border-line focus-within:border-accent/50 rounded-2xl p-1.5 transition-all">
-        {/* Attachment Button */}
+    <div className="p-3 sm:p-4 bg-surface/90 backdrop-blur-md border-t border-line/70 shrink-0 pb-safe z-10 font-sans">
+      <div className="flex items-end gap-2 bg-surface-alt/80 border border-line focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/15 rounded-2xl p-2 transition-all shadow-2xs">
+        {/* Attachment Plus Button */}
         <div className="relative shrink-0">
           <button
             type="button"
@@ -74,14 +74,14 @@ export function MessageComposer({
               setShowAttachmentTooltip(true);
               setTimeout(() => setShowAttachmentTooltip(false), 2000);
             }}
-            className="p-2 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-hover transition-colors cursor-pointer"
+            className="w-8 h-8 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-hover flex items-center justify-center transition-colors cursor-pointer"
             title="Add attachment"
           >
             <Plus size={18} />
           </button>
 
           {showAttachmentTooltip && (
-            <div className="absolute left-0 bottom-10 z-30 px-2.5 py-1 rounded-lg bg-black text-white text-[11px] font-sans shadow-lg whitespace-nowrap animate-fade-in">
+            <div className="absolute left-0 bottom-11 z-30 px-3 py-1 rounded-xl bg-black text-white text-[11px] font-sans shadow-xl whitespace-nowrap animate-fade-in">
               Attachments coming soon
             </div>
           )}
@@ -95,7 +95,7 @@ export function MessageComposer({
           onKeyDown={handleKeyDown}
           placeholder="Message..."
           disabled={disabled}
-          className="flex-1 bg-transparent py-2 px-1 text-xs text-ink placeholder:text-ink-tertiary focus:outline-none resize-none min-h-[44px] max-h-[140px] leading-relaxed font-sans"
+          className="flex-1 bg-transparent py-2 px-1 text-xs text-ink placeholder:text-ink-tertiary focus:outline-none resize-none min-h-[40px] max-h-[140px] leading-relaxed font-sans"
           rows={1}
         />
 
@@ -104,14 +104,14 @@ export function MessageComposer({
           type="button"
           onClick={handleSend}
           disabled={!text.trim() || disabled}
-          className={`h-9 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+          className={`h-8 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
             text.trim() && !disabled
-              ? "bg-accent text-white hover:bg-accent-hover active:scale-95 shadow-2xs"
-              : "bg-surface-alt text-ink-tertiary cursor-not-allowed opacity-60"
+              ? "bg-accent text-white hover:bg-accent-hover active:scale-95 shadow-sm"
+              : "bg-surface-alt text-ink-tertiary cursor-not-allowed opacity-50"
           }`}
         >
           <span>Send</span>
-          <PaperPlaneRight size={14} weight="fill" />
+          <PaperPlaneRight size={13} weight="fill" />
         </button>
       </div>
     </div>
