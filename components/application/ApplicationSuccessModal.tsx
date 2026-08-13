@@ -69,7 +69,7 @@ export function ApplicationSuccessModal({
 
           <div>
             <h3 className="text-lg font-bold text-ink tracking-tight">
-              Application Filed
+              Success
             </h3>
             <p className="text-xs text-ink-secondary font-medium mt-0.5">
               {ipoName}
