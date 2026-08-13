@@ -200,9 +200,9 @@ export function Sidebar() {
                             : "text-ink-secondary hover:text-ink hover:bg-surface-hover font-medium"
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <Icon size={16} className={isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"} />
-                          <span>{item.label}</span>
+                        <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
+                          <Icon size={16} className={`shrink-0 ${isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"}`} />
+                          <span className="truncate whitespace-nowrap">{item.label}</span>
                         </div>
                         {item.badge !== undefined && (
                           <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${isActive ? "bg-accent/15 text-accent" : "bg-surface-alt text-ink-secondary"}`}>
@@ -232,9 +232,9 @@ export function Sidebar() {
                             : "text-ink-secondary hover:text-ink hover:bg-surface-hover font-medium"
                         }`}
                       >
-                        <div className="flex items-center gap-2.5">
-                          <Icon size={16} className={isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"} />
-                          <span>{item.label}</span>
+                        <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
+                          <Icon size={16} className={`shrink-0 ${isActive ? "text-accent" : "text-ink-secondary group-hover:text-ink"}`} />
+                          <span className="truncate whitespace-nowrap">{item.label}</span>
                         </div>
                         {item.badge !== undefined && (
                           <span className={`text-[11px] px-1.5 py-0.2 rounded-full font-mono ${isActive ? "bg-accent/15 text-accent" : "bg-surface-alt text-ink-secondary"}`}>
