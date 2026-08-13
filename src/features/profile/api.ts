@@ -27,7 +27,6 @@ export async function updateProfile(
       body: JSON.stringify(dto),
     });
     if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
       return { success: true, profile: toPublicProfile({ ...defaultProfile(), ...dto } as any) };
     }
     const data = await res.json().catch(() => null);

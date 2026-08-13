@@ -19,6 +19,8 @@ import {
 
 
 
+import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
+
 interface ContributorEntry {
   memberId: string;
   memberName: string;
@@ -64,6 +66,14 @@ export function ApplicationModal() {
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Success Modal State
+  const [submittedData, setSubmittedData] = useState<{
+    ipoName: string;
+    ipoLogo: string;
+    applicantName: string;
+    panCount: number;
+  } | null>(null);
 
   // Clear error msg when modal status changes
   useEffect(() => {
@@ -127,8 +137,6 @@ export function ApplicationModal() {
   useEffect(() => {
     handleEqualSplit();
   }, [targetRequiredCapital]);
-
-  if (!isApplicationModalOpen || !activeApplicationIpo) return null;
 
   const totalPooledCapital = contributors.reduce(
     (sum, c) => sum + (typeof c.amount === "number" ? c.amount : 0),
@@ -213,6 +221,8 @@ export function ApplicationModal() {
     setIsSubmitting(true);
 
     setTimeout(() => {
+      if (!activeApplicationIpo) return;
+
       const primaryMember =
         members.find((m) => m.name.toLowerCase() === applicantName.trim().toLowerCase()) ||
         members[0];
@@ -243,6 +253,14 @@ export function ApplicationModal() {
         panNumbers
       );
 
+      // Trigger Success Popup
+      setSubmittedData({
+        ipoName: activeApplicationIpo.name,
+        ipoLogo: activeApplicationIpo.logo,
+        applicantName: applicantName,
+        panCount: effectiveIpos,
+      });
+
       setIsSubmitting(false);
       closeApplicationModal();
     }, 1200);
@@ -251,7 +269,9 @@ export function ApplicationModal() {
   const isValidPan = (pan: string) => /^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(pan);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-md p-4 animate-fade-in font-sans">
+    <>
+      {isApplicationModalOpen && activeApplicationIpo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-md p-4 animate-fade-in font-sans">
       <div className="w-full max-w-[560px] bg-surface border border-line/90 rounded-3xl overflow-hidden shadow-2xl flex flex-col justify-between max-h-[92vh] transition-all">
         {/* Header */}
         <div className="px-6 py-5 border-b border-line flex items-center justify-between bg-surface">
@@ -597,5 +617,16 @@ export function ApplicationModal() {
         </form>
       </div>
     </div>
-  );
+  )}
+
+  <ApplicationSuccessModal
+    isOpen={Boolean(submittedData)}
+    onClose={() => setSubmittedData(null)}
+    ipoName={submittedData?.ipoName || ""}
+    ipoLogo={submittedData?.ipoLogo || "⚡"}
+    applicantName={submittedData?.applicantName || "Member"}
+    panCount={submittedData?.panCount || 1}
+  />
+</>
+);
 }

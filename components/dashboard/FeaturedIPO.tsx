@@ -14,7 +14,7 @@ interface FeaturedIPOProps {
 }
 
 export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
-  const participants = ipo.applications.flatMap((a) => a.participants);
+  const participants = ipo.applications.flatMap((a) => a.participants || []).filter(Boolean);
 
   return (
     <Card

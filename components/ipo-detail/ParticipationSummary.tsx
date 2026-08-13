@@ -16,7 +16,7 @@ export function ParticipationSummary({
   ipo,
   onJoinClick,
 }: ParticipationSummaryProps) {
-  const participants = ipo.applications.flatMap((a) => a.participants);
+  const participants = ipo.applications.flatMap((a) => a.participants || []).filter(Boolean);
 
   return (
     <Card id="participation" className="p-6 bg-surface border-line shadow-sm space-y-5">

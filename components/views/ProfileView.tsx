@@ -51,7 +51,9 @@ export function ProfileView() {
   const email       = activeUser?.email     || (profileData?.email  && profileData.email.trim() ? profileData.email   : "")  || "";
   const phone       = activeUser?.phone     || profileData?.phone     || "";
   const avatar      = activeUser?.avatar    || profileData?.avatar    || "";
-  const role        = String(activeUser?.role || profileData?.role || "MEMBER").toUpperCase();
+  const rawRole     = String(activeUser?.role || profileData?.role || "MEMBER").toUpperCase();
+  // On user-side: SUPER_ADMIN is displayed as plain Member (admin identity is admin-panel only)
+  const role        = rawRole === "SUPER_ADMIN" ? "MEMBER" : rawRole;
   const panMasked   = activeUser?.panMasked || profileData?.panMasked || "";
   const roleLabel   = role === "ADMIN" ? "Administrator" : "Member";
 
@@ -154,7 +156,7 @@ export function ProfileView() {
             className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
             style={{ background: "rgba(107,147,255,0.12)", borderColor: "rgba(107,147,255,0.28)", color: "#6B93FF" }}
           >
-            {role}
+            {role === "ADMIN" ? "Admin" : "Member"}
           </span>
         </div>
 

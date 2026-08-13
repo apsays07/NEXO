@@ -4,6 +4,7 @@ import React, { useEffect, useRef } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { useTheme } from "@/components/providers/ThemeProvider";
 import { ProfileAvatar } from "./ProfileAvatar";
+import Link from "next/link";
 import {
   User,
   Moon,
@@ -11,6 +12,8 @@ import {
   Keyboard,
   SignOut,
   CheckCircle,
+  ShieldCheck,
+  LockKey,
 } from "@phosphor-icons/react";
 
 interface ProfilePopoverProps {
@@ -30,7 +33,9 @@ export function ProfilePopover({
 
   const activeUser = currentUser || members[0];
   const name = activeUser?.name || "Member";
-  const role = String(activeUser?.role || "ADMIN").toUpperCase();
+  const rawRole = String(activeUser?.role || "MEMBER").toUpperCase();
+  // SUPER_ADMIN is masked as Member on user-side — admin identity belongs to admin panel only
+  const role = rawRole === "SUPER_ADMIN" ? "MEMBER" : rawRole;
 
   useEffect(() => {
     if (!isOpen) return;
@@ -84,7 +89,7 @@ export function ProfilePopover({
                   : "bg-surface-alt text-ink-secondary border border-line-subtle"
               }`}
             >
-              {role}
+              {role === "ADMIN" ? "Admin" : "Member"}
             </span>
             <span className="text-[11px] font-medium text-positive flex items-center gap-1">
               <span className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
@@ -109,6 +114,19 @@ export function ProfilePopover({
           <span>View Profile</span>
         </button>
 
+        {role === "ADMIN" && (
+          <button
+            onClick={() => {
+              setActiveTab("admin" as any);
+              onClose();
+            }}
+            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-small font-bold text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30 hover:bg-blue-100/80 transition-colors cursor-pointer border border-blue-200/60"
+          >
+            <ShieldCheck size={16} className="text-blue-600" />
+            <span>Admin IPO Console</span>
+          </button>
+        )}
+
         <button
           onClick={() => {
             toggleTheme();
@@ -127,6 +145,15 @@ export function ProfilePopover({
             {theme}
           </span>
         </button>
+
+        <Link
+          href="/settings/security"
+          onClick={onClose}
+          className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-small hover:text-ink hover:bg-surface-hover transition-colors cursor-pointer"
+        >
+          <LockKey size={16} className="text-ink-tertiary" />
+          <span>Security & Sessions</span>
+        </Link>
 
         {onOpenShortcuts && (
           <button

@@ -1,36 +1,40 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
-import { MaskedPAN } from "../ui/MaskedPAN";
-import { formatINR } from "@/lib/mockData";
 import {
   UserPlus,
   ShieldCheck,
   Key,
-  Eye,
-  EyeSlash,
   Pencil,
   X,
   CheckCircle,
-  User,
-  Lock,
+  Users,
+  TrendUp,
+  CalendarBlank,
+  MagnifyingGlass,
+  Crown,
+  Sparkle,
+  Phone,
+  ChatCircleDots,
 } from "@phosphor-icons/react";
-import { Member } from "@/types/nexo";
+import { Member, MemberRole } from "@/types/nexo";
 
 export function MembersView() {
-  const { members, addMember, updateMember, currentUser } = useNexo();
+  const { members, ipos, addMember, updateMember, currentUser, openDirectChatWithUser } = useNexo();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
-  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "ADMIN" | "MEMBER">("ALL");
 
   // Add form state
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [pan, setPan] = useState("");
   const [email, setEmail] = useState("");
@@ -40,12 +44,62 @@ export function MembersView() {
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [editPan, setEditPan] = useState("");
-  const [editRole, setEditRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
+  const [editRole, setEditRole] = useState<MemberRole>("MEMBER");
 
-  const togglePasswordReveal = (id: string) => {
-    setShowPasswords((prev) => ({ ...prev, [id]: !prev[id] }));
+  // Calculate applied IPO count for a member
+  const getAppliedIpoCount = (member: Member): number => {
+    if (!ipos || ipos.length === 0) return 0;
+    return ipos.filter((ipo) => {
+      if (!ipo.applications || ipo.applications.length === 0) return false;
+      return ipo.applications.some((app: any) => {
+        const isDirectMatch =
+          app.memberId === member.id ||
+          (app.applicantName && app.applicantName.toLowerCase() === member.name.toLowerCase());
+
+        const isParticipantMatch =
+          Array.isArray(app.participants) &&
+          app.participants.some(
+            (p: any) =>
+              p.memberId === member.id ||
+              (p.memberName && p.memberName.toLowerCase() === member.name.toLowerCase())
+          );
+
+        return isDirectMatch || isParticipantMatch;
+      });
+    }).length;
   };
+
+  // Group Stats
+  const totalApplications = useMemo(() => {
+    return members.reduce((sum, member) => sum + getAppliedIpoCount(member), 0);
+  }, [members, ipos]);
+
+  const adminCount = useMemo(() => {
+    return members.filter((m) => m.role === "ADMIN").length;
+  }, [members]);
+
+  // Filtered members list
+  const filteredMembers = useMemo(() => {
+    return members
+      .filter((m) => m.role !== "SUPER_ADMIN") // hide super admin from user-side member list
+      .filter((member) => {
+        const mUsername = member.username || member.name.toLowerCase();
+        const mPhone = member.phone || "";
+        const matchesSearch =
+          member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          mPhone.includes(searchQuery);
+
+        const matchesRole =
+          roleFilter === "ALL" ||
+          (roleFilter === "ADMIN" && member.role === "ADMIN") ||
+          (roleFilter === "MEMBER" && member.role === "MEMBER");
+
+        return matchesSearch && matchesRole;
+      });
+  }, [members, searchQuery, roleFilter]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,6 +109,7 @@ export function MembersView() {
       name,
       username: username.trim().toLowerCase(),
       password: password.trim(),
+      phone: phone.trim() || "+91 98200 12345",
       role,
       panMasked: pan.trim().toUpperCase() || "ABCDE1234F",
       panFull: pan.trim().toUpperCase() || "ABCDE1234F",
@@ -70,6 +125,7 @@ export function MembersView() {
     setName("");
     setUsername("");
     setPassword("");
+    setPhone("");
     setRole("MEMBER");
     setPan("");
     setEmail("");
@@ -81,6 +137,7 @@ export function MembersView() {
     setEditName(member.name);
     setEditUsername(member.username || member.name.toLowerCase());
     setEditPassword(member.password || (member.role === "ADMIN" ? "admin123" : "user123"));
+    setEditPhone(member.phone || "+91 98200 12345");
     setEditPan(member.panFull || member.panMasked);
     setEditRole(member.role);
   };
@@ -93,6 +150,7 @@ export function MembersView() {
       name: editName,
       username: editUsername.trim().toLowerCase(),
       password: editPassword.trim(),
+      phone: editPhone.trim(),
       panMasked: editPan.trim().toUpperCase(),
       panFull: editPan.trim().toUpperCase(),
       role: editRole,
@@ -105,137 +163,265 @@ export function MembersView() {
 
   return (
     <div className="space-y-6 animate-fade-in font-sans">
+      {/* Top Header Banner */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="nexo-h2 text-ink flex items-center gap-2">
-            Group Members
-            <span className="text-caption font-semibold px-2 py-0.5 rounded-full bg-surface-alt border border-line text-ink-secondary">
-              {members.length} Members
+          <div className="flex items-center gap-2.5">
+            <h2 className="nexo-h2 text-ink">Group Members</h2>
+            <span className="text-xs font-mono font-bold px-2.5 py-0.5 rounded-full bg-accent-soft text-accent border border-accent/20 flex items-center gap-1">
+              <Sparkle size={12} className="text-accent" /> {members.length} Total
             </span>
-          </h2>
-          <p className="text-xs text-ink-secondary font-normal mt-0.5">
-            Manage trusted members and issue login credentials (usernames & passwords)
+          </div>
+          <p className="text-xs text-ink-tertiary font-medium mt-1">
+            Manage your syndicate members, phone contacts, identity handles & IPO participation
           </p>
         </div>
 
         {isCurrentUserAdmin && (
-          <Button size="sm" variant="primary" onClick={() => setIsAddModalOpen(true)}>
-            <UserPlus size={16} /> Add Member & Issue Credentials
+          <Button
+            size="sm"
+            variant="primary"
+            onClick={() => setIsAddModalOpen(true)}
+            className="shadow-sm shadow-accent/20 hover:shadow-accent/40"
+          >
+            <UserPlus size={16} /> Add Member
           </Button>
         )}
       </div>
 
-      {/* Member Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-        {members.map((member) => {
-          const mUsername = member.username || member.name.toLowerCase();
-          const mPassword = member.password || (member.role === "ADMIN" ? "admin123" : "user123");
-          const isRevealed = Boolean(showPasswords[member.id]);
+      {/* Overview Analytics Bar */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="bg-surface/80 border border-line rounded-2xl p-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-accent-soft text-accent flex items-center justify-center">
+              <Users size={20} />
+            </div>
+            <div>
+              <p className="text-caption font-semibold text-ink-tertiary">Group Roster</p>
+              <p className="text-lg font-black text-ink font-mono">{members.length} Members</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md border border-line">
+            {adminCount} Admin{adminCount > 1 ? "s" : ""}
+          </span>
+        </div>
 
-          return (
-            <Card key={member.id} className="flex flex-col justify-between space-y-4 border-line">
-              <div>
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={member.avatar}
-                      alt={member.name}
-                      className="w-12 h-12 rounded-full object-cover ring-2 ring-accent/30 bg-surface-alt"
-                    />
-                    <div>
-                      <h3 className="text-[18px] leading-[26px] font-semibold text-ink flex items-center gap-1.5">
-                        {member.name}
-                        {member.role === "ADMIN" && (
-                          <span className="text-[10px] px-1.5 py-0.2 rounded bg-caution-soft text-caution font-semibold uppercase font-mono">
-                            Admin
-                          </span>
-                        )}
-                      </h3>
-                      <div className="text-xs text-ink-secondary font-normal">{member.email}</div>
-                    </div>
-                  </div>
-                </div>
+        <div className="bg-surface/80 border border-line rounded-2xl p-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-400 flex items-center justify-center">
+              <TrendUp size={20} />
+            </div>
+            <div>
+              <p className="text-caption font-semibold text-ink-tertiary">Total Applications</p>
+              <p className="text-lg font-black text-ink font-mono">{totalApplications} Submitted</p>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-accent bg-accent-soft px-2 py-0.5 rounded-md border border-accent/20 font-mono">
+            Active
+          </span>
+        </div>
 
-                {/* Login Credentials Box */}
-                <div className="mt-4 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle space-y-2.5 text-xs">
-                  <div className="flex items-center justify-between font-mono">
-                    <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1">
-                      <User size={13} className="text-accent" /> Username:
-                    </span>
-                    <span className="font-bold text-ink bg-surface px-2 py-0.5 rounded border border-line">
-                      {mUsername}
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between font-mono">
-                    <span className="text-ink-tertiary font-medium font-sans flex items-center gap-1">
-                      <Lock size={13} className="text-positive" /> Password:
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className="font-bold text-ink bg-surface px-2 py-0.5 rounded border border-line">
-                        {isRevealed ? mPassword : "••••••••"}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => togglePasswordReveal(member.id)}
-                        className="text-ink-tertiary hover:text-ink transition-colors cursor-pointer p-0.5"
-                        title={isRevealed ? "Hide Password" : "Reveal Password"}
-                      >
-                        {isRevealed ? <EyeSlash size={14} /> : <Eye size={14} />}
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Attributes */}
-                <div className="mt-3 p-3 rounded-xl bg-page border border-line space-y-2 text-xs">
-                  <div className="flex justify-between items-center">
-                    <span className="text-ink-secondary font-medium">Registered PAN</span>
-                    <MaskedPAN panMasked={member.panMasked} panFull={member.panFull} />
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-ink-secondary font-medium">Default Lot Allocation</span>
-                    <span className="font-semibold text-ink num-tabular">
-                      {formatINR(member.defaultContribution)}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-ink-secondary font-medium">Member Since</span>
-                    <span className="text-ink font-medium">{member.joinedAt}</span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="pt-3 border-t border-line flex items-center justify-between text-xs">
-                <span className="text-positive font-medium flex items-center gap-1">
-                  <ShieldCheck size={14} /> Verified Member
-                </span>
-                {isCurrentUserAdmin && (
-                  <button
-                    onClick={() => openEditModal(member)}
-                    className="text-accent hover:underline font-semibold cursor-pointer flex items-center gap-1"
-                  >
-                    <Pencil size={13} /> Edit Credentials
-                  </button>
-                )}
-              </div>
-            </Card>
-          );
-        })}
+        <div className="bg-surface/80 border border-line rounded-2xl p-4 flex items-center justify-between shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/10 text-emerald-400 flex items-center justify-center">
+              <ShieldCheck size={20} />
+            </div>
+            <div>
+              <p className="text-caption font-semibold text-ink-tertiary">Verification Status</p>
+              <p className="text-lg font-black text-emerald-400 font-sans">100% Verified</p>
+            </div>
+          </div>
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
+        </div>
       </div>
+
+      {/* Filter & Search Bar */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface/90 dark:bg-[#11131A]/90 backdrop-blur-md border border-line/80 p-2.5 rounded-2xl shadow-lg focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/15 transition-all font-sans select-none">
+        <div className="relative flex-1">
+          <MagnifyingGlass
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-accent"
+          />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search member by name, @username, or phone number..."
+            className="w-full pl-10 pr-9 py-2 bg-surface-alt/80 dark:bg-[#151821] border border-line/70 rounded-xl text-xs sm:text-sm text-ink placeholder:text-ink-tertiary focus:outline-none font-sans transition-all"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-ink-tertiary hover:text-ink hover:bg-surface-hover cursor-pointer transition-colors"
+              title="Clear search"
+            >
+              <X size={14} />
+            </button>
+          )}
+        </div>
+
+        {/* Role Filter Tabs */}
+        <div className="flex items-center gap-1 bg-surface-alt/80 dark:bg-[#151821] p-1 rounded-xl border border-line/70 shrink-0 font-sans">
+          {(["ALL", "ADMIN", "MEMBER"] as const).map((tab) => (
+            <button
+              key={tab}
+              onClick={() => setRoleFilter(tab)}
+              className={`px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
+                roleFilter === tab
+                  ? "bg-accent text-white font-extrabold shadow-xs shadow-accent/25"
+                  : "text-ink-tertiary hover:text-ink font-semibold hover:bg-surface-hover/50"
+              }`}
+            >
+              {tab === "ALL" ? "All" : tab === "ADMIN" ? "Admins" : "Members"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Member Cards Grid */}
+      {filteredMembers.length === 0 ? (
+        <div className="text-center py-12 bg-surface/40 border border-line rounded-2xl">
+          <Users size={32} className="mx-auto text-ink-tertiary mb-2 opacity-60" />
+          <p className="text-sm font-semibold text-ink">No members found</p>
+          <p className="text-xs text-ink-tertiary mt-0.5">Try searching with a different keyword</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredMembers.map((member) => {
+            const mUsername = member.username || member.name.toLowerCase();
+            const mPhone = member.phone || "+91 98200 12345";
+            const appliedCount = getAppliedIpoCount(member);
+
+            return (
+              <div
+                key={member.id}
+                className="group relative bg-gradient-to-b from-surface via-surface-alt/60 to-surface-alt/90 dark:from-[#11131A] dark:to-[#0D0E14] border border-line/80 hover:border-accent/40 rounded-2xl p-5 transition-all duration-300 hover:shadow-2xl hover:shadow-accent/10 hover:-translate-y-1 flex flex-col justify-between overflow-hidden font-sans"
+              >
+                {/* Glowing Top Edge Accent */}
+                <div className="absolute top-0 left-0 right-0 h-0.5 bg-gradient-to-r from-accent/0 via-accent/60 to-accent/0 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                <div className="space-y-4">
+                  {/* Top Profile Header */}
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-3.5">
+                      {/* Avatar with Status Ring */}
+                      <div className="relative shrink-0">
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="w-13 h-13 rounded-2xl object-cover ring-2 ring-accent/30 group-hover:ring-accent/60 bg-surface-alt transition-all duration-300 shadow-md"
+                        />
+                        <span
+                          className="w-3.5 h-3.5 rounded-full bg-emerald-500 ring-2 ring-surface absolute -bottom-0.5 -right-0.5 shadow-xs"
+                          title="Active Member"
+                        />
+                      </div>
+
+                      {/* Name, Username & Phone */}
+                      <div className="space-y-1.5 min-w-0">
+                        <div className="flex items-center gap-2">
+                          <h3 className="text-base font-black text-ink group-hover:text-accent transition-colors truncate tracking-tight">
+                            {member.name}
+                          </h3>
+                          {member.role === "ADMIN" && (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-extrabold tracking-wider uppercase shrink-0 flex items-center gap-1">
+                              <Crown size={11} className="text-amber-400" /> Admin
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Username Tag & Phone Badge */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/40 hover:bg-accent-soft px-2.5 py-0.5 rounded-lg border border-accent/25 transition-all shadow-2xs">
+                            @{mUsername}
+                          </div>
+
+                          <div className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-ink-secondary bg-surface-alt/90 px-2.5 py-0.5 rounded-lg border border-line/80 shadow-2xs">
+                            <Phone size={11} className="text-ink-tertiary" /> {mPhone}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Clean Stats Grid */}
+                  <div className="grid grid-cols-2 gap-2.5 pt-1">
+                    <div className="p-3 rounded-xl bg-surface-alt/80 dark:bg-[#141721] border border-line/70 group-hover:border-line transition-all space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-ink-tertiary uppercase tracking-wider">
+                        <TrendUp size={13} className="text-accent" />
+                        <span>IPOs Applied</span>
+                      </div>
+                      <p className="text-base font-black font-sans text-ink">
+                        {appliedCount}{" "}
+                        <span className="text-xs text-ink-tertiary font-sans font-normal">
+                          {appliedCount === 1 ? "IPO" : "IPOs"}
+                        </span>
+                      </p>
+                    </div>
+
+                    <div className="p-3 rounded-xl bg-surface-alt/80 dark:bg-[#141721] border border-line/70 group-hover:border-line transition-all space-y-1">
+                      <div className="flex items-center gap-1.5 text-[11px] font-bold text-ink-tertiary uppercase tracking-wider">
+                        <CalendarBlank size={13} className="text-ink-secondary" />
+                        <span>Member Since</span>
+                      </div>
+                      <p className="text-xs font-bold text-ink truncate mt-0.5">
+                        {member.joinedAt || "Jan 2025"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Controls */}
+                <div className="pt-4 mt-4 border-t border-line/80 flex items-center justify-between text-xs">
+                  <span className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 text-xs font-semibold flex items-center gap-1.5 shadow-2xs">
+                    <ShieldCheck size={14} className="text-emerald-400" /> Verified Member
+                  </span>
+
+                  <div className="flex items-center gap-1.5">
+                    {member.id === currentUser?.id ? (
+                      <span className="px-3 py-1 rounded-xl bg-surface-alt/90 border border-line/80 text-ink-tertiary font-bold text-xs">
+                        You
+                      </span>
+                    ) : (
+                      <button
+                        onClick={() => openDirectChatWithUser(member.id)}
+                        className="px-3.5 py-1.5 rounded-xl bg-accent text-white hover:bg-accent-hover font-bold text-xs shadow-xs shadow-accent/25 transition-all cursor-pointer flex items-center gap-1.5 active:scale-95"
+                        title={`Message @${mUsername}`}
+                      >
+                        <ChatCircleDots size={14} weight="bold" />
+                        <span>Message</span>
+                        <span className="text-white/80 font-sans font-normal">→</span>
+                      </button>
+                    )}
+
+                    {isCurrentUserAdmin && (
+                      <button
+                        onClick={() => openEditModal(member)}
+                        className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-surface-hover transition-all border border-transparent hover:border-line"
+                      >
+                        <Pencil size={13} /> Edit
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* ADD MEMBER MODAL */}
       {isAddModalOpen && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 animate-scale-up">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
                 <h3 className="text-body-md font-bold text-ink flex items-center gap-2">
                   <UserPlus size={18} className="text-accent" />
-                  Add Member & Issue Credentials
+                  Add Member
                 </h3>
                 <p className="text-caption text-ink-tertiary">
-                  Create member account with assigned username & password
+                  Create member account with username & phone details
                 </p>
               </div>
               <button
@@ -248,7 +434,7 @@ export function MembersView() {
 
             <form onSubmit={handleAddSubmit} className="space-y-4">
               <div>
-                <label className="block text-caption font-semibold text-ink mb-1">Full Legal Name *</label>
+                <label className="block text-caption font-semibold text-ink mb-1">Full Name *</label>
                 <input
                   type="text"
                   value={name}
@@ -271,7 +457,7 @@ export function MembersView() {
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder="e.g. ashay"
                     required
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
                   />
                 </div>
                 <div>
@@ -289,6 +475,16 @@ export function MembersView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="e.g. +91 98200 12345"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
+                  />
+                </div>
+                <div>
                   <label className="block text-caption font-semibold text-ink mb-1">Role</label>
                   <select
                     value={role}
@@ -298,18 +494,6 @@ export function MembersView() {
                     <option value="MEMBER">Member</option>
                     <option value="ADMIN">Admin</option>
                   </select>
-                </div>
-
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">PAN Card</label>
-                  <input
-                    type="text"
-                    value={pan}
-                    onChange={(e) => setPan(e.target.value.toUpperCase())}
-                    placeholder="e.g. ABCDE1234F"
-                    maxLength={10}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
-                  />
                 </div>
               </div>
 
@@ -321,8 +505,8 @@ export function MembersView() {
                       key={img}
                       type="button"
                       onClick={() => setAvatar(img)}
-                      className={`relative rounded-full p-0.5 border-2 transition-all ${
-                        avatar === img ? "border-accent scale-110" : "border-transparent opacity-70"
+                      className={`relative rounded-full p-0.5 border-2 transition-all cursor-pointer ${
+                        avatar === img ? "border-accent scale-110" : "border-transparent opacity-70 hover:opacity-100"
                       }`}
                     >
                       <img src={img} alt="Avatar" className="w-8 h-8 rounded-full object-cover" />
@@ -332,11 +516,11 @@ export function MembersView() {
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
-                <Button type="button" variant="tertiary" size="sm" onClick={() => setIsAddModalOpen(false)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setIsAddModalOpen(false)}>
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" size="sm">
-                  <CheckCircle size={16} /> Save & Issue Credentials
+                  <CheckCircle size={16} /> Save Member
                 </Button>
               </div>
             </form>
@@ -346,16 +530,16 @@ export function MembersView() {
 
       {/* EDIT CREDENTIALS MODAL */}
       {editingMember && (
-        <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-surface border border-line rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5">
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-surface border border-line rounded-2xl w-full max-w-md p-6 shadow-2xl space-y-5 animate-scale-up">
             <div className="flex items-center justify-between border-b border-line pb-3">
               <div>
                 <h3 className="text-body-md font-bold text-ink flex items-center gap-2">
                   <Key size={18} className="text-accent" />
-                  Edit Credentials for {editingMember.name}
+                  Edit Member details: {editingMember.name}
                 </h3>
                 <p className="text-caption text-ink-tertiary">
-                  Update login username and password
+                  Update username, password, phone, or member role
                 </p>
               </div>
               <button
@@ -368,7 +552,7 @@ export function MembersView() {
 
             <form onSubmit={handleEditSubmit} className="space-y-4">
               <div>
-                <label className="block text-caption font-semibold text-ink mb-1">Full Legal Name</label>
+                <label className="block text-caption font-semibold text-ink mb-1">Full Name</label>
                 <input
                   type="text"
                   value={editName}
@@ -386,7 +570,7 @@ export function MembersView() {
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
                   />
                 </div>
                 <div>
@@ -403,6 +587,16 @@ export function MembersView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="e.g. +91 98200 12345"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
+                  />
+                </div>
+                <div>
                   <label className="block text-caption font-semibold text-ink mb-1">Role</label>
                   <select
                     value={editRole}
@@ -413,25 +607,14 @@ export function MembersView() {
                     <option value="ADMIN">Admin</option>
                   </select>
                 </div>
-
-                <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">PAN Card</label>
-                  <input
-                    type="text"
-                    value={editPan}
-                    onChange={(e) => setEditPan(e.target.value.toUpperCase())}
-                    maxLength={10}
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-mono focus:border-accent outline-none"
-                  />
-                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">
-                <Button type="button" variant="tertiary" size="sm" onClick={() => setEditingMember(null)}>
+                <Button type="button" variant="outline" size="sm" onClick={() => setEditingMember(null)}>
                   Cancel
                 </Button>
                 <Button type="submit" variant="primary" size="sm">
-                  <CheckCircle size={16} /> Save Credentials
+                  <CheckCircle size={16} /> Save Changes
                 </Button>
               </div>
             </form>

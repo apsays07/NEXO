@@ -41,6 +41,7 @@ export async function POST(req: Request) {
       amount: Number(body.amount) || 15000,
       applicationNumber: body.applicationNumber || `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`,
       participants: Array.isArray(body.participants) ? body.participants : ["Member"],
+      status: body.status || "SUBMITTED",
       createdAt: new Date(),
     };
 
@@ -60,5 +61,41 @@ export async function POST(req: Request) {
   } catch (err: any) {
     console.error("POST /api/transactions error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500 });
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────
+   PUT /api/transactions
+   Updates an existing transaction status in MongoDB.
+──────────────────────────────────────────────────────────────── */
+export async function PUT(req: Request) {
+  try {
+    const body = await req.json();
+    const { id, ...updates } = body;
+
+    if (!id) {
+      return NextResponse.json(
+        { success: false, error: "Transaction id is required for update" },
+        { status: 400 }
+      );
+    }
+
+    const client = await clientPromise;
+    const col = client.db(DB).collection<TransactionDocument>(COL);
+
+    const result = await col.updateOne({ id }, { $set: updates });
+
+    return NextResponse.json({
+      success: true,
+      message: "Transaction updated in MongoDB",
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    });
+  } catch (err: any) {
+    console.error("PUT /api/transactions error:", err);
+    return NextResponse.json(
+      { success: false, error: "Failed to update transaction in MongoDB" },
+      { status: 500 }
+    );
   }
 }

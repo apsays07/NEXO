@@ -15,6 +15,7 @@ export function KeyboardShortcutsModal({
   if (!isOpen) return null;
 
   const shortcuts = [
+    { key: "Ctrl + B", description: "Toggle Left Sidebar" },
     { key: "Ctrl + Shift + D", description: "Toggle Dark / Light mode" },
     { key: "⌘K / Ctrl + K", description: "Open Command Palette / Search" },
     { key: "C", description: "Create new IPO opportunity" },

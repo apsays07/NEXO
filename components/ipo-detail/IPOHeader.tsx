@@ -19,7 +19,7 @@ export function IPOHeader({
   onViewApplicationClick,
 }: IPOHeaderProps) {
   const hasApplied = ipo.applications.some((a) =>
-    a.participants.some((p) => p.memberName === "Ankit" || p.memberName === "Ashay")
+    (a.participants || []).some((p) => p.memberName === "Ankit" || p.memberName === "Ashay")
   );
 
   return (

@@ -15,5 +15,6 @@ export interface TransactionDocument {
   amount: number;
   applicationNumber: string;
   participants: string[];
+  status?: "SUBMITTED" | "ALLOTTED" | "REFUNDED" | "REJECTED" | string;
   createdAt: Date;
 }

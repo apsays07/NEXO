@@ -89,9 +89,35 @@ export async function POST(req: Request) {
       console.warn("POST /api/members MongoDB unavailable, continuing with local store.");
     }
 
+    // Also provision User Account in nexo.users for authentication
+    const usersCol = client.db(DB).collection("users");
+    const { hashPassword, normalizeEmail } = await import("@/src/lib/auth/password");
+    const userEmail = newDoc.email;
+    const emailNorm = normalizeEmail(userEmail);
+    const passwordHash = hashPassword(password);
+
+    await usersCol.updateOne(
+      { emailNormalized: emailNorm },
+      {
+        $set: {
+          id: `usr_${Date.now()}`,
+          email: userEmail,
+          emailNormalized: emailNorm,
+          passwordHash: passwordHash,
+          memberId: newDoc.id,
+          role: newDoc.role,
+          status: "ACTIVE",
+          emailVerified: true,
+          updatedAt: new Date(),
+        },
+        $setOnInsert: { createdAt: new Date() },
+      },
+      { upsert: true }
+    );
+
     return NextResponse.json({
       success: true,
-      message: "Member saved successfully.",
+      message: `Member ${newMember.name} provisioned with login credentials`,
       member: newMember,
     });
   } catch (err: any) {
