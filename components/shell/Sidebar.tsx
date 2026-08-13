@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import { useNexo } from "@/context/NexoContext";
 import {
   SquaresFour,
@@ -25,6 +25,40 @@ export function Sidebar() {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const popoverRef = useRef<HTMLDivElement>(null);
+  const [sidebarWidth, setSidebarWidth] = useState(230);
+  const isDragging = useRef(false);
+  const dragStartX = useRef(0);
+  const dragStartWidth = useRef(230);
+
+  const MIN_WIDTH = 180;
+  const MAX_WIDTH = 480;
+
+  const startResize = useCallback((e: React.MouseEvent) => {
+    e.preventDefault();
+    isDragging.current = true;
+    dragStartX.current = e.clientX;
+    dragStartWidth.current = sidebarWidth;
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
+
+    const onMouseMove = (ev: MouseEvent) => {
+      if (!isDragging.current) return;
+      const delta = ev.clientX - dragStartX.current;
+      const newWidth = Math.min(MAX_WIDTH, Math.max(MIN_WIDTH, dragStartWidth.current + delta));
+      setSidebarWidth(newWidth);
+    };
+
+    const onMouseUp = () => {
+      isDragging.current = false;
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  }, [sidebarWidth]);
 
   const activeUser = sessionUser || members[0];
 
@@ -53,9 +87,10 @@ export function Sidebar() {
     <>
       {/* DESKTOP SIDEBAR (Visible on lg screens >= 1024px) */}
       <aside
-        className={`hidden lg:flex bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans transition-all duration-300 ease-in-out overflow-hidden ${
-          isSidebarCollapsed ? "w-[60px] items-center" : "w-[230px]"
+        className={`hidden lg:flex bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans overflow-hidden relative ${
+          isSidebarCollapsed ? "w-[60px] items-center" : ""
         }`}
+        style={isSidebarCollapsed ? undefined : { width: sidebarWidth, transition: isDragging.current ? "none" : "width 0.3s ease" }}
       >
         {isSidebarCollapsed ? (
           /* ── COLLAPSED: icon-only rail ── */
@@ -237,6 +272,15 @@ export function Sidebar() {
                 onClose={() => setIsPopoverOpen(false)}
                 onOpenShortcuts={() => setIsShortcutsOpen(true)}
               />
+            </div>
+
+            {/* ── Drag Resize Handle ── */}
+            <div
+              onMouseDown={startResize}
+              className="absolute top-0 right-0 h-full w-1 cursor-col-resize z-50 group/resize"
+              title="Drag to resize"
+            >
+              <div className="absolute right-0 top-0 h-full w-[2px] bg-transparent group-hover/resize:bg-accent/40 transition-colors duration-150" />
             </div>
           </>
         )}
