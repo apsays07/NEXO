@@ -1252,6 +1252,31 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
     setIpos((prev) => [newIpo, ...prev]);
 
+    // Persist new IPO to shared_ipos.json on disk via API
+    try {
+      fetch("/api/ipos", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: data.name,
+          minInvestment: data.minInvestment,
+          issueSize: data.issueSize,
+          description: data.description,
+          closeDate: data.closeDate,
+          createdBy: adminName,
+        }),
+      }).then(() => refreshIpos());
+    } catch (e) {
+      console.warn("Failed to POST /api/ipos in createIPO:", e);
+    }
+
+    try {
+      const stored = localStorage.getItem("nexo_local_admin_ipos") || "[]";
+      const parsed = JSON.parse(stored);
+      localStorage.setItem("nexo_local_admin_ipos", JSON.stringify([newIpo, ...parsed]));
+      window.dispatchEvent(new Event("storage"));
+    } catch (e) {}
+
     const newActivity: ActivityItem = {
       id: `act_${Date.now()}`,
       type: "IPO_ADDED",

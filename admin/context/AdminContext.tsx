@@ -147,6 +147,14 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
 
       const result = await res.json();
       if (result.success) {
+        if (result.ipo) {
+          try {
+            const stored = localStorage.getItem("nexo_local_admin_ipos") || "[]";
+            const parsed = JSON.parse(stored);
+            localStorage.setItem("nexo_local_admin_ipos", JSON.stringify([result.ipo, ...parsed]));
+          } catch (e) {}
+        }
+        window.dispatchEvent(new Event("storage"));
         await refreshIpos();
         return {
           success: true,
