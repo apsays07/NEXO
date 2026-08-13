@@ -1,156 +1,107 @@
 import React from "react";
 import { IPOLifecycleStage, RecommendationType } from "@/types/nexo";
+import { TrendUp, TrendDown } from "@phosphor-icons/react";
 
-interface StatusBadgeProps {
-  status: IPOLifecycleStage;
+interface GMPBadgeProps {
+  gmpPercent?: number;
   size?: "sm" | "md";
+  className?: string;
+  animate?: boolean;
 }
 
-export function StatusBadge({ status, size = "sm" }: StatusBadgeProps) {
-  const statusMap: Record<
-    IPOLifecycleStage,
-    { label: string; dotColor: string; bg: string; text: string; border: string }
-  > = {
-    RESEARCHING: {
-      label: "Researching",
-      dotColor: "bg-accent",
-      bg: "bg-accent-soft",
-      text: "text-accent",
-      border: "border-accent/30",
-    },
-    WATCHLIST: {
-      label: "Watchlist",
-      dotColor: "bg-ink-secondary",
-      bg: "bg-surface-alt",
-      text: "text-ink-secondary",
-      border: "border-line",
-    },
-    APPLYING: {
-      label: "Applying",
-      dotColor: "bg-accent",
-      bg: "bg-accent-soft",
-      text: "text-accent",
-      border: "border-accent/30",
-    },
-    APPLICATION_OPEN: {
-      label: "Open for Application",
-      dotColor: "bg-accent",
-      bg: "bg-accent-soft",
-      text: "text-accent",
-      border: "border-accent/30",
-    },
-    APPLIED: {
-      label: "Applied",
-      dotColor: "bg-positive",
-      bg: "bg-positive-soft",
-      text: "text-positive",
-      border: "border-positive/30",
-    },
-    ALLOTMENT_PENDING: {
-      label: "Allotment Pending",
-      dotColor: "bg-caution",
-      bg: "bg-caution-soft",
-      text: "text-caution",
-      border: "border-caution/30",
-    },
-    ALLOTTED: {
-      label: "Allotted",
-      dotColor: "bg-positive",
-      bg: "bg-positive-soft",
-      text: "text-positive",
-      border: "border-positive/30",
-    },
-    NOT_ALLOTTED: {
-      label: "Not Allotted",
-      dotColor: "bg-negative",
-      bg: "bg-negative-soft",
-      text: "text-negative",
-      border: "border-negative/30",
-    },
-    LISTED: {
-      label: "Listed",
-      dotColor: "bg-accent",
-      bg: "bg-accent-soft",
-      text: "text-accent",
-      border: "border-accent/30",
-    },
-    HOLDING: {
-      label: "Holding",
-      dotColor: "bg-positive",
-      bg: "bg-positive-soft",
-      text: "text-positive",
-      border: "border-positive/30",
-    },
-    SOLD: {
-      label: "Sold / Settled",
-      dotColor: "bg-ink-secondary",
-      bg: "bg-surface-alt",
-      text: "text-ink-secondary",
-      border: "border-line",
-    },
-    CLOSED: {
-      label: "Closed",
-      dotColor: "bg-ink-muted",
-      bg: "bg-surface-alt",
-      text: "text-ink-muted",
-      border: "border-line",
-    },
-  };
-
-  const config = statusMap[status] || statusMap.APPLYING;
-  const padding = size === "sm" ? "px-2 py-0.5 text-[12px] leading-4 font-medium" : "px-2.5 py-1 text-xs leading-4 font-semibold";
+export function GMPBadge({
+  gmpPercent = 18.5,
+  size = "sm",
+  className = "",
+  animate = true,
+}: GMPBadgeProps) {
+  const percent = typeof gmpPercent === "number" ? gmpPercent : 18.5;
+  const isPositive = percent >= 0;
+  const formattedPercent = `${isPositive ? "+" : ""}${percent.toFixed(1)}%`;
+  const isSmall = size === "sm";
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border ${config.bg} ${config.text} ${config.border} ${padding}`}
+      className={`inline-flex items-center gap-2 font-sans select-none tracking-tight transition-all duration-200 hover:scale-[1.03] shrink-0 ${
+        isSmall
+          ? "px-3 py-1.5 text-[13px] rounded-full"
+          : "px-4 py-2 text-[14px] rounded-full"
+      } ${
+        isPositive
+          ? "bg-emerald-950/90 text-emerald-200 border-2 border-emerald-400/60 shadow-[0_0_16px_rgba(16,185,129,0.25)]"
+          : "bg-rose-950/90 text-rose-200 border-2 border-rose-400/60 shadow-[0_0_16px_rgba(244,63,94,0.25)]"
+      } backdrop-blur-md ${className}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
-      <span>{config.label}</span>
+      {/* Live Signal Indicator */}
+      <span className="relative flex items-center justify-center shrink-0 w-2.5 h-2.5">
+        {animate && (
+          <span
+            className={`absolute inset-0 rounded-full animate-ping opacity-80 ${
+              isPositive ? "bg-emerald-400" : "bg-rose-400"
+            }`}
+          />
+        )}
+        <span
+          className={`relative w-2 h-2 rounded-full ${
+            isPositive
+              ? "bg-emerald-400 shadow-[0_0_8px_#34d399]"
+              : "bg-rose-400 shadow-[0_0_8px_#fb7185]"
+          }`}
+        />
+      </span>
+
+      {/* Label */}
+      <span className="text-[11px] font-black uppercase tracking-widest text-slate-300">
+        GMP
+      </span>
+
+      {/* Value */}
+      <span
+        className={`font-black font-mono tracking-tight text-[13px] ${
+          isPositive ? "text-emerald-300" : "text-rose-300"
+        }`}
+      >
+        {formattedPercent}
+      </span>
+
+      {/* Trend Arrow */}
+      {isPositive ? (
+        <TrendUp
+          size={isSmall ? 15 : 17}
+          weight="bold"
+          className="text-emerald-300 shrink-0"
+        />
+      ) : (
+        <TrendDown
+          size={isSmall ? 15 : 17}
+          weight="bold"
+          className="text-rose-300 shrink-0"
+        />
+      )}
     </span>
   );
 }
 
+interface StatusBadgeProps {
+  status?: IPOLifecycleStage;
+  gmpPercent?: number;
+  size?: "sm" | "md";
+}
+
+export function StatusBadge({ status, gmpPercent, size = "sm" }: StatusBadgeProps) {
+  return <GMPBadge gmpPercent={gmpPercent} size={size} />;
+}
+
 interface RecommendationBadgeProps {
-  type: RecommendationType;
+  type?: RecommendationType;
+  gmpPercent?: number;
   size?: "sm" | "md";
 }
 
 export function RecommendationBadge({
   type,
+  gmpPercent,
   size = "sm",
 }: RecommendationBadgeProps) {
-  const config = {
-    APPLY: {
-      label: "Group Decision: APPLY",
-      dotColor: "bg-positive",
-      bg: "bg-positive-soft",
-      text: "text-positive",
-      border: "border-positive/30",
-    },
-    WATCH: {
-      label: "Group Decision: WATCH",
-      dotColor: "bg-caution",
-      bg: "bg-caution-soft",
-      text: "text-caution",
-      border: "border-caution/30",
-    },
-    SKIP: {
-      label: "Group Decision: SKIP",
-      dotColor: "bg-negative",
-      bg: "bg-negative-soft",
-      text: "text-negative",
-      border: "border-negative/30",
-    },
-  }[type];
-
-  const padding = size === "sm" ? "px-2 py-0.5 text-[12px] leading-4 font-semibold" : "px-2.5 py-1 text-xs leading-4 font-semibold";
-
-  return (
-    <span
-      className={`inline-flex items-center gap-1.5 rounded-md border ${config.bg} ${config.text} ${config.border} ${padding}`}
-    >
-      <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor}`} />
-      <span>{config.label}</span>
-    </span>
-  );
+  return <GMPBadge gmpPercent={gmpPercent} size={size} />;
 }

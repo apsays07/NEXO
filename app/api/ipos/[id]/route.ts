@@ -166,6 +166,9 @@ export async function PUT(
     if (typeof body.thesis === "string") {
       updateFields.thesis = body.thesis.trim();
     }
+    if (typeof body.gmpPercent === "number") {
+      updateFields.gmpPercent = body.gmpPercent;
+    }
 
     await collection.updateOne(
       { _id: new ObjectId(id) },

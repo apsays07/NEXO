@@ -2,9 +2,9 @@
 
 import React, { useState } from "react";
 import { Card } from "../ui/Card";
-import { StatusBadge, RecommendationBadge } from "../ui/Badge";
+import { GMPBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { formatINR } from "@/lib/mockData";
+import { formatINR, formatDate } from "@/lib/mockData";
 import { IPOOpportunity } from "@/types/nexo";
 import { ArrowRight, Clock, ShieldCheck } from "@phosphor-icons/react";
 import { IPODetailModal } from "../ipo/IPODetailModal";
@@ -46,7 +46,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
               </div>
             </div>
 
-            <StatusBadge status={ipo.status} size="sm" />
+            <GMPBadge gmpPercent={ipo.metrics?.gmpPercent ?? 18.5} size="sm" />
           </div>
 
           {/* Financial Metrics Cluster */}
@@ -72,12 +72,9 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
 
           {/* Group Decision Box */}
           <div className="p-3 rounded-xl bg-positive-soft/70 border border-positive/30 space-y-2">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1.5 text-caption font-semibold text-positive">
-                <ShieldCheck size={16} />
-                <span>Group Decision</span>
-              </div>
-              <RecommendationBadge type={ipo.recommendation} size="sm" />
+            <div className="flex items-center gap-1.5 text-caption font-semibold text-positive">
+              <ShieldCheck size={16} />
+              <span>Group Decision</span>
             </div>
 
             <p className="text-small text-ink font-normal leading-relaxed">
@@ -99,7 +96,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
         {/* Footer */}
         <div className="pt-4 border-t border-line flex items-center justify-between gap-3">
           <span className="text-caption text-caution font-semibold flex items-center gap-1.5 bg-caution-soft px-3 py-1.5 rounded-xl border border-caution/30 shadow-2xs">
-            <Clock size={14} /> Closes {ipo.metrics.closeDate}
+            <Clock size={14} /> Closes {formatDate(ipo.metrics.closeDate)}
           </span>
           <Button
             size="md"

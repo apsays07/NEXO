@@ -48,14 +48,14 @@ export function MoreDrawer({ isOpen, onClose }: MoreDrawerProps) {
         <div className="flex items-center justify-between pb-4 border-b border-line">
           <div className="flex items-center gap-3">
             <img
-              src={adminMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-              alt={adminMember?.name || "Ankit"}
+              src={adminMember?.avatar || "/oggy.png"}
+              alt={adminMember?.name || "Member"}
               className="w-10 h-10 rounded-full object-cover ring-2 ring-accent/20"
             />
             <div>
               <div className="flex items-center gap-1.5">
                 <h3 className="text-base font-bold text-ink tracking-tight">
-                  {adminMember?.name || "Ankit"}
+                  {adminMember?.name || "Member"}
                 </h3>
                 <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-accent-soft text-accent border border-accent/30">
                   ADMIN

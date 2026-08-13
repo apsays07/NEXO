@@ -23,6 +23,7 @@ export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
   const [lotSize, setLotSize] = useState<number>(58);
   const [closeDate, setCloseDate] = useState("");
   const [decision, setDecision] = useState<"APPLY" | "WATCH" | "SKIP">("APPLY");
+  const [gmpPercent, setGmpPercent] = useState<number>(18.5);
   const [thesis, setThesis] = useState("");
 
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -39,6 +40,7 @@ export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
       setCloseDate(ipo.metrics?.closeDate || "");
       const rec = String(ipo.recommendation);
       setDecision(rec === "WATCH" ? "WATCH" : rec === "AVOID" || rec === "SKIP" ? "SKIP" : "APPLY");
+      setGmpPercent(ipo.metrics?.gmpPercent !== undefined ? ipo.metrics.gmpPercent : 18.5);
       setThesis(ipo.thesis || "");
       setValidationError(null);
       setIsSubmitting(false);
@@ -77,7 +79,7 @@ export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
     try {
       await updateIPOApi(ipo.id, {
         name: name.trim(),
-        company: company.trim() || ipo.company,
+        company: company.trim() || `${name.trim()} Limited`,
         type,
         priceMin,
         priceMax,
@@ -85,6 +87,7 @@ export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
         minimumInvestment: priceMax * lotSize,
         closeDate: closeDate.trim(),
         decision,
+        gmpPercent: Number(gmpPercent) || 0,
         thesis: thesis.trim(),
       });
 
@@ -179,17 +182,16 @@ export function EditIPOModal({ ipo, isOpen, onClose }: EditIPOModalProps) {
             </div>
             <div>
               <label className="block text-caption font-semibold text-ink-secondary mb-1">
-                Group Decision
+                GMP Percentage (%) *
               </label>
-              <select
-                value={decision}
-                onChange={(e) => setDecision(e.target.value as any)}
-                className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer"
-              >
-                <option value="APPLY">APPLY</option>
-                <option value="WATCH">WATCH</option>
-                <option value="SKIP">SKIP</option>
-              </select>
+              <input
+                type="number"
+                step="0.1"
+                required
+                value={gmpPercent}
+                onChange={(e) => setGmpPercent(Number(e.target.value) || 0)}
+                className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none"
+              />
             </div>
           </div>
 

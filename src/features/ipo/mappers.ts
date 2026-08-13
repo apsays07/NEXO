@@ -42,6 +42,7 @@ export function mapIPOToOpportunity(ipo: IPO, existingApps: any[] = []): IPOOppo
       closeDate: ipo.closeDate || "14 Aug 2026",
       allotmentDate: ipo.allotmentDate || "19 Aug 2026",
       listingDate: ipo.listingDate || "21 Aug 2026",
+      gmpPercent: ipo.gmpPercent !== undefined ? ipo.gmpPercent : 18.5,
     },
     applications: existingApps,
     isFeatured: true,

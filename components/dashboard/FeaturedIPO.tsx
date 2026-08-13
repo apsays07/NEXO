@@ -2,9 +2,9 @@
 
 import React from "react";
 import { Card } from "../ui/Card";
-import { StatusBadge, RecommendationBadge } from "../ui/Badge";
+import { GMPBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
-import { formatINR } from "@/lib/mockData";
+import { formatINR, formatDate } from "@/lib/mockData";
 import { IPOOpportunity } from "@/types/nexo";
 import { ArrowRight, Clock, ShieldCheck } from "@phosphor-icons/react";
 
@@ -44,7 +44,7 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
             </div>
           </div>
 
-          <StatusBadge status={ipo.status} size="md" />
+          <GMPBadge gmpPercent={ipo.metrics?.gmpPercent ?? 18.5} size="md" />
         </div>
 
         {/* MIDDLE */}
@@ -82,13 +82,13 @@ export function FeaturedIPO({ ipo, onInspect }: FeaturedIPOProps) {
               </span>
               <div className="text-body-md font-semibold text-caution flex items-center gap-1.5 mt-1">
                 <Clock size={16} />
-                <span>{ipo.metrics.closeDate}</span>
+                <span>{formatDate(ipo.metrics.closeDate)}</span>
               </div>
             </div>
 
             <div className="pt-2 border-t border-line flex items-center justify-between">
-              <span className="text-caption text-ink-secondary font-medium">Group Decision</span>
-              <RecommendationBadge type={ipo.recommendation} size="sm" />
+              <span className="text-caption text-ink-secondary font-medium">Subscription closes</span>
+              <span className="text-caption font-semibold text-caution num-tabular">{formatDate(ipo.metrics.closeDate)}</span>
             </div>
           </div>
         </div>

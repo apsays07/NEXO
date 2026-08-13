@@ -2,8 +2,8 @@
 
 import React from "react";
 import { Card } from "../ui/Card";
-import { StatusBadge, RecommendationBadge } from "../ui/Badge";
-import { formatINR } from "@/lib/mockData";
+import { GMPBadge } from "../ui/Badge";
+import { formatINR, formatDate } from "@/lib/mockData";
 import { IPOOpportunity } from "@/types/nexo";
 
 interface IPOPipelineTableProps {
@@ -38,8 +38,7 @@ export function IPOPipelineTable({ ipos, onInspect, onViewAll }: IPOPipelineTabl
           <thead>
             <tr className="border-b border-line text-ink-tertiary uppercase text-caption tracking-wider font-semibold">
               <th className="py-2.5 px-3">IPO</th>
-              <th className="py-2.5 px-3">Status</th>
-              <th className="py-2.5 px-3">Decision</th>
+              <th className="py-2.5 px-3">GMP (%)</th>
               <th className="py-2.5 px-3">Deadline</th>
               <th className="py-2.5 px-3">Members</th>
               <th className="py-2.5 px-3 text-right">Committed Capital</th>
@@ -57,13 +56,10 @@ export function IPOPipelineTable({ ipos, onInspect, onViewAll }: IPOPipelineTabl
                   <div className="text-caption text-ink-tertiary truncate">{ipo.company}</div>
                 </td>
                 <td className="py-2.5 px-3">
-                  <StatusBadge status={ipo.status} size="sm" />
-                </td>
-                <td className="py-2.5 px-3">
-                  <RecommendationBadge type={ipo.recommendation} size="sm" />
+                  <GMPBadge gmpPercent={ipo.metrics?.gmpPercent ?? 18.5} size="sm" />
                 </td>
                 <td className="py-2.5 px-3 text-caution font-semibold text-caption">
-                  {ipo.metrics.closeDate}
+                  {formatDate(ipo.metrics.closeDate)}
                 </td>
                 <td className="py-2.5 px-3 num-table text-ink">
                   {ipo.participantsCount}

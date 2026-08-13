@@ -599,7 +599,7 @@ export function PortfolioView() {
               <button
                 type="button"
                 onClick={() => {
-                  if (editingTxn) {
+                  if (editingTxn && updateTransaction) {
                     updateTransaction(editingTxn.id, {
                       applicantName: editTxnName.trim(),
                       amount: Number(editTxnAmount) || 0,

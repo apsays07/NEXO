@@ -3,7 +3,7 @@
 import React from "react";
 import { Card } from "../ui/Card";
 import { StatusBadge, RecommendationBadge } from "../ui/Badge";
-import { formatINR } from "@/lib/mockData";
+import { formatINR, formatDate } from "@/lib/mockData";
 import { IPOOpportunity } from "@/types/nexo";
 
 interface IPOPipelineProps {
@@ -82,7 +82,7 @@ export function IPOPipeline({ ipos, onInspect, onViewAll }: IPOPipelineProps) {
             <div className="pt-3 border-t border-line flex items-center justify-between text-xs">
               <div>
                 <div className="text-caution font-bold text-[11px]">
-                  Closes {ipo.metrics.closeDate}
+                  Closes {formatDate(ipo.metrics.closeDate)}
                 </div>
                 <div className="text-[11px] text-[#64748B] font-medium mt-0.5">
                   {ipo.participantsCount} members • {formatINR(ipo.combinedCapital)}

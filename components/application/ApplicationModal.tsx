@@ -41,22 +41,24 @@ export function ApplicationModal() {
     activeApplicationIpo,
     closeApplicationModal,
     members,
+    currentUser,
     createApplication,
   } = useNexo();
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState<string>("");
 
-
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
   const minInvest = activeApplicationIpo?.metrics?.minInvestment || 14964;
   const targetRequiredCapital = minInvest * effectiveIpos;
 
+  const activeUserName = currentUser?.name || members[0]?.name || "Member";
+
   // Dynamic Contributors State
   const [contributors, setContributors] = useState<ContributorEntry[]>([
-    { memberId: members[0]?.id || "mem_1", memberName: "Ankit", amount: Math.floor(targetRequiredCapital / 2) },
-    { memberId: members[1]?.id || "mem_2", memberName: "Ashay", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
+    { memberId: currentUser?.id || members[0]?.id || "mem_1", memberName: activeUserName, amount: Math.floor(targetRequiredCapital / 2) },
+    { memberId: members[1]?.id || "mem_2", memberName: members[1]?.name || "Partner", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
   ]);
 
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
@@ -72,10 +74,10 @@ export function ApplicationModal() {
 
   // Set default applicant name only when modal opens
   useEffect(() => {
-    if (isApplicationModalOpen && members.length > 0) {
-      setApplicantName(members[0].name);
+    if (isApplicationModalOpen) {
+      setApplicantName(currentUser?.name || members[0]?.name || "Member");
     }
-  }, [isApplicationModalOpen, members]);
+  }, [isApplicationModalOpen, currentUser, members]);
 
   // Synchronize array length: 1 PAN per IPO
   useEffect(() => {
@@ -83,15 +85,14 @@ export function ApplicationModal() {
       const updated = [...prev];
       if (effectiveIpos > updated.length) {
         while (updated.length < effectiveIpos) {
-          const defaultPan = members[updated.length]?.panFull || "";
-          updated.push(defaultPan);
+          updated.push("");
         }
       } else if (effectiveIpos < updated.length) {
         return updated.slice(0, effectiveIpos);
       }
       return updated;
     });
-  }, [effectiveIpos, members]);
+  }, [effectiveIpos]);
 
   // Auto-fetch friend names into Primary Applicant Name when in Multi-Friend mode
   useEffect(() => {
@@ -104,7 +105,7 @@ export function ApplicationModal() {
       }
     } else {
       if (!applicantName || applicantName.includes(",")) {
-        setApplicantName(members[0]?.name || "Ankit");
+        setApplicantName(members[0]?.name || "Member");
       }
     }
   }, [applicantMode, contributors, members]);
@@ -237,7 +238,9 @@ export function ApplicationModal() {
         applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
         participantContributions,
         undefined,
-        primaryMember.id
+        primaryMember.id,
+        applicantName,
+        panNumbers
       );
 
       setIsSubmitting(false);
@@ -331,37 +334,13 @@ export function ApplicationModal() {
             <input
               type="text"
               required
-              placeholder="e.g. Ankit"
+              placeholder="Enter applicant name"
               value={applicantName}
               onChange={(e) => setApplicantName(e.target.value)}
               className="w-full bg-surface-alt/80 border border-line hover:border-line-strong rounded-xl px-4 py-2.5 text-sm font-semibold text-ink tracking-tight focus:bg-surface focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all placeholder:text-ink-muted"
             />
           </div>
 
-          {/* 2. Number of PAN Cards */}
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <label className="block text-xs font-semibold text-slate-800 flex items-center gap-1.5">
-                <CheckCircle size={15} className="text-blue-600" /> Number of PAN Cards <span className="text-rose-500">*</span>
-              </label>
-              <span className="text-[11px] text-slate-500 font-mono">
-                1 PAN per Application
-              </span>
-            </div>
-            <input
-              type="number"
-              min={1}
-              max={50}
-              required
-              value={numberOfIpos}
-              onChange={(e) => {
-                const parsed = parseInt(e.target.value, 10);
-                setNumberOfIpos(isNaN(parsed) ? 1 : Math.max(1, Math.min(50, parsed)));
-              }}
-              className="w-full bg-slate-50/70 border border-slate-200 hover:border-slate-300 rounded-xl px-4 py-2.5 text-sm font-medium text-slate-900 tracking-tight focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-500/10 focus:outline-none transition-all placeholder:text-slate-400"
-              placeholder="Enter number of PAN cards (e.g. 5)"
-            />
-          </div>
 
           {/* FRIEND NAME | AMOUNT TABLE WITH VISUAL PROGRESS BAR & SUM MATCHING */}
           {applicantMode === "JOINT" && (

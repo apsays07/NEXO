@@ -2,15 +2,19 @@
 
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { MagnifyingGlass, User, Gear, SignOut } from "@phosphor-icons/react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { NotificationPopover } from "./NotificationPopover";
 import { CommandPalette } from "../ui/CommandPalette";
+import { ProfileAvatar } from "../profile/ProfileAvatar";
+import { ProfilePopover } from "../profile/ProfilePopover";
+import { KeyboardShortcutsModal } from "../profile/KeyboardShortcutsModal";
 
 export function TopBar() {
-  const { activeTab, searchQuery, setSearchQuery, portfolioSummary, members } = useNexo();
-  const currentUser = members[0];
+  const { activeTab, searchQuery, setSearchQuery, portfolioSummary, members, currentUser: sessionUser } = useNexo();
+  const currentUser = sessionUser || members[0];
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   const userMenuRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
@@ -30,21 +34,17 @@ export function TopBar() {
     portfolio: "Portfolio",
     members: "Group Members",
     premium: "Nexo Premium",
+    profile: "Profile & Identity",
   };
 
   return (
     <>
       <header className="h-16 border-b border-line bg-surface/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-line/20">
-        {/* Title & Breadcrumb + Mobile Brand Header */}
+        {/* Page Title */}
         <div className="flex items-center gap-3 text-sm font-semibold text-ink-tertiary">
-          <div className="flex lg:hidden items-center gap-2 mr-1">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-xs shadow-md shadow-blue-500/20">
-              N
-            </div>
-          </div>
-          <span className="text-ink font-extrabold text-base sm:text-lg tracking-tight select-none">
+          <h1 className="text-ink font-extrabold text-base sm:text-lg tracking-tight select-none">
             {titles[activeTab] || "Dashboard"}
-          </span>
+          </h1>
         </div>
 
         {/* Right Controls */}
@@ -75,66 +75,34 @@ export function TopBar() {
           {/* Activity Bell Popover */}
           <NotificationPopover />
 
-          {/* Profile Circle with Interactive User Dropdown */}
+          {/* Profile Circle with Premium Popover */}
           <div className="relative shrink-0" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-              className="flex items-center gap-1.5 focus:outline-none cursor-pointer"
+              className="flex items-center gap-2 focus:outline-none cursor-pointer p-0.5 rounded-full hover:bg-surface-alt transition-colors"
             >
-              <img
-                src={currentUser?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-                alt={currentUser?.name || "Ankit"}
-                className="w-10 h-10 rounded-full object-cover ring-2 ring-accent/10 hover:ring-accent/30 transition-all hover:scale-[1.05] duration-200 shadow-sm"
-                title={currentUser?.name || "Ankit"}
-              />
+              <ProfileAvatar src={currentUser?.avatar} name={currentUser?.name || "Member"} size="md" />
             </button>
 
-            {isUserMenuOpen && (
-              <div className="absolute right-0 mt-2.5 w-56 rounded-2xl bg-surface/95 backdrop-blur-md border border-line/80 shadow-2xl p-2.5 z-40 space-y-1 animate-fade-in text-xs font-sans">
-                {/* User Info Header */}
-                <div className="px-3 py-2 border-b border-line mb-1.5">
-                  <p className="font-extrabold text-ink text-xs truncate">
-                    {currentUser?.name || "Ankit"}
-                  </p>
-                  <p className="text-[10px] font-bold text-ink-muted uppercase tracking-wide truncate mt-0.5">
-                    {currentUser?.role || "Group Admin"}
-                  </p>
-                </div>
-
-                {/* Dropdown Items */}
-                <button
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-2 rounded-xl text-ink-secondary hover:text-ink hover:bg-surface-hover font-semibold transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <User size={14} className="text-ink-muted" />
-                  <span>Profile Settings</span>
-                </button>
-                
-                <button
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-2 rounded-xl text-ink-secondary hover:text-ink hover:bg-surface-hover font-semibold transition-colors flex items-center gap-2 cursor-pointer"
-                >
-                  <Gear size={14} className="text-ink-muted" />
-                  <span>System Settings</span>
-                </button>
-
-                <button
-                  onClick={() => setIsUserMenuOpen(false)}
-                  className="w-full text-left px-3 py-2 rounded-xl text-negative hover:text-negative hover:bg-negative-soft/50 font-bold transition-colors flex items-center gap-2 cursor-pointer mt-1 border-t border-line pt-2"
-                >
-                  <SignOut size={14} className="text-negative" />
-                  <span>Log Out</span>
-                </button>
-              </div>
-            )}
+            <ProfilePopover
+              isOpen={isUserMenuOpen}
+              onClose={() => setIsUserMenuOpen(false)}
+              onOpenShortcuts={() => setIsShortcutsOpen(true)}
+            />
           </div>
         </div>
       </header>
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
 
       {/* Command Palette Modal */}
       <CommandPalette
         isOpen={isCommandPaletteOpen}
         onClose={() => setIsCommandPaletteOpen(false)}
+        onOpen={() => setIsCommandPaletteOpen(true)}
       />
     </>
   );

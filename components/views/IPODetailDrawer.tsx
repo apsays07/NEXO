@@ -6,7 +6,7 @@ import { StatusBadge, RecommendationBadge } from "../ui/Badge";
 import { Button } from "../ui/Button";
 import { LifecycleBar } from "../ui/LifecycleBar";
 import { MaskedPAN } from "../ui/MaskedPAN";
-import { formatINR } from "@/lib/mockData";
+import { formatINR, formatDate } from "@/lib/mockData";
 import { X, UserPlus, ShieldCheck, PencilSimple, Archive } from "@phosphor-icons/react";
 import { EditIPOModal } from "../ipo/EditIPOModal";
 import { ArchiveIPOModal } from "../ipo/ArchiveIPOModal";
@@ -111,7 +111,7 @@ export function IPODetailDrawer() {
                 <div className="p-3 rounded-xl bg-page border border-line">
                   <span className="text-[12px] text-ink-secondary block font-medium uppercase">Last Date</span>
                   <span className="text-xs font-semibold text-caution">
-                    {selectedIpo.metrics.closeDate}
+                    {formatDate(selectedIpo.metrics.closeDate)}
                   </span>
                 </div>
               </div>

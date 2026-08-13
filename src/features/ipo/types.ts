@@ -40,6 +40,7 @@ export interface IPO {
   decision: IPODecision;
   stage: IPOStage;
   thesis?: string;
+  gmpPercent?: number;
   createdBy: string;
   createdAt: string;
   updatedAt: string;

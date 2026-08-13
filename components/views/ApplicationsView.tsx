@@ -26,6 +26,7 @@ export function ApplicationsView() {
     deleteApplication,
     updateApplication,
     currentMember,
+    currentUser,
   } = useNexo();
 
   // Local Filter for selecting IPO / Company
@@ -41,7 +42,8 @@ export function ApplicationsView() {
     ipoId: string;
     appId: string;
     applicantName: string;
-    lotCount: number;
+    lotCount: number | "";
+    panNumbers: string[];
   } | null>(null);
 
   // Delete Application Confirmation Modal State
@@ -130,15 +132,56 @@ export function ApplicationsView() {
     }
   };
 
+  const handleLotCountChange = (valStr: string) => {
+    if (!editingApp) return;
+    if (valStr === "") {
+      setEditingApp({
+        ...editingApp,
+        lotCount: "",
+      });
+      return;
+    }
+
+    const num = parseInt(valStr, 10);
+    if (isNaN(num)) return;
+    const count = Math.max(1, Math.min(50, num));
+
+    const updatedPans = [...editingApp.panNumbers];
+    while (updatedPans.length < count) {
+      updatedPans.push("");
+    }
+
+    setEditingApp({
+      ...editingApp,
+      lotCount: count,
+      panNumbers: updatedPans,
+    });
+  };
+
+  const handlePanNumberChange = (index: number, val: string) => {
+    if (!editingApp) return;
+    const updated = [...editingApp.panNumbers];
+    updated[index] = val.toUpperCase().slice(0, 10);
+    setEditingApp({ ...editingApp, panNumbers: updated });
+  };
+
   const handleSaveEditApp = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingApp) {
+      const effectiveCount = Math.max(1, typeof editingApp.lotCount === "number" ? editingApp.lotCount : 1);
+      const cleanPans = editingApp.panNumbers.map((p, idx) =>
+        p && !p.includes("X") && p.length === 10 ? p : `ABCDE274${idx + 1}D`
+      );
+      const primaryPan = cleanPans[0] || "ABCDE2741D";
+
       updateApplication(
         editingApp.ipoId,
         editingApp.appId,
         {
-          applicantName: editingApp.applicantName,
-          lotCount: Math.max(1, editingApp.lotCount),
+          applicantName: editingApp.applicantName.trim() || "Member",
+          lotCount: effectiveCount,
+          panMasked: primaryPan,
+          panNumbers: cleanPans,
         }
       );
       setEditingApp(null);
@@ -276,6 +319,7 @@ export function ApplicationsView() {
                   onChange={(e) =>
                     setEditingApp({ ...editingApp, applicantName: e.target.value })
                   }
+                  placeholder="Enter applicant name"
                   className="w-full bg-surface-alt border border-line rounded-xl px-3.5 py-2.5 text-body font-normal text-ink focus:bg-surface focus:border-accent outline-none"
                 />
               </div>
@@ -290,14 +334,41 @@ export function ApplicationsView() {
                   max={50}
                   required
                   value={editingApp.lotCount}
-                  onChange={(e) =>
-                    setEditingApp({
-                      ...editingApp,
-                      lotCount: parseInt(e.target.value, 10) || 1,
-                    })
-                  }
+                  onChange={(e) => handleLotCountChange(e.target.value)}
+                  onBlur={() => {
+                    if (editingApp.lotCount === "" || editingApp.lotCount < 1) {
+                      handleLotCountChange("1");
+                    }
+                  }}
+                  placeholder="Enter number of lots (e.g. 5)"
                   className="w-full bg-surface-alt border border-line rounded-xl px-3.5 py-2.5 text-body font-normal text-ink num-tabular focus:bg-surface focus:border-accent outline-none"
                 />
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-caption font-semibold text-ink flex items-center justify-between">
+                  <span>PAN Card Numbers ({editingApp.panNumbers.length} Required)</span>
+                  <span className="text-[11px] text-ink-muted font-normal">Auto-Uppercase</span>
+                </label>
+
+                <div className="space-y-2 max-h-48 overflow-y-auto pr-1">
+                  {editingApp.panNumbers.map((pan, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="text-[11px] font-bold text-ink-tertiary w-16 shrink-0 font-mono text-center bg-surface-alt py-2 px-2 rounded-xl border border-line shadow-2xs">
+                        PAN #{idx + 1}
+                      </span>
+                      <input
+                        type="text"
+                        maxLength={10}
+                        required
+                        placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
+                        value={pan}
+                        onChange={(e) => handlePanNumberChange(idx, e.target.value)}
+                        className="w-full bg-surface-alt border border-line rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-ink uppercase focus:bg-surface focus:border-accent outline-none"
+                      />
+                    </div>
+                  ))}
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-line">
@@ -375,17 +446,25 @@ export function ApplicationsView() {
 
           // View scope filter (All vs My)
           if (viewScope === "MY") {
-            const name = (app.applicantName || "").toLowerCase();
+            const currentUserName = (currentUser?.name || currentMember?.name || "ankit").toLowerCase();
+            const currentUserId = currentUser?.id || currentMember?.id || "mem_1";
+            const appName = (app.applicantName || "").toLowerCase();
+
             const isMy =
-              name.includes("ashay") ||
-              name.includes("shivam") ||
-              app.memberId === "mem_1" ||
-              app.memberId === "mem_user";
+              app.memberId === currentUserId ||
+              (appName && currentUserName && appName.includes(currentUserName)) ||
+              (app.participants && app.participants.some(p => p.memberId === currentUserId || (p.memberName && p.memberName.toLowerCase().includes(currentUserName))));
+
             if (!isMy) return false;
           }
 
           return true;
         });
+
+        const totalExpandedCount = filteredApps.reduce(
+          (sum, app) => sum + Math.max(1, app.lotCount || 1),
+          0
+        );
 
         return (
           <div
@@ -423,7 +502,7 @@ export function ApplicationsView() {
                       : "text-ink-tertiary hover:text-ink"
                   }`}
                 >
-                  All ({filteredApps.length})
+                  All ({totalExpandedCount})
                 </button>
                 <button
                   onClick={() => setStatusFilter("ALLOTTED")}
@@ -475,130 +554,128 @@ export function ApplicationsView() {
                   <div className="text-body-md font-semibold text-ink">No applications found</div>
                   <div>No applications match your scope or filter criteria.</div>
                 </div>
-              ) : (
-                filteredApps.map((app) => {
-                  sequentialCounter += 1;
-                  const formattedSeq = String(sequentialCounter).padStart(2, "0");
+              ) : (() => {
+                const nameTotalCounts: Record<string, number> = {};
+                filteredApps.forEach((app) => {
+                  const name =
+                    app.applicantName ||
+                    (app.participants && app.participants.length > 0
+                      ? app.participants.map((p) => p.memberName).join(", ")
+                      : "Member");
+                  const count = Math.max(1, app.lotCount || 1);
+                  nameTotalCounts[name] = (nameTotalCounts[name] || 0) + count;
+                });
 
+                const nameRunningIndex: Record<string, number> = {};
+
+                return filteredApps.flatMap((app) => {
                   const currentStatus =
                     (app.allotmentStatus as AllotmentStatus) ||
                     (app.status as AllotmentStatus) ||
                     "AWAITING";
 
                   const applicantName = app.applicantName || "Ashay";
-                  const lotCount = app.lotCount || 1;
+                  const lotCount = Math.max(1, app.lotCount || 1);
+                  const minInvest = ipo.metrics?.minInvestment || 14964;
+                  const perLotAmount = Math.round(app.totalContribution / lotCount) || minInvest;
 
                   const displayNames =
-                    app.participants && app.participants.length > 0
+                    app.applicantName ||
+                    (app.participants && app.participants.length > 0
                       ? app.participants.map((p) => p.memberName).join(", ")
-                      : applicantName;
+                      : "Member");
 
-                  const isMine =
-                    app.memberId === currentMember?.id ||
-                    (app.applicantName && app.applicantName.toLowerCase() === currentMember?.name?.toLowerCase()) ||
-                    (app.participants && app.participants.some(p => p.memberId === currentMember?.id || p.memberName.toLowerCase() === currentMember?.name?.toLowerCase()));
+                  const currentUserName = (currentUser?.name || currentMember?.name || "").toLowerCase();
+                  const currentUserId = currentUser?.id || currentMember?.id || "mem_1";
 
-                  return (
-                    <React.Fragment key={app.id}>
-                      {/* DESKTOP ROW (md and larger) */}
-                      <div className="hidden md:grid md:grid-cols-12 px-6 py-4 items-center hover:bg-surface-alt/60 transition-colors text-small">
-                        {/* # SR No */}
-                        <div className="col-span-1 num-tabular font-semibold text-ink">
-                          {formattedSeq}
-                        </div>
+                  const isMine = Boolean(
+                    (app.memberId && app.memberId === currentUserId) ||
+                    (app.applicantName && currentUserName && app.applicantName.toLowerCase() === currentUserName)
+                  );
 
-                        {/* Contributors List as name1, name2 */}
-                        <div className="col-span-3">
-                          <div className="text-body-md font-semibold text-ink tracking-tight">
-                            {displayNames}
+                  return Array.from({ length: lotCount }).map((_, lotIdx) => {
+                    sequentialCounter += 1;
+                    const formattedSeq = String(sequentialCounter).padStart(2, "0");
+
+                    const panFromApp = (app.panNumbers && app.panNumbers[lotIdx] && app.panNumbers[lotIdx].trim())
+                      ? app.panNumbers[lotIdx].trim()
+                      : (app.participants && app.participants[lotIdx] && app.participants[lotIdx].panMasked && !app.participants[lotIdx].panMasked.includes("X"))
+                      ? app.participants[lotIdx].panMasked
+                      : (app.panMasked && !app.panMasked.includes("X"))
+                      ? app.panMasked
+                      : `ABCDE${String(2741 + lotIdx).padStart(4, "0")}D`;
+                    const panDisplay = panFromApp.toUpperCase();
+
+                    const baseName = displayNames;
+                    nameRunningIndex[baseName] = (nameRunningIndex[baseName] || 0) + 1;
+
+                    const lotDisplayName = (nameTotalCounts[baseName] || 0) > 1
+                      ? `${baseName} ${nameRunningIndex[baseName]}`
+                      : baseName;
+
+                    return (
+                      <React.Fragment key={`${app.id}_lot_${lotIdx}`}>
+                        {/* DESKTOP ROW (md and larger) */}
+                        <div className="hidden md:grid md:grid-cols-12 px-6 py-4 items-center hover:bg-surface-alt/60 transition-colors text-small">
+                          {/* # SR No */}
+                          <div className="col-span-1 num-tabular font-semibold text-ink">
+                            {formattedSeq}
                           </div>
-                        </div>
 
-                        {/* PAN Card Column */}
-                        <div className="col-span-2 self-center">
-                          <div className="text-small font-normal text-ink-secondary font-mono">
-                            {app.panMasked || "ABCDE2741D"}
+                          {/* Contributors List / Name */}
+                          <div className="col-span-3">
+                            <div className="text-body-md font-semibold text-ink tracking-tight">
+                              {lotDisplayName}
+                            </div>
                           </div>
-                        </div>
 
-                        {/* Amount */}
-                        <div className="col-span-2 text-right self-center num-table text-ink font-semibold">
-                          {formatINR(app.totalContribution)}
-                        </div>
-
-                        {/* Status */}
-                        <div className="col-span-2 text-center self-center">
-                          {renderStatusControl(currentStatus)}
-                        </div>
-
-                        {/* ACTIONS: EDIT & DELETE */}
-                        <div className="col-span-2 flex items-center justify-end gap-1.5">
-                          {isMine ? (
-                            <>
-                              <button
-                                onClick={() =>
-                                  setEditingApp({
-                                    ipoId: ipo.id,
-                                    appId: app.id,
-                                    applicantName: applicantName,
-                                    lotCount: lotCount,
-                                  })
-                                }
-                                className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors cursor-pointer"
-                                title="Edit Application"
-                              >
-                                <PencilSimple size={16} weight="bold" />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                                className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors cursor-pointer"
-                                title="Delete Application"
-                              >
-                                <Trash size={16} weight="bold" />
-                              </button>
-                            </>
-                          ) : (
-                            <span className="text-caption font-medium text-ink-muted flex items-center gap-1">
-                              <LockKey size={13} />
-                              View Only
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* MOBILE CARD VIEW (< md screens) */}
-                      <div className="md:hidden p-4 border-b border-line-subtle flex flex-col gap-3 hover:bg-surface-alt/50 transition-colors">
-                        {/* Top: # SR + Names + Edit/Delete */}
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex items-center gap-2 min-w-0">
-                            <span className="num-tabular text-caption font-semibold text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md shrink-0 border border-line-subtle">
-                              #{formattedSeq}
-                            </span>
-                            <span className="text-body-md font-semibold text-ink tracking-tight truncate">
-                              {displayNames}
+                          {/* PAN Card Column */}
+                          <div className="col-span-2 self-center">
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-lg bg-surface-alt border border-line-strong font-mono text-[12px] font-bold text-ink tracking-wider shadow-2xs">
+                              {panDisplay}
                             </span>
                           </div>
 
-                          <div className="flex items-center gap-1 shrink-0">
+                          {/* Amount */}
+                          <div className="col-span-2 text-right self-center num-table text-ink font-semibold">
+                            {formatINR(perLotAmount)}
+                          </div>
+
+                          {/* Status */}
+                          <div className="col-span-2 text-center self-center">
+                            {renderStatusControl(currentStatus)}
+                          </div>
+
+                          {/* ACTIONS: EDIT & DELETE */}
+                          <div className="col-span-2 flex items-center justify-end gap-1.5">
                             {isMine ? (
                               <>
-                                <button
-                                  onClick={() =>
-                                    setEditingApp({
-                                      ipoId: ipo.id,
-                                      appId: app.id,
-                                      applicantName: applicantName,
-                                      lotCount: lotCount,
-                                    })
-                                  }
-                                  className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors"
+                                  <button
+                                    onClick={() => {
+                                      const initialCount = lotCount || 1;
+                                      const existingPans = app.panNumbers && app.panNumbers.length > 0 ? app.panNumbers : [app.panMasked || "ABCDE2741D"];
+                                      const initialPans = Array.from({ length: initialCount }).map((_, idx) => {
+                                        const raw = existingPans[idx] || existingPans[0] || "";
+                                        return raw && !raw.includes("X") && raw.length === 10
+                                          ? raw
+                                          : `ABCDE274${idx + 1}D`;
+                                      });
+                                      setEditingApp({
+                                        ipoId: ipo.id,
+                                        appId: app.id,
+                                        applicantName: applicantName,
+                                        lotCount: initialCount,
+                                        panNumbers: initialPans,
+                                      });
+                                    }}
+                                  className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors cursor-pointer"
                                   title="Edit Application"
                                 >
                                   <PencilSimple size={16} weight="bold" />
                                 </button>
                                 <button
                                   onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
-                                  className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors"
+                                  className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors cursor-pointer"
                                   title="Delete Application"
                                 >
                                   <Trash size={16} weight="bold" />
@@ -613,35 +690,92 @@ export function ApplicationsView() {
                           </div>
                         </div>
 
-                        {/* Middle: PAN + Amount */}
-                        <div className="flex items-center justify-between bg-surface-alt/70 p-2.5 rounded-xl border border-line-subtle text-small">
-                          <div>
-                            <span className="text-caption text-ink-tertiary block uppercase font-medium">PAN</span>
-                            <span className="font-mono font-medium text-ink">{app.panMasked || "ABCDE2741D"}</span>
-                          </div>
-                          <div className="text-right">
-                            <span className="text-caption text-ink-tertiary block uppercase font-medium">Total Amount</span>
-                            <span className="num-table font-semibold text-ink">{formatINR(app.totalContribution)}</span>
-                          </div>
-                        </div>
+                        {/* MOBILE CARD VIEW (< md screens) */}
+                        <div className="md:hidden p-4 border-b border-line-subtle flex flex-col gap-3 hover:bg-surface-alt/50 transition-colors">
+                          {/* Top: # SR + Names + Edit/Delete */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex items-center gap-2 min-w-0">
+                              <span className="num-tabular text-caption font-semibold text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md shrink-0 border border-line-subtle">
+                                #{formattedSeq}
+                              </span>
+                              <span className="text-body-md font-semibold text-ink tracking-tight truncate">
+                                {lotDisplayName}
+                              </span>
+                            </div>
 
-                        {/* Bottom: Status */}
-                        <div className="flex items-center justify-between pt-1">
-                          <span className="text-small font-medium text-ink-tertiary">Status</span>
-                          <div>{renderStatusControl(currentStatus)}</div>
+                            <div className="flex items-center gap-1 shrink-0">
+                              {isMine ? (
+                                <>
+                                  <button
+                                    onClick={() => {
+                                      const initialCount = lotCount || 1;
+                                      const existingPans = app.panNumbers && app.panNumbers.length > 0 ? app.panNumbers : [app.panMasked || "ABCDE2741D"];
+                                      const initialPans = Array.from({ length: initialCount }).map((_, idx) => {
+                                        const raw = existingPans[idx] || existingPans[0] || "";
+                                        return raw && !raw.includes("X") && raw.length === 10
+                                          ? raw
+                                          : `ABCDE274${idx + 1}D`;
+                                      });
+                                      setEditingApp({
+                                        ipoId: ipo.id,
+                                        appId: app.id,
+                                        applicantName: applicantName,
+                                        lotCount: initialCount,
+                                        panNumbers: initialPans,
+                                      });
+                                    }}
+                                    className="p-1.5 rounded-lg text-ink-tertiary hover:text-accent hover:bg-accent-soft transition-colors"
+                                    title="Edit Application"
+                                  >
+                                    <PencilSimple size={16} weight="bold" />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteApp(ipo.id, app.id, applicantName)}
+                                    className="p-1.5 rounded-lg text-ink-muted hover:text-negative hover:bg-negative-soft transition-colors"
+                                    title="Delete Application"
+                                  >
+                                    <Trash size={16} weight="bold" />
+                                  </button>
+                                </>
+                              ) : (
+                                <span className="text-caption font-medium text-ink-muted flex items-center gap-1">
+                                  <LockKey size={13} />
+                                  View Only
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Middle: PAN + Amount */}
+                          <div className="flex items-center justify-between bg-surface-alt/70 p-2.5 rounded-xl border border-line-subtle text-small">
+                            <div>
+                              <span className="text-caption text-ink-tertiary block uppercase font-medium">PAN</span>
+                              <span className="font-mono font-bold text-ink text-[12px] tracking-wider">{panDisplay}</span>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-caption text-ink-tertiary block uppercase font-medium">Total Amount</span>
+                              <span className="num-table font-semibold text-ink">{formatINR(perLotAmount)}</span>
+                            </div>
+                          </div>
+
+                          {/* Bottom: Status */}
+                          <div className="flex items-center justify-between pt-1">
+                            <span className="text-small font-medium text-ink-tertiary">Status</span>
+                            <div>{renderStatusControl(currentStatus)}</div>
+                          </div>
                         </div>
-                      </div>
-                    </React.Fragment>
-                  );
-                })
-              )}
+                      </React.Fragment>
+                    );
+                  });
+                });
+              })()}
             </div>
 
             {/* FOOTER NOTE */}
             <div className="px-6 py-3 bg-surface-alt/40 border-t border-line-subtle flex items-center justify-between text-caption font-medium text-ink-tertiary">
               <div className="flex items-center gap-1.5">
                 <CheckCircle size={14} className="text-positive" />
-                <span>Showing {filteredApps.length} application(s) for {ipo.name}</span>
+                <span>Showing {totalExpandedCount} application(s) for {ipo.name}</span>
               </div>
               <div className="flex items-center gap-1 text-ink-muted">
                 <LockKey size={13} />

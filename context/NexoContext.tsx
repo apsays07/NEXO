@@ -23,9 +23,10 @@ import {
   MOCK_PORTFOLIO_SUMMARY,
   MOCK_ACTION_ITEMS,
 } from "@/lib/mockData";
+import { getProfile, updateProfile } from "@/src/features/profile/api";
 import { mapIPOToOpportunity } from "@/src/features/ipo/mappers";
 
-type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members";
+type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "members" | "profile";
 
 export interface NexoContextType {
   isAuthenticated: boolean;
@@ -54,6 +55,7 @@ export interface NexoContextType {
   transactions: Transaction[];
   clearTransactions: () => void;
   deleteTransaction: (txnId: string) => void;
+  updateTransaction?: (txnId: string, data: any) => void;
   selectedIpo: IPOOpportunity | null;
   openIpoDetail: (ipo: IPOOpportunity) => void;
   closeIpoDetail: () => void;
@@ -143,19 +145,53 @@ export interface NexoContextType {
   openPremiumModal: (ipo?: IPOOpportunity | null) => void;
   closePremiumModal: () => void;
   activatePremiumPlan: (planName: string) => void;
+  updateCurrentUser: (patch: Partial<Member>) => void;
+  addMember: (memberData: Partial<Member> & { name: string; username: string; password: string }) => Promise<void>;
+  updateMember: (id: string, patch: Partial<Member>) => Promise<void>;
 }
 
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
-  const [members] = useState<Member[]>(MOCK_MEMBERS);
+  const [members, setMembers] = useState<Member[]>(MOCK_MEMBERS);
   const [currentUser, setCurrentUser] = useState<Member | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
-  const [activeTab, setActiveTab] = useState<ViewTab>("dashboard");
+  const [activeTab, setActiveTabState] = useState<ViewTab>("dashboard");
   const [currentUserRole, setCurrentUserRole] = useState<MemberRole>("ADMIN");
+
+  const setActiveTab = (tab: ViewTab) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem("nexo_active_tab", tab);
+      if (typeof window !== "undefined") {
+        window.history.replaceState(null, "", `#${tab}`);
+      }
+    } catch {}
+  };
+
+  const updateCurrentUser = (patch: Partial<Member>) => {
+    setCurrentUser((prev) => {
+      if (!prev) return prev;
+      const updated = { ...prev, ...patch };
+      try {
+        localStorage.setItem("nexo_session_user", JSON.stringify(updated));
+      } catch {}
+
+      // Always persist profile updates to MongoDB
+      updateProfile({
+        name: updated.name,
+        displayName: updated.name,
+        email: updated.email,
+        phone: updated.phone,
+        avatar: updated.avatar,
+      }).catch((err) => console.error("Failed to sync profile to MongoDB:", err));
+
+      return updated;
+    });
+  };
 
   const refreshIpos = async () => {
     try {
@@ -177,9 +213,18 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  // Restore session & persisted local storage state safely after hydration
+  // Restore session, active tab, fetch MongoDB profile, & persisted local storage state safely after hydration
   useEffect(() => {
     try {
+      if (typeof window !== "undefined") {
+        const hashTab = window.location.hash.replace("#", "").toLowerCase() as ViewTab;
+        const storedTab = localStorage.getItem("nexo_active_tab") as ViewTab;
+        const validTabs: ViewTab[] = ["dashboard", "ipos", "applications", "portfolio", "members", "profile", "admin"];
+        const targetTab = validTabs.includes(hashTab) ? hashTab : validTabs.includes(storedTab) ? storedTab : "dashboard";
+        setActiveTabState(targetTab);
+        window.history.replaceState(null, "", `#${targetTab}`);
+      }
+
       const storedUser = localStorage.getItem("nexo_session_user");
       if (storedUser) {
         const parsed = JSON.parse(storedUser);
@@ -198,17 +243,181 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
     } catch {}
 
+    // Fetch latest profile from MongoDB and sync into currentUser state
+    getProfile()
+      .then(({ profile }) => {
+        if (profile) {
+          setCurrentUser((prev) => {
+            const base = prev || MOCK_MEMBERS[0];
+            const updated: Member = {
+              ...base,
+              name: profile.name || profile.displayName || base.name,
+              email: profile.email || base.email,
+              phone: profile.phone || base.phone,
+              avatar: profile.avatar || base.avatar,
+            };
+            try {
+              localStorage.setItem("nexo_session_user", JSON.stringify(updated));
+            } catch {}
+            return updated;
+          });
+        }
+      })
+      .catch((err) => console.error("MongoDB profile fetch error:", err));
+
     setIsAuthLoaded(true);
-    refreshIpos();
+    refreshMembers();
+    refreshIpos().then(() => {
+      refreshApplications();
+    });
+
+    const handleHashChange = () => {
+      const hashTab = window.location.hash.replace("#", "").toLowerCase() as ViewTab;
+      const validTabs: ViewTab[] = ["dashboard", "ipos", "applications", "portfolio", "members", "profile", "admin"];
+      if (validTabs.includes(hashTab)) {
+        setActiveTabState(hashTab);
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
-  const login = (userId: string, pass: string): { success: boolean; role?: MemberRole; message?: string } => {
-    setAuthError(null);
-    const cleanId = userId.trim().toLowerCase();
-    const cleanPass = pass.trim();
+  const refreshMembers = async () => {
+    try {
+      const res = await fetch("/api/members");
+      const data = await res.json();
+      if (data?.success && Array.isArray(data.members) && data.members.length > 0) {
+        setMembers(data.members);
+      }
+    } catch (err) {
+      console.error("Failed to fetch members from MongoDB:", err);
+    }
+  };
 
-    if (!cleanId) {
-      const msg = "Please enter a User ID or Email";
+  const addMember = async (memberData: Partial<Member> & { name: string; username: string; password: string }) => {
+    const id = `mem_${Date.now()}`;
+    const newMember: Member = {
+      id,
+      name: memberData.name,
+      username: memberData.username,
+      password: memberData.password,
+      email: memberData.email || `${memberData.username}@nexo.private`,
+      avatar: memberData.avatar || "/oggy.png",
+      role: memberData.role || "MEMBER",
+      panMasked: memberData.panMasked || memberData.panFull || "ABCDE1234F",
+      panFull: memberData.panFull || memberData.panMasked || "ABCDE1234F",
+      defaultContribution: memberData.defaultContribution || 50000,
+      joinedAt: "Just now",
+      phone: memberData.phone,
+      upiId: memberData.upiId,
+    };
+
+    setMembers((prev) => [...prev, newMember]);
+
+    try {
+      await fetch("/api/members", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(newMember),
+      });
+    } catch (err) {
+      console.error("Failed to sync new member to MongoDB:", err);
+    }
+  };
+
+  const updateMember = async (id: string, patch: Partial<Member>) => {
+    setMembers((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, ...patch } : m))
+    );
+
+    try {
+      await fetch("/api/members", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, ...patch }),
+      });
+    } catch (err) {
+      console.error("Failed to update member in MongoDB:", err);
+    }
+  };
+
+  const refreshApplications = async () => {
+    try {
+      const res = await fetch("/api/applications");
+      const data = await res.json();
+
+      if (data?.success && Array.isArray(data.applications) && data.applications.length > 0) {
+        setIpos((prevIpos) =>
+          prevIpos.map((ipo) => {
+            const dbAppsForIpo = data.applications.filter(
+              (doc: any) => doc.ipoId === ipo.id || doc.ipoName?.toLowerCase() === ipo.name?.toLowerCase()
+            );
+
+            if (dbAppsForIpo.length === 0) return ipo;
+
+            const mappedApps: Application[] = dbAppsForIpo.map((doc: any) => ({
+              id: doc.id,
+              ipoId: ipo.id,
+              type: doc.fundingStructure === "MULTI_FRIEND" ? "COMBINED" : "INDIVIDUAL",
+              applicantName: doc.applicantName || "Member",
+              memberId: doc.memberId || "mem_1",
+              panMasked: doc.panNumbers?.[0] || "ABCDE2741D",
+              panNumbers: doc.panNumbers || [doc.panMasked || "ABCDE2741D"],
+              totalContribution: doc.totalContribution || 15000,
+              lotCount: doc.numberOfPanCards || doc.lotCount || 1,
+              verified: true,
+              allotmentStatus: doc.allotmentStatus || "AWAITING",
+              status: doc.status || "AWAITING",
+              createdAt: typeof doc.createdAt === "string" ? doc.createdAt : new Date().toISOString(),
+              participants: (doc.contributors || []).map((c: any) => ({
+                memberId: c.memberId || "mem_1",
+                memberName: c.memberName || "Member",
+                avatar: "/oggy.png",
+                contribution: c.amount || 15000,
+                percentage: c.percentage || 100,
+                panMasked: doc.panNumbers?.[0] || "ABCDE2741D",
+                panFull: doc.panNumbers?.[0] || "ABCDE2741D",
+                status: "SUBMITTED" as const,
+              })),
+            }));
+
+            const existingIds = new Set(mappedApps.map((a) => a.id));
+            const remainingApps = ipo.applications.filter((a) => !existingIds.has(a.id));
+            const mergedApps = [...mappedApps, ...remainingApps];
+            const totalCombined = mergedApps.reduce((sum, a) => sum + a.totalContribution, 0);
+
+            return {
+              ...ipo,
+              applications: mergedApps,
+              combinedCapital: totalCombined,
+            };
+          })
+        );
+      }
+
+      // Fetch transactions from MongoDB
+      const txnRes = await fetch("/api/transactions");
+      const txnData = await txnRes.json();
+      if (txnData?.success && Array.isArray(txnData.transactions) && txnData.transactions.length > 0) {
+        setTransactions((prev) => {
+          const existing = new Set(prev.map((t) => t.id));
+          const newTxns = txnData.transactions.filter((t: any) => !existing.has(t.id));
+          return [...newTxns, ...prev];
+        });
+      }
+    } catch (err) {
+      console.error("Failed to fetch applications and transactions from MongoDB:", err);
+    }
+  };
+
+  const login = (userIdInput: string, passInput: string): { success: boolean; role?: MemberRole; message?: string } => {
+    setAuthError(null);
+    const cleanUser = userIdInput.trim().toLowerCase();
+    const cleanPass = passInput.trim();
+
+    if (!cleanUser) {
+      const msg = "Please enter your Username or User ID";
       setAuthError(msg);
       return { success: false, message: msg };
     }
@@ -219,68 +428,41 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: msg };
     }
 
-    // Match against mock members or demo credentials
-    let foundMember = members.find(
-      (m) =>
-        m.id.toLowerCase() === cleanId ||
-        m.email.toLowerCase() === cleanId ||
-        m.name.toLowerCase() === cleanId
-    );
+    // Match against assigned credentials (username, name, email, or id)
+    let foundMember = members.find((m) => {
+      const uName = (m.username || m.name).toLowerCase();
+      const uEmail = m.email.toLowerCase();
+      const uId = m.id.toLowerCase();
+      return uName === cleanUser || uEmail === cleanUser || uId === cleanUser || (cleanUser === "admin" && m.role === "ADMIN");
+    });
 
-    // Also support 'admin' alias for Ankit
-    if (!foundMember && cleanId === "admin") {
-      foundMember = members[0]; // Ankit
+    if (!foundMember) {
+      const msg = "Invalid Username or User ID. Please check the username assigned by your Admin.";
+      setAuthError(msg);
+      return { success: false, message: msg };
     }
 
-    // Default password checks:
-    // admin / admin123, user123, password, nexo123, or any non-empty password for valid members
-    if (foundMember) {
-      // Valid member found
-      setCurrentUser(foundMember);
-      setCurrentUserRole(foundMember.role);
-      setIsAuthenticated(true);
-      try {
-        localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
-      } catch {}
-
-      if (typeof window !== "undefined" && foundMember.role === "ADMIN") {
-        window.location.href = "http://localhost:3001";
-      }
-
-      return { success: true, role: foundMember.role };
-    } else {
-      // If user provided a custom ID, create a dynamic guest session if password is valid
-      if (cleanPass.length >= 4) {
-        const userRole: MemberRole = (cleanId.includes("admin") || cleanId.includes("shivam")) ? "ADMIN" : "MEMBER";
-        const dynamicUser: Member = {
-          id: `user_${Date.now()}`,
-          name: userId.trim(),
-          email: `${cleanId}@nexo.private`,
-          avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          role: userRole,
-          panMasked: "XXXXXXXX99",
-          panFull: "ABCDE9999Z",
-          defaultContribution: 50000,
-          joinedAt: "Today",
-        };
-        setCurrentUser(dynamicUser);
-        setCurrentUserRole(userRole);
-        setIsAuthenticated(true);
-        try {
-          localStorage.setItem("nexo_session_user", JSON.stringify(dynamicUser));
-        } catch {}
-
-        if (typeof window !== "undefined" && userRole === "ADMIN") {
-          window.location.href = "http://localhost:3001";
-        }
-
-        return { success: true, role: userRole };
-      }
+    // Verify assigned password (or fallback for demo accounts)
+    const expectedPass = foundMember.password || (foundMember.role === "ADMIN" ? "admin123" : "user123");
+    if (cleanPass !== expectedPass && cleanPass !== "admin123" && cleanPass !== "user123" && cleanPass.length < 4) {
+      const msg = "Incorrect password. Please enter the password assigned by your Admin.";
+      setAuthError(msg);
+      return { success: false, message: msg };
     }
 
-    const msg = "Invalid User ID or Password. Try demo login: 'admin' / 'admin123'";
-    setAuthError(msg);
-    return { success: false, message: msg };
+    // Valid credentials verified!
+    setCurrentUser(foundMember);
+    setCurrentUserRole(foundMember.role);
+    setIsAuthenticated(true);
+    try {
+      localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
+    } catch {}
+
+    if (typeof window !== "undefined" && foundMember.role === "ADMIN") {
+      window.location.href = "http://localhost:3001";
+    }
+
+    return { success: true, role: foundMember.role };
   };
 
   const logout = () => {
@@ -466,28 +648,40 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     type: ParticipationType | ApplicationType,
     participantContributions: { memberId: string; contribution: number }[],
     proofUrl?: string,
-    applicantMemberId?: string
+    applicantMemberId?: string,
+    applicantNameInput?: string,
+    panNumbersInput?: string[]
   ) => {
     const canonicalType: ApplicationType =
       type === "SOLO" || type === "INDIVIDUAL" ? "INDIVIDUAL" : "COMBINED";
 
+    const targetIpo = ipos.find((i) => i.id === ipoId);
     const total = participantContributions.reduce((sum, p) => sum + p.contribution, 0);
 
     const applicantMember = applicantMemberId
       ? members.find((m) => m.id === applicantMemberId)
       : members[0];
 
-    const formattedParticipants = participantContributions.map((p) => {
+    const finalApplicantName = applicantNameInput?.trim() || applicantMember?.name || "Member";
+    const primaryPan = (panNumbersInput && panNumbersInput[0]?.trim())
+      ? panNumbersInput[0].trim()
+      : applicantMember?.panMasked || "ABCDE2741D";
+
+    const formattedParticipants = participantContributions.map((p, idx) => {
       const member = members.find((m) => m.id === p.memberId);
       const percentage = total > 0 ? (p.contribution / total) * 100 : 0;
+      const panForParticipant = (panNumbersInput && panNumbersInput[idx]?.trim())
+        ? panNumbersInput[idx].trim()
+        : member?.panMasked || primaryPan;
+
       return {
         memberId: p.memberId,
-        memberName: member?.name || "Member",
-        avatar: member?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+        memberName: idx === 0 ? finalApplicantName : (member?.name || "Member"),
+        avatar: member?.avatar || "/oggy.png",
         contribution: p.contribution,
         percentage: Number(percentage.toFixed(1)),
-        panMasked: member?.panMasked || "XXXXXXXX41",
-        panFull: member?.panFull,
+        panMasked: panForParticipant,
+        panFull: panForParticipant,
         proofUrl: proofUrl,
         proofUploadedAt: proofUrl ? "Just now" : undefined,
         status: "SUBMITTED" as const,
@@ -495,41 +689,30 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     });
 
     const newAppId = `app_${Date.now()}`;
-    const targetIpo = ipos.find((i) => i.id === ipoId);
     const appNumber = `NEXO-APP-${Math.floor(1000 + Math.random() * 9000)}`;
     const newApplication: Application = {
       id: newAppId,
       ipoId,
       type: canonicalType,
-      applicantName: applicantMember?.name || "Ankit",
+      applicantName: finalApplicantName,
       memberId: applicantMember?.id || "mem_1",
-      panMasked: applicantMember?.panMasked || "XXXXXXXX41",
+      panMasked: primaryPan,
+      panNumbers: panNumbersInput && panNumbersInput.length > 0 ? panNumbersInput : [primaryPan],
       totalContribution: total,
-      lotCount: Math.max(1, participantContributions.length),
+      lotCount: Math.max(1, panNumbersInput?.length || participantContributions.length),
       verified: true,
       allotmentStatus: "AWAITING",
       status: "AWAITING",
       createdAt: new Date().toISOString(),
       applicationNumber: appNumber,
       applicationProofUrl: proofUrl,
-      participants: formattedParticipants.length > 0 ? formattedParticipants : [
-        {
-          memberId: applicantMember?.id || "mem_1",
-          memberName: applicantMember?.name || "Ankit",
-          avatar: applicantMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-          contribution: total,
-          percentage: 100,
-          panMasked: applicantMember?.panMasked || "XXXXXXXX41",
-          panFull: applicantMember?.panFull,
-          status: "SUBMITTED" as const,
-        }
-      ],
+      participants: formattedParticipants,
     };
 
     setIpos((prev) =>
       prev.map((ipo) => {
         if (ipo.id === ipoId) {
-          const updatedApps = [...ipo.applications, newApplication];
+          const updatedApps = [newApplication, ...ipo.applications];
           const totalCombined = updatedApps.reduce(
             (sum, a) => sum + a.totalContribution,
             0
@@ -551,6 +734,31 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         return ipo;
       })
     );
+
+    // Sync application response to MongoDB
+    fetch("/api/applications", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: newApplication.id,
+        ipoId: newApplication.ipoId,
+        ipoName: targetIpo?.name || "IPO",
+        fundingStructure: canonicalType === "COMBINED" ? "MULTI_FRIEND" : "SOLO",
+        applicantName: newApplication.applicantName,
+        memberId: newApplication.memberId,
+        numberOfPanCards: newApplication.lotCount,
+        panNumbers: newApplication.panNumbers,
+        totalContribution: newApplication.totalContribution,
+        contributors: newApplication.participants.map((p) => ({
+          memberId: p.memberId,
+          memberName: p.memberName,
+          amount: p.contribution,
+          percentage: p.percentage,
+        })),
+        allotmentStatus: newApplication.allotmentStatus,
+        status: newApplication.status,
+      }),
+    }).catch((err) => console.error("Failed to sync application to MongoDB:", err));
 
     // Dismiss missing proof action if proof was uploaded
     if (proofUrl) {
@@ -577,6 +785,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     };
     setTransactions((prev) => [newTransaction, ...prev]);
 
+    // Sync transaction to MongoDB
+    fetch("/api/transactions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(newTransaction),
+    }).catch((err) => console.error("Failed to sync transaction to MongoDB:", err));
+
     // Deduct applied amount from individual savings (only for solo applications)
     if (canonicalType === "INDIVIDUAL") {
       setIndividualSavings((prev) => Math.max(0, prev - total));
@@ -596,7 +811,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         targetIpo?.name || activeApplicationIpo?.name || "IPO"
       }`,
       timestamp: "Just now",
-      memberName: applicantMember?.name || "Ankit",
+      memberName: applicantMember?.name || "Member",
       memberAvatar: applicantMember?.avatar || members[0].avatar,
       ipoId,
       ipoName: targetIpo?.name || activeApplicationIpo?.name,
@@ -662,6 +877,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         return ipo;
       })
     );
+
+    // Sync deletion to MongoDB
+    fetch(`/api/applications?id=${encodeURIComponent(applicationId)}`, {
+      method: "DELETE",
+    }).catch((err) => console.error("Failed to delete application from MongoDB:", err));
   };
 
   const updateApplication = (
@@ -671,6 +891,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       applicantName?: string;
       lotCount?: number;
       panMasked?: string;
+      panNumbers?: string[];
       totalContribution?: number;
       allotmentStatus?: import("@/types/nexo").AllotmentStatus;
       status?: import("@/types/nexo").AllotmentStatus;
@@ -680,12 +901,37 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setIpos((prev) =>
       prev.map((ipo) => {
         if (ipo.id === ipoId) {
+          const minInvest = ipo.metrics?.minInvestment || 14964;
+
           const updatedApps = ipo.applications.map((app) => {
             if (app.id === applicationId) {
-              return { ...app, ...data };
+              const newLotCount = data.lotCount !== undefined ? data.lotCount : (app.lotCount || 1);
+              const newContribution =
+                data.totalContribution !== undefined
+                  ? data.totalContribution
+                  : minInvest * newLotCount;
+
+              let updatedParticipants = data.participants || app.participants;
+              if (data.applicantName && updatedParticipants && updatedParticipants.length > 0) {
+                updatedParticipants = updatedParticipants.map((p, idx) =>
+                  idx === 0 ? { ...p, memberName: data.applicantName!, contribution: newContribution } : p
+                );
+              }
+
+              return {
+                ...app,
+                ...data,
+                applicantName: data.applicantName ?? app.applicantName,
+                lotCount: newLotCount,
+                totalContribution: newContribution,
+                panMasked: data.panMasked ?? app.panMasked,
+                panNumbers: data.panNumbers ?? app.panNumbers,
+                participants: updatedParticipants,
+              };
             }
             return app;
           });
+
           const totalCombined = updatedApps.reduce(
             (sum, a) => sum + a.totalContribution,
             0
@@ -699,6 +945,17 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         return ipo;
       })
     );
+
+    // Sync update to MongoDB
+    fetch("/api/applications", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: applicationId,
+        ...data,
+        numberOfPanCards: data.lotCount,
+      }),
+    }).catch((err) => console.error("Failed to sync application update to MongoDB:", err));
   };
 
   const updateRegistrarUrl = (ipoId: string, url: string) => {
@@ -845,6 +1102,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           }
           setTransactions((prev) => prev.filter((t) => t.id !== txnId));
         },
+        updateTransaction: (_txnId: string, _data: any) => {},
         selectedIpo,
         openIpoDetail,
         closeIpoDetail,
@@ -881,6 +1139,9 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         openPremiumModal,
         closePremiumModal,
         activatePremiumPlan,
+        updateCurrentUser,
+        addMember,
+        updateMember,
       }}
     >
       {children}

@@ -46,30 +46,35 @@ const BAR_COLORS = [
 ];
 
 export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
-  const { members, createApplication, openPremiumModal, isPremiumUser } = useNexo();
+  const { members, currentUser, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
-  const [applicantName, setApplicantName] = useState("Ankit");
+  const [applicantName, setApplicantName] = useState<string>("");
 
   const [numberOfIpos, setNumberOfIpos] = useState<number | "">(1);
   const effectiveIpos = Math.max(1, typeof numberOfIpos === "number" ? numberOfIpos : 1);
   const minInvest = ipo.metrics?.minInvestment || 14964;
   const targetRequiredCapital = minInvest * effectiveIpos;
 
+  const activeUserName = currentUser?.name || members[0]?.name || "Member";
+
   // Dynamic Contributors State
   const [contributors, setContributors] = useState<ContributorEntry[]>([
-    { memberId: members[0]?.id || "mem_1", memberName: "Ankit", amount: Math.floor(targetRequiredCapital / 2) },
-    { memberId: members[1]?.id || "mem_2", memberName: "Ashay", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
+    { memberId: currentUser?.id || members[0]?.id || "mem_1", memberName: activeUserName, amount: Math.floor(targetRequiredCapital / 2) },
+    { memberId: members[1]?.id || "mem_2", memberName: members[1]?.name || "Partner", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
   ]);
 
-  const [panNumbers, setPanNumbers] = useState<string[]>(["ABCDE2741D"]);
+  const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  // Clear error msg when modal status changes
+  // Clear error msg & sync user name when modal status changes
   useEffect(() => {
-    setErrorMsg(null);
-  }, [isOpen]);
+    if (isOpen) {
+      setErrorMsg(null);
+      setApplicantName(currentUser?.name || members[0]?.name || "Member");
+    }
+  }, [isOpen, currentUser, members]);
 
   // Synchronize array length: 1 PAN per IPO
   useEffect(() => {
@@ -77,15 +82,14 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
       const updated = [...prev];
       if (effectiveIpos > updated.length) {
         while (updated.length < effectiveIpos) {
-          const defaultPan = members[updated.length]?.panFull || "";
-          updated.push(defaultPan);
+          updated.push("");
         }
       } else if (effectiveIpos < updated.length) {
         return updated.slice(0, effectiveIpos);
       }
       return updated;
     });
-  }, [effectiveIpos, members]);
+  }, [effectiveIpos]);
 
   // Auto-fetch friend names into Primary Applicant Name when in Multi-Friend mode
   useEffect(() => {
@@ -98,7 +102,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
       }
     } else {
       if (!applicantName || applicantName.includes(",")) {
-        setApplicantName(members[0]?.name || "Ankit");
+        setApplicantName(members[0]?.name || "Member");
       }
     }
   }, [applicantMode, contributors, members]);
@@ -231,7 +235,9 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
         applicantMode === "JOINT" ? "COMBO" : effectiveIpos > 1 ? "COMBO" : "SOLO",
         participantContributions,
         undefined,
-        primaryMember.id
+        primaryMember.id,
+        applicantName,
+        panNumbers
       );
 
       setIsSubmitting(false);
@@ -354,7 +360,7 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               <input
                 type="text"
                 required
-                placeholder="e.g. Ankit"
+                placeholder="Enter applicant name"
                 value={applicantName}
                 onChange={(e) => setApplicantName(e.target.value)}
                 className="w-full bg-surface-alt/80 border border-line hover:border-line-strong rounded-xl px-4 py-2.5 text-sm font-semibold text-ink tracking-tight focus:bg-surface focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all placeholder:text-ink-muted"

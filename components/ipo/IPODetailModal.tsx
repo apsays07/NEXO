@@ -180,6 +180,12 @@ export function IPODetailModal({ ipo, isOpen, onClose, onApply }: IPODetailModal
                   {ipo.metrics.issueSize || "—"}
                 </p>
               </div>
+              <div>
+                <p className="text-caption text-ink-secondary font-normal mb-1">Estimated GMP</p>
+                <p className="text-small font-bold text-positive num-tabular">
+                  +{(ipo.metrics?.gmpPercent ?? 18.5).toFixed(1)}%
+                </p>
+              </div>
               {ipo.metrics.faceValue !== undefined && (
                 <div>
                   <p className="text-caption text-ink-secondary font-normal mb-1">Face value</p>

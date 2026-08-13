@@ -47,6 +47,7 @@ export function mapDocumentToIPO(doc: any): IPO {
     decision: rest.decision || "APPLY",
     stage: rest.stage || "APPLICATION",
     thesis: rest.thesis || "",
+    gmpPercent: rest.gmpPercent !== undefined ? Number(rest.gmpPercent) : 18.5,
     createdBy: rest.createdBy || "admin",
     createdAt: rest.createdAt || new Date().toISOString(),
     updatedAt: rest.updatedAt || new Date().toISOString(),
@@ -72,6 +73,8 @@ export function mapIPOToOpportunity(ipo: IPO, existingApps: any[] = []): any {
     }
   } catch (_e) {}
 
+  const gmpVal = ipo.gmpPercent !== undefined ? ipo.gmpPercent : 18.5;
+
   return {
     id: ipo.id,
     name: ipo.name,
@@ -92,6 +95,7 @@ export function mapIPOToOpportunity(ipo: IPO, existingApps: any[] = []): any {
       closeDate: ipo.closeDate || "14 Aug 2026",
       allotmentDate: ipo.allotmentDate || "19 Aug 2026",
       listingDate: ipo.listingDate || "21 Aug 2026",
+      gmpPercent: gmpVal,
     },
     applications: existingApps,
     history: [

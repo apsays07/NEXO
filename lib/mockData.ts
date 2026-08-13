@@ -11,9 +11,9 @@ export const MOCK_MEMBERS: Member[] = [
     id: "mem_1",
     name: "Ankit",
     email: "ankit@nexo.private",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
+    avatar: "/oggy.png",
     role: "ADMIN",
-    panMasked: "XXXXXXXX41",
+    panMasked: "ABCDE1234F",
     panFull: "ABCDE1234F",
     defaultContribution: 50000,
     joinedAt: "Jan 2025",
@@ -23,9 +23,9 @@ export const MOCK_MEMBERS: Member[] = [
     id: "mem_2",
     name: "Ashay",
     email: "ashay@nexo.private",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
+    avatar: "/jack.png",
     role: "MEMBER",
-    panMasked: "XXXXXXXX5G",
+    panMasked: "BCDEF2345G",
     panFull: "BCDEF2345G",
     defaultContribution: 50000,
     joinedAt: "Jan 2025",
@@ -34,9 +34,9 @@ export const MOCK_MEMBERS: Member[] = [
     id: "mem_3",
     name: "Ranveer",
     email: "ranveer@nexo.private",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
+    avatar: "/sinchan.png",
     role: "MEMBER",
-    panMasked: "XXXXXXXX6H",
+    panMasked: "CDEFG3456H",
     panFull: "CDEFG3456H",
     defaultContribution: 30000,
     joinedAt: "Feb 2025",
@@ -45,9 +45,9 @@ export const MOCK_MEMBERS: Member[] = [
     id: "mem_4",
     name: "Priya",
     email: "priya@nexo.private",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80",
+    avatar: "/japlu.png",
     role: "MEMBER",
-    panMasked: "XXXXXXXX7I",
+    panMasked: "DEFGH4567I",
     panFull: "DEFGH4567I",
     defaultContribution: 40000,
     joinedAt: "Mar 2025",
@@ -56,9 +56,9 @@ export const MOCK_MEMBERS: Member[] = [
     id: "mem_5",
     name: "Siddharth",
     email: "siddharth@nexo.private",
-    avatar: "https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?w=150&auto=format&fit=crop&q=80",
+    avatar: "/doremon.png",
     role: "MEMBER",
-    panMasked: "XXXXXXXX8J",
+    panMasked: "EFGHI5678J",
     panFull: "EFGHI5678J",
     defaultContribution: 50000,
     joinedAt: "Apr 2025",
@@ -771,4 +771,24 @@ export function formatINR(amount: number, showSign = false): string {
 export function maskPAN(pan: string): string {
   if (!pan || pan.length < 10) return "XXXXXXXX41";
   return `XXXXXX${pan.slice(-4)}`;
+}
+
+/**
+ * Formats any date string into "23 august 26" style.
+ * Handles ISO (2026-07-23), natural (22 Aug 2026), etc.
+ */
+export function formatDate(d?: string | null): string {
+  if (!d || !d.trim()) return "—";
+  const s = d.trim();
+
+  // Try native Date parse
+  const parsed = new Date(s);
+  if (!isNaN(parsed.getTime())) {
+    const day   = parsed.getUTCDate();
+    const month = parsed.toLocaleString("en-US", { month: "long", timeZone: "UTC" }).toLowerCase();
+    const year  = String(parsed.getUTCFullYear()).slice(2);
+    return `${day} ${month} ${year}`;
+  }
+
+  return s;
 }

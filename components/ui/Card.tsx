@@ -37,6 +37,7 @@ interface MetricCardProps {
   change?: string;
   changeType?: "positive" | "negative" | "neutral";
   icon?: React.ReactNode;
+  action?: React.ReactNode;
 }
 
 export function MetricCard({
@@ -46,6 +47,7 @@ export function MetricCard({
   change,
   changeType = "positive",
   icon,
+  action,
 }: MetricCardProps) {
   return (
     <Card className="flex flex-col justify-between">
@@ -53,11 +55,14 @@ export function MetricCard({
         <span className="text-xs font-medium text-ink-secondary uppercase tracking-wider">
           {label}
         </span>
-        {icon && (
-          <div className="p-2 rounded-xl bg-surface-alt text-ink-secondary border border-line">
-            {icon}
-          </div>
-        )}
+        <div className="flex items-center gap-2">
+          {action}
+          {icon && (
+            <div className="p-2 rounded-xl bg-surface-alt text-ink-secondary border border-line">
+              {icon}
+            </div>
+          )}
+        </div>
       </div>
 
       <div>

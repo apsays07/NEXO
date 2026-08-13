@@ -5,6 +5,7 @@ import { useNexo } from "@/context/NexoContext";
 import { IPOOpportunity } from "@/types/nexo";
 import { Plus, Trash, CheckCircle, WarningCircle, Buildings, ArrowLeft } from "@phosphor-icons/react";
 import { AddIPODrawer } from "./AddIPODrawer";
+import { formatDate } from "@/lib/mockData";
 
 export function AdminIPOManagement() {
   const { ipos, removeIPO, currentMember, currentUser, currentUserRole } = useNexo();
@@ -158,7 +159,7 @@ export function AdminIPOManagement() {
                     <div>
                       Closes:{" "}
                       <span className="font-bold text-slate-900">
-                        {ipo.metrics.closeDate || "Soon"}
+                        {formatDate(ipo.metrics.closeDate) || "Soon"}
                       </span>
                     </div>
                   </div>

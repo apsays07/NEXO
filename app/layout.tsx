@@ -1,8 +1,16 @@
 import type { Metadata } from "next";
+import { Geist } from "next/font/google";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { NexoProvider } from "@/context/NexoContext";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
+
+const geist = Geist({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist",
+  weight: ["400", "500", "600", "700", "800"],
+});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -12,7 +20,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NEXO • Private Investment Workspace",
+  title: "NEXO",
   description:
     "Private wealth operating system for trusted group IPO discovery, evaluation, solo/combo participation, and performance tracking.",
   icons: {
@@ -30,7 +38,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${geist.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Inline script to prevent flash of wrong theme */}
         <script

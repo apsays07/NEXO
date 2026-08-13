@@ -24,6 +24,8 @@ export type MemberRole = "ADMIN" | "MEMBER";
 export interface Member {
   id: string;
   name: string;
+  username?: string;
+  password?: string;
   email: string;
   avatar: string;
   role: MemberRole;
@@ -64,10 +66,9 @@ export interface Application {
   verified?: boolean;        // Checkmark ✓
   status?: "DRAFT" | "SUBMITTED" | "VERIFIED" | "ALLOTTED" | "REFUNDED" | AllotmentStatus;
   allotmentStatus: AllotmentStatus;
-  createdAt: string;
-  participants: ApplicationParticipant[];
   applicationProofUrl?: string;
   applicationNumber?: string;
+  panNumbers?: string[];
 }
 
 export interface FinancialMetrics {
@@ -188,6 +189,8 @@ export interface Transaction {
   ipoName: string;
   type: "SOLO" | "COMBO";
   amount: number;
+  groupTotalPool?: number;
+  panMasked?: string;
   applicationNumber: string;
   participants: string[]; // member names
   createdAt: string; // ISO string

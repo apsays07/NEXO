@@ -50,7 +50,7 @@ export function IPOWorkspaceView() {
     ipo.name.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const activeUserName = currentMember?.name || "Niranjan";
+  const activeUserName = currentMember?.name || "Member";
   const activeUserId = currentMember?.id || "mem_1";
 
   // Calculate summary metrics

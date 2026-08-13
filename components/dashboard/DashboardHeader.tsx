@@ -2,7 +2,7 @@
 
 import React from "react";
 import { useNexo } from "@/context/NexoContext";
-import { CalendarBlank, ShieldCheck } from "@phosphor-icons/react";
+import { CalendarBlank } from "@phosphor-icons/react";
 
 function getGreeting() {
   const hour = new Date().getHours();
@@ -12,8 +12,8 @@ function getGreeting() {
 }
 
 export function DashboardHeader() {
-  const { members } = useNexo();
-  const currentUser = members[0] || { name: "Ankit", role: "ADMIN" };
+  const { currentUser: loggedInUser, members } = useNexo();
+  const currentUser = loggedInUser || members[0] || { name: "Member", role: "MEMBER" };
 
   const formattedDate = new Date().toLocaleDateString("en-IN", {
     weekday: "long",
@@ -26,15 +26,6 @@ export function DashboardHeader() {
     <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-5 pb-6 border-b border-line font-sans">
       {/* Left: Greeting */}
       <div className="space-y-2">
-        {/* Status pill row */}
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-accent bg-accent-soft border border-[#BFDBFE] px-2.5 py-1 rounded-full">
-            <ShieldCheck size={12} weight="fill" /> Group Verified
-          </span>
-          <span className="text-[11px] text-ink-tertiary font-medium">
-            {currentUser.name} · {currentUser.role === "ADMIN" ? "Admin" : "Member"}
-          </span>
-        </div>
 
         {/* Headline */}
         <h1 className="text-[28px] sm:text-[32px] leading-[1.2] font-bold text-ink tracking-tight">

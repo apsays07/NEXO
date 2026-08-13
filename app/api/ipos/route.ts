@@ -72,6 +72,7 @@ export async function POST(req: Request) {
       decision = "APPLY",
       stage = "APPLICATION",
       thesis = "",
+      gmpPercent,
       createdBy = "admin",
     } = body;
 
@@ -161,6 +162,7 @@ export async function POST(req: Request) {
       decision,
       stage,
       thesis: typeof thesis === "string" ? thesis.trim() : "",
+      gmpPercent: typeof gmpPercent === "number" ? gmpPercent : 18.5,
       createdBy: String(createdBy || "admin"),
       createdAt: now,
       updatedAt: now,

@@ -2,7 +2,7 @@
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { useNexo } from "@/context/NexoContext";
 import {
   SquaresFour,
@@ -11,15 +11,20 @@ import {
   ChartPie,
   Users,
   DotsThree,
-  Lightning,
-  Gear,
-  SignOut,
+  CaretUp,
 } from "@phosphor-icons/react";
 import { MoreDrawer } from "./MoreDrawer";
+import { ProfileAvatar } from "../profile/ProfileAvatar";
+import { ProfilePopover } from "../profile/ProfilePopover";
+import { KeyboardShortcutsModal } from "../profile/KeyboardShortcutsModal";
 
 export function Sidebar() {
   const { activeTab, setActiveTab, members, ipos, currentUser: sessionUser, logout } = useNexo();
   const [isMoreOpen, setIsMoreOpen] = useState(false);
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
+  const popoverRef = useRef<HTMLDivElement>(null);
+
   const activeUser = sessionUser || members[0];
 
   const workspaceNav = [
@@ -49,25 +54,11 @@ export function Sidebar() {
         <div>
           {/* Brand Header */}
           <div className="p-4 border-b border-line/80 bg-surface/40 flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-black text-sm shadow-md shadow-blue-500/20 hover:scale-[1.05] transition-transform duration-200 cursor-pointer">
-                N
-              </div>
-              <div>
-                <h1 className="text-sm font-extrabold tracking-tight text-ink flex items-center gap-1">
-                  NEXO
-                  <span className="text-[9px] px-1.5 py-0.2 rounded bg-accent-soft text-accent border border-accent/30 font-extrabold tracking-wider uppercase">
-                    OS
-                  </span>
-                </h1>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-1 text-[10px] text-positive bg-positive-soft border border-positive/30 px-2 py-0.5 rounded-full font-bold shadow-3xs">
-              <svg className="w-3 h-3 text-positive fill-current shrink-0" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-              </svg>
-              <span>Verified</span>
+            <div className="flex items-center gap-1.5">
+              <span className="text-xl font-black tracking-tight text-ink font-sans">
+                NEXO
+              </span>
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shadow-2xs shadow-blue-500/40" />
             </div>
           </div>
 
@@ -166,40 +157,45 @@ export function Sidebar() {
         </div>
 
         {/* User Footer Profile */}
-        <div className="p-3 border-t border-line bg-surface">
-          <div className="flex items-center gap-2.5 p-2 rounded-xl bg-page border border-line">
-            <img
-              src={adminMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-              alt={adminMember?.name || "User"}
-              className="w-8 h-8 rounded-full object-cover shrink-0"
-            />
+        <div className="p-3 border-t border-line bg-surface relative" ref={popoverRef}>
+          <button
+            onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+            className="w-full flex items-center gap-2.5 p-2 rounded-xl bg-surface-alt/70 border border-line hover:border-line-strong transition-all cursor-pointer text-left group"
+          >
+            <ProfileAvatar src={adminMember?.avatar} name={adminMember?.name || "Member"} size="md" />
             <div className="min-w-0 flex-1">
-              <p className="text-small font-semibold text-ink truncate">
-                {adminMember?.name || "Ankit"}
-              </p>
-              <p className="text-caption text-ink-secondary truncate">
-                {adminMember?.role || "Group Admin"} {adminMember?.panMasked ? `• ${adminMember.panMasked}` : ""}
+              <div className="flex items-center gap-1">
+                <p className="text-small font-semibold text-ink truncate">
+                  {adminMember?.name || "Member"}
+                </p>
+                <span className="w-1.5 h-1.5 rounded-full bg-positive shrink-0" />
+              </div>
+              <p className="text-caption text-ink-tertiary font-medium uppercase tracking-wider truncate">
+                {adminMember?.role || "ADMIN"}
               </p>
             </div>
-            {logout && (
-              <button
-                onClick={logout}
-                title="Sign Out"
-                className="p-1 rounded-md text-negative hover:bg-negative-soft transition-colors cursor-pointer shrink-0"
-              >
-                <SignOut size={16} />
-              </button>
-            )}
-          </div>
+            <CaretUp size={14} className="text-ink-tertiary group-hover:text-ink transition-transform shrink-0" />
+          </button>
+
+          <ProfilePopover
+            isOpen={isPopoverOpen}
+            onClose={() => setIsPopoverOpen(false)}
+            onOpenShortcuts={() => setIsShortcutsOpen(true)}
+          />
         </div>
       </aside>
+
+      <KeyboardShortcutsModal
+        isOpen={isShortcutsOpen}
+        onClose={() => setIsShortcutsOpen(false)}
+      />
 
       {/* TABLET COLLAPSED SIDEBAR (Visible on md screens 768px - 1023px) */}
       <aside className="hidden md:flex lg:hidden w-16 bg-surface border-r border-line flex-col justify-between h-screen sticky top-0 shrink-0 select-none z-30 font-sans py-3 items-center">
         <div className="space-y-6 flex flex-col items-center">
           {/* Logo */}
-          <div className="w-8 h-8 rounded-xl bg-accent flex items-center justify-center text-white font-bold text-sm shadow-2xs">
-            N
+          <div className="flex items-center gap-1 font-black text-ink text-sm">
+            N<span className="w-2 h-2 rounded-full bg-blue-600 inline-block" />
           </div>
 
           {/* Icons Nav */}
@@ -234,10 +230,10 @@ export function Sidebar() {
 
         {/* User Profile Avatar */}
         <img
-          src={adminMember?.avatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"}
-          alt={adminMember?.name || "User"}
+          src={adminMember?.avatar || "/oggy.png"}
+          alt={adminMember?.name || "Member"}
           className="w-8 h-8 rounded-full object-cover ring-2 ring-accent/10"
-          title={adminMember?.name || "Ankit"}
+          title={adminMember?.name || "Member"}
         />
       </aside>
 
