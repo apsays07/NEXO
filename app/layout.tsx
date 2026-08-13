@@ -47,7 +47,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="min-h-full flex flex-col bg-page text-ink font-sans antialiased">
+      <body className="min-h-full flex flex-col bg-page text-ink font-sans antialiased" suppressHydrationWarning>
         <ThemeProvider>
           <NexoProvider>{children}</NexoProvider>
         </ThemeProvider>
