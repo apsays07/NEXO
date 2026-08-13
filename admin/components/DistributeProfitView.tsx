@@ -209,7 +209,7 @@ export function DistributeProfitView() {
         </div>
 
         {/* ── Row 2: Auto-calculated summary ── */}
-        <div className="grid grid-cols-1 sm:grid-cols-1 gap-4 max-w-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-lg">
           {/* Total Applications (auto) */}
           <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 space-y-1 shadow-2xs">
             <div className="flex items-center gap-2 text-slate-500">
@@ -219,6 +219,17 @@ export function DistributeProfitView() {
             <div className="text-xl font-black text-slate-900">
               {totalApplications}
               <span className="text-xs font-bold text-slate-400 ml-1">Applications</span>
+            </div>
+          </div>
+
+          {/* Per Application Profit (auto) */}
+          <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-4 space-y-1 shadow-2xs">
+            <div className="flex items-center gap-2 text-emerald-600">
+              <Calculator size={16} weight="bold" />
+              <span className="text-[10px] font-extrabold uppercase tracking-wider">Per Application Profit</span>
+            </div>
+            <div className="text-xl font-mono font-black text-emerald-700">
+              ₹{perApplicationProfit.toLocaleString("en-IN")}
             </div>
           </div>
         </div>
