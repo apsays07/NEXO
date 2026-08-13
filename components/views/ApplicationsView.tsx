@@ -224,7 +224,7 @@ export function ApplicationsView() {
               <option value="ALL">All IPOs & History</option>
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
-                  {ipo.name} IPO {ipo.isHidden ? "(History)" : ""}
+                  {ipo.name} {ipo.isHidden ? "(History)" : ""} {ipo.metrics?.issueSize ? `(${ipo.metrics.issueSize})` : ""}
                 </option>
               ))}
             </select>

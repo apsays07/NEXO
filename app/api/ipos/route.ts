@@ -47,13 +47,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const isAdmin = url.searchParams.get("admin") === "true";
 
-    if (isAdmin) {
-      return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
-    }
-
-    // Filter out soft-hidden records for member user-side website
-    const visibleIpos = allIpos.filter((ipo) => !ipo.isHidden);
-    return NextResponse.json({ success: true, ipos: visibleIpos }, { headers: corsHeaders });
+    return NextResponse.json({ success: true, ipos: allIpos }, { headers: corsHeaders });
   } catch (err: any) {
     console.error("GET /api/ipos error:", err);
     return NextResponse.json({ success: false, error: err.message }, { status: 500, headers: corsHeaders });
