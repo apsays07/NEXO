@@ -120,7 +120,7 @@ export function ApplicationSuccessModal({
             onClick={handleViewApplications}
             className="flex-1 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white font-bold text-xs shadow-md shadow-accent/20 flex items-center justify-center gap-1.5 transition-all active:scale-95 cursor-pointer"
           >
-            <span>View Ledger</span>
+            <span>View Applications</span>
             <ArrowRight size={14} weight="bold" />
           </button>
         </div>
