@@ -17,6 +17,7 @@ import {
   MagnifyingGlass,
   Crown,
   Sparkle,
+  Phone,
 } from "@phosphor-icons/react";
 import { Member } from "@/types/nexo";
 
@@ -32,6 +33,7 @@ export function MembersView() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
   const [pan, setPan] = useState("");
   const [email, setEmail] = useState("");
@@ -41,6 +43,7 @@ export function MembersView() {
   const [editUsername, setEditUsername] = useState("");
   const [editPassword, setEditPassword] = useState("");
   const [editName, setEditName] = useState("");
+  const [editPhone, setEditPhone] = useState("");
   const [editPan, setEditPan] = useState("");
   const [editRole, setEditRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
 
@@ -80,9 +83,11 @@ export function MembersView() {
   const filteredMembers = useMemo(() => {
     return members.filter((member) => {
       const mUsername = member.username || member.name.toLowerCase();
+      const mPhone = member.phone || "";
       const matchesSearch =
         member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mUsername.toLowerCase().includes(searchQuery.toLowerCase());
+        mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        mPhone.includes(searchQuery);
       
       const matchesRole =
         roleFilter === "ALL" ||
@@ -101,6 +106,7 @@ export function MembersView() {
       name,
       username: username.trim().toLowerCase(),
       password: password.trim(),
+      phone: phone.trim() || "+91 98200 12345",
       role,
       panMasked: pan.trim().toUpperCase() || "ABCDE1234F",
       panFull: pan.trim().toUpperCase() || "ABCDE1234F",
@@ -116,6 +122,7 @@ export function MembersView() {
     setName("");
     setUsername("");
     setPassword("");
+    setPhone("");
     setRole("MEMBER");
     setPan("");
     setEmail("");
@@ -127,6 +134,7 @@ export function MembersView() {
     setEditName(member.name);
     setEditUsername(member.username || member.name.toLowerCase());
     setEditPassword(member.password || (member.role === "ADMIN" ? "admin123" : "user123"));
+    setEditPhone(member.phone || "+91 98200 12345");
     setEditPan(member.panFull || member.panMasked);
     setEditRole(member.role);
   };
@@ -139,6 +147,7 @@ export function MembersView() {
       name: editName,
       username: editUsername.trim().toLowerCase(),
       password: editPassword.trim(),
+      phone: editPhone.trim(),
       panMasked: editPan.trim().toUpperCase(),
       panFull: editPan.trim().toUpperCase(),
       role: editRole,
@@ -161,7 +170,7 @@ export function MembersView() {
             </span>
           </div>
           <p className="text-xs text-ink-tertiary font-medium mt-1">
-            Manage your syndicate members, identity handles & IPO participation track record
+            Manage your syndicate members, phone contacts, identity handles & IPO participation
           </p>
         </div>
 
@@ -231,7 +240,7 @@ export function MembersView() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search member by name or @username..."
+            placeholder="Search member by name, @username, or phone number..."
             className="w-full pl-9 pr-4 py-1.5 bg-surface-alt/70 border border-line/80 rounded-xl text-xs text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-accent transition-colors"
           />
           {searchQuery && (
@@ -273,6 +282,7 @@ export function MembersView() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredMembers.map((member) => {
             const mUsername = member.username || member.name.toLowerCase();
+            const mPhone = member.phone || "+91 98200 12345";
             const appliedCount = getAppliedIpoCount(member);
 
             return (
@@ -300,7 +310,7 @@ export function MembersView() {
                         />
                       </div>
 
-                      {/* Name & Username */}
+                      {/* Name, Username & Phone */}
                       <div className="space-y-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <h3 className="text-base font-extrabold text-ink group-hover:text-accent transition-colors truncate">
@@ -313,9 +323,15 @@ export function MembersView() {
                           )}
                         </div>
 
-                        {/* Username Pill */}
-                        <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/50 hover:bg-accent-soft px-2.5 py-0.5 rounded-md border border-accent/20 transition-colors">
-                          @{mUsername}
+                        {/* Username Tag & Phone Badge */}
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <div className="inline-flex items-center gap-1 text-xs font-sans font-semibold tracking-tight text-accent bg-accent-soft/50 hover:bg-accent-soft px-2.5 py-0.5 rounded-md border border-accent/20 transition-colors">
+                            @{mUsername}
+                          </div>
+
+                          <div className="inline-flex items-center gap-1 text-[11px] font-sans font-medium text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md border border-line">
+                            <Phone size={11} className="text-ink-tertiary" /> {mPhone}
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -380,7 +396,7 @@ export function MembersView() {
                   Add Member
                 </h3>
                 <p className="text-caption text-ink-tertiary">
-                  Create member account with assigned username & role
+                  Create member account with username & phone details
                 </p>
               </div>
               <button
@@ -432,16 +448,28 @@ export function MembersView() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-caption font-semibold text-ink mb-1">Role</label>
-                <select
-                  value={role}
-                  onChange={(e) => setRole(e.target.value as any)}
-                  className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
-                >
-                  <option value="MEMBER">Member</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    placeholder="e.g. +91 98200 12345"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Role</label>
+                  <select
+                    value={role}
+                    onChange={(e) => setRole(e.target.value as any)}
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
               </div>
 
               <div>
@@ -486,7 +514,7 @@ export function MembersView() {
                   Edit Member details: {editingMember.name}
                 </h3>
                 <p className="text-caption text-ink-tertiary">
-                  Update username, password, or member role
+                  Update username, password, phone, or member role
                 </p>
               </div>
               <button
@@ -532,16 +560,28 @@ export function MembersView() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-caption font-semibold text-ink mb-1">Role</label>
-                <select
-                  value={editRole}
-                  onChange={(e) => setEditRole(e.target.value as any)}
-                  className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
-                >
-                  <option value="MEMBER">Member</option>
-                  <option value="ADMIN">Admin</option>
-                </select>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Mobile Number</label>
+                  <input
+                    type="text"
+                    value={editPhone}
+                    onChange={(e) => setEditPhone(e.target.value)}
+                    placeholder="e.g. +91 98200 12345"
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-caption font-semibold text-ink mb-1">Role</label>
+                  <select
+                    value={editRole}
+                    onChange={(e) => setEditRole(e.target.value as any)}
+                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink focus:border-accent outline-none"
+                  >
+                    <option value="MEMBER">Member</option>
+                    <option value="ADMIN">Admin</option>
+                  </select>
+                </div>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-2 border-t border-line">

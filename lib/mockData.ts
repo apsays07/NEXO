@@ -29,6 +29,7 @@ export const MOCK_MEMBERS: Member[] = [
     panFull: "BCDEF2345G",
     defaultContribution: 50000,
     joinedAt: "Jan 2025",
+    phone: "+91 98765 43210",
   },
   {
     id: "mem_3",
@@ -40,6 +41,7 @@ export const MOCK_MEMBERS: Member[] = [
     panFull: "CDEFG3456H",
     defaultContribution: 30000,
     joinedAt: "Feb 2025",
+    phone: "+91 98111 22334",
   },
   {
     id: "mem_4",
@@ -51,6 +53,7 @@ export const MOCK_MEMBERS: Member[] = [
     panFull: "DEFGH4567I",
     defaultContribution: 40000,
     joinedAt: "Mar 2025",
+    phone: "+91 97222 33445",
   },
   {
     id: "mem_5",
@@ -62,6 +65,7 @@ export const MOCK_MEMBERS: Member[] = [
     panFull: "EFGHI5678J",
     defaultContribution: 50000,
     joinedAt: "Apr 2025",
+    phone: "+91 99333 44556",
   },
 ];
 
