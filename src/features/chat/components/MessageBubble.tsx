@@ -76,8 +76,8 @@ export function MessageBubble({
         <div
           className={`relative px-4 py-2.5 rounded-2xl text-xs font-sans leading-relaxed shadow-xs break-words transition-all ${
             isSelf
-              ? "bg-gradient-to-br from-accent/20 via-accent/15 to-accent/10 dark:from-[#1E2E4A] dark:to-[#16233B] text-ink border border-accent/30 rounded-tr-xs"
-              : "bg-surface-alt/90 dark:bg-[#141720] text-ink border border-line/80 rounded-tl-xs"
+              ? "bg-gradient-to-br from-accent/25 via-accent/15 to-accent/10 text-ink border border-accent/30 rounded-tr-xs"
+              : "bg-surface-alt text-ink border border-line/80 rounded-tl-xs"
           }`}
         >
           {message.isDeleted ? (

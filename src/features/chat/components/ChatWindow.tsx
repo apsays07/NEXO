@@ -256,7 +256,7 @@ export function ChatWindow({
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#0C0E12] select-none font-sans overflow-hidden">
+    <div className="flex flex-col h-full bg-surface select-none font-sans overflow-hidden">
       <ChatHeader
         conversation={conversation}
         currentMemberId={currentMemberId}
