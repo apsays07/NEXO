@@ -20,6 +20,7 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
   const [name, setName] = useState("");
   const [minInvestment, setMinInvestment] = useState<number | "">(15000);
   const [issueSize, setIssueSize] = useState<number | "">(2400);
+  const [gmpPercent, setGmpPercent] = useState<number | "">(18.5);
   const [description, setDescription] = useState("");
   
   // Date Fields
@@ -35,6 +36,7 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
 
   const numMinInvestment = typeof minInvestment === "number" ? minInvestment : 0;
   const numIssueSize = typeof issueSize === "number" ? issueSize : 0;
+  const numGmpPercent = typeof gmpPercent === "number" ? gmpPercent : 0;
 
   // Step 1 Validation
   const isNameValid = name.trim().length > 0;
@@ -81,6 +83,7 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
       name: name.trim(),
       minInvestment: numMinInvestment,
       issueSize: numIssueSize,
+      gmpPercent: numGmpPercent,
       description: description.trim(),
       openDate: openDate.trim(),
       closeDate: closeDate.trim(),
@@ -97,6 +100,7 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
       setName("");
       setMinInvestment(15000);
       setIssueSize(2400);
+      setGmpPercent(18.5);
       setDescription("");
       setOpenDate("18 Aug 2026");
       setCloseDate("28 Aug 2026");
@@ -186,8 +190,8 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
                 </div>
               </div>
 
-              {/* 2. Minimum Investment & Issue Size Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* 2. Minimum Investment, Issue Size & GMP Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="block text-slate-900 font-extrabold text-sm mb-1.5">
                     Minimum Investment <span className="text-rose-500">*</span>
@@ -228,6 +232,26 @@ export function AddIPODrawer({ isOpen, onClose, onSuccess }: AddIPODrawerProps) 
                       className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-9 pr-11 py-3 text-sm font-mono font-extrabold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all shadow-xs"
                     />
                     <span className="absolute right-4 text-sm font-mono font-bold text-slate-500">Cr</span>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-slate-900 font-extrabold text-sm mb-1.5">
+                    GMP Premium (%)
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="18.5"
+                      value={gmpPercent}
+                      onChange={(e) => {
+                        const val = e.target.value === "" ? "" : Number(e.target.value);
+                        setGmpPercent(val);
+                      }}
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-4 pr-10 py-3 text-sm font-mono font-extrabold text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none transition-all shadow-xs"
+                    />
+                    <span className="absolute right-4 text-sm font-mono font-extrabold text-emerald-600">%</span>
                   </div>
                 </div>
               </div>

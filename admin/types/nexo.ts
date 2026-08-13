@@ -33,6 +33,7 @@ export interface FinancialMetrics {
   priceBand: { min: number; max: number };
   lotSize: number;
   minInvestment: number;
+  gmpPercent?: number;
   openDate: string;
   closeDate: string;
   allotmentDate: string;

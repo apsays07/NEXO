@@ -11,6 +11,7 @@ interface AdminContextType {
     name: string;
     minInvestment: number;
     issueSize: number;
+    gmpPercent?: number;
     description: string;
     openDate?: string;
     closeDate: string;
@@ -113,6 +114,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     name: string;
     minInvestment: number;
     issueSize: number;
+    gmpPercent?: number;
     description: string;
     openDate?: string;
     closeDate: string;
@@ -156,6 +158,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         priceBand: { min: 0, max: 0 },
         lotSize: 1,
         minInvestment: Number(data.minInvestment) || 15000,
+        gmpPercent: Number(data.gmpPercent) || 18.5,
         openDate: data.openDate?.trim() || "18 Aug 2026",
         closeDate: data.closeDate.trim() || "28 Aug 2026",
         allotmentDate: data.allotmentDate?.trim() || "01 Sep 2026",
