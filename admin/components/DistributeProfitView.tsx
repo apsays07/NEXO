@@ -33,10 +33,13 @@ export function DistributeProfitView() {
       // Combined pool application with multiple participants
       if (Array.isArray(app.participants) && app.participants.length > 0) {
         app.participants.forEach((p: any) => {
-          const pName = p.memberName || p.name || "Member";
+          let pName = p.memberName || p.name || app.applicantName || "Member";
+          if (pName.includes(",")) {
+            pName = pName.split(",")[0].trim();
+          }
           const pKey = (p.memberId || pName).toLowerCase().trim();
           const pPan = p.panMasked || p.panFull || app.panMasked || "XXXXXXXX41";
-          const lotVal = p.contribution ? p.contribution / minInv : (app.lotCount || 1) / app.participants.length;
+          const lotVal = p.contribution ? (p.contribution / minInv) : (app.lotCount || 1) / app.participants.length;
 
           if (membersMap.has(pKey)) {
             const existing = membersMap.get(pKey)!;
