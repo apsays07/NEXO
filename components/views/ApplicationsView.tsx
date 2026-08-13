@@ -29,8 +29,8 @@ export function ApplicationsView() {
     currentUser,
   } = useNexo();
 
-  // Local Filter for selecting IPO / Company
-  const [ipoFilter, setIpoFilter] = useState<string>("ALL");
+  // Local Filter for selecting single IPO / Company
+  const [ipoFilter, setIpoFilter] = useState<string>("");
   const [viewScope, setViewScope] = useState<"ALL" | "MY">("ALL");
   const [statusFilter, setStatusFilter] = useState<"ALL" | "ALLOTTED" | "AWAITING" | "NOT_ALLOTTED">("ALL");
   
@@ -53,19 +53,20 @@ export function ApplicationsView() {
     name: string;
   } | null>(null);
 
-  // Sync filter when navigating from applying for specific IPO
+  // Sync filter when navigating or default to first available IPO
   useEffect(() => {
     if (activeApplicationIpo) {
       setIpoFilter(activeApplicationIpo.id);
+    } else if (!ipoFilter && ipos.length > 0) {
+      setIpoFilter(ipos[0].id);
     }
-  }, [activeApplicationIpo]);
+  }, [ipos, activeApplicationIpo, ipoFilter]);
 
-  // Dynamically select the active IPO to display based on ipoFilter
+  // Dynamically select single active IPO to display based on ipoFilter
   const selectedIpoList = useMemo(() => {
     if (!ipos || ipos.length === 0) return [];
-    if (ipoFilter === "ALL") return ipos;
     const found = ipos.find((i) => i.id === ipoFilter);
-    return found ? [found] : ipos;
+    return found ? [found] : [ipos[0]];
   }, [ipos, ipoFilter]);
 
   // Selected active IPO object
@@ -221,7 +222,6 @@ export function ApplicationsView() {
               onChange={(e) => setIpoFilter(e.target.value)}
               className="bg-surface-alt border border-line-strong rounded-xl px-3.5 py-1.5 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer min-w-[190px] shadow-2xs transition-all"
             >
-              <option value="ALL">All IPOs & History</option>
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
                   {ipo.name} {ipo.isHidden ? "(History)" : ""} {ipo.metrics?.issueSize ? `(${ipo.metrics.issueSize})` : ""}
@@ -439,14 +439,7 @@ export function ApplicationsView() {
       )}
 
       {/* SINGLE CLEAN FINTECH INVESTMENT LEDGER CONTAINER */}
-      {selectedIpoList
-        .filter((ipo) => {
-          if (ipoFilter === "ALL") {
-            return ipo.applications && ipo.applications.length > 0;
-          }
-          return true;
-        })
-        .map((ipo) => {
+      {selectedIpoList.map((ipo) => {
         const filteredApps = ipo.applications.filter((app) => {
           // Status filter
           if (statusFilter !== "ALL") {
