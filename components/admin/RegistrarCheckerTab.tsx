@@ -4,7 +4,6 @@ import React, { useState, useMemo } from "react";
 import { useAdmin } from "../../admin/context/AdminContext";
 import {
   MagnifyingGlass,
-  ArrowClockwise,
   CheckCircle,
   XCircle,
   Hourglass,
@@ -16,29 +15,36 @@ import {
   Buildings,
   IdentificationCard,
   X,
+  PencilSimple,
+  PaperPlaneTilt,
+  ArrowClockwise,
 } from "@phosphor-icons/react";
 
 export function RegistrarCheckerTab() {
   const { ipos, refreshIpos } = useAdmin();
 
-  // Search & Filter State
+  // Search & Filter
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedIpoId, setSelectedIpoId] = useState<string>("ALL");
-  const [statusFilter, setStatusFilter] = useState<string>("ALL");
   const [revealedPans, setRevealedPans] = useState<Record<string, boolean>>({});
+
+  // Local allotment marks (before publishing)
+  // Key: appId, Value: true = marked as ALLOTTED
+  const [localMarks, setLocalMarks] = useState<Record<string, boolean>>({});
+
+  // Publishing state
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [publishResult, setPublishResult] = useState<string | null>(null);
 
   // Real PAN Check Modal
   const [isRealPanModalOpen, setIsRealPanModalOpen] = useState(false);
   const [customPan, setCustomPan] = useState("");
   const [customRegistrar, setCustomRegistrar] = useState("Link Intime India");
   const [customIpoId, setCustomIpoId] = useState(ipos[0]?.id || "");
-  const [checkResult, setCheckResult] = useState<{ success: boolean; status?: string; message?: string } | null>(null);
+  const [checkResult, setCheckResult] = useState<any>(null);
   const [isCheckingSingle, setIsCheckingSingle] = useState(false);
 
-  // Loading states for row-level updates
-  const [updatingAppId, setUpdatingAppId] = useState<string | null>(null);
-
-  // Flatten all applications across all IPOs
+  // Flatten all applications
   const allApplications = useMemo(() => {
     const list: Array<{
       ipoId: string;
@@ -51,8 +57,7 @@ export function RegistrarCheckerTab() {
       applicationNumber: string;
       totalContribution: number;
       lotCount: number;
-      status: string;
-      createdAt?: string;
+      savedStatus: string; // status already saved in shared_ipos.json
       registrarName: string;
       registrarUrl: string;
     }> = [];
@@ -73,10 +78,9 @@ export function RegistrarCheckerTab() {
       const apps = ipo.applications || [];
       apps.forEach((app: any) => {
         const rawStatus = app.allotmentStatus || app.status || "AWAITING";
-        // Normalize: only ALLOTTED or REFUNDED are confirmed, everything else is AWAITING
         const normStatus =
           rawStatus === "ALLOTTED" ? "ALLOTTED"
-          : rawStatus === "REFUNDED" || rawStatus === "NOT_ALLOTTED" ? "REFUNDED"
+          : rawStatus === "REFUNDED" || rawStatus === "NOT_ALLOTTED" ? "NOT_ALLOTTED"
           : "AWAITING";
 
         list.push({
@@ -90,8 +94,7 @@ export function RegistrarCheckerTab() {
           applicationNumber: app.applicationNumber || `NEXO-APP-${app.id.slice(-4)}`,
           totalContribution: app.totalContribution || 15000,
           lotCount: app.lotCount || 1,
-          status: normStatus,
-          createdAt: app.createdAt,
+          savedStatus: normStatus,
           registrarName: regName,
           registrarUrl: regUrl,
         });
@@ -101,11 +104,10 @@ export function RegistrarCheckerTab() {
     return list;
   }, [ipos]);
 
-  // Filtered applicants
+  // Filtered
   const filteredApplicants = useMemo(() => {
     return allApplications.filter((item) => {
       if (selectedIpoId !== "ALL" && item.ipoId !== selectedIpoId) return false;
-      if (statusFilter !== "ALL" && item.status !== statusFilter) return false;
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         if (
@@ -118,49 +120,106 @@ export function RegistrarCheckerTab() {
       }
       return true;
     });
-  }, [allApplications, selectedIpoId, statusFilter, searchQuery]);
+  }, [allApplications, selectedIpoId, searchQuery]);
+
+  // Get effective status for an applicant (local mark overrides saved)
+  const getEffectiveStatus = (app: typeof allApplications[0]) => {
+    if (localMarks[app.appId] === true) return "ALLOTTED";
+    if (localMarks[app.appId] === false) return "AWAITING"; // edited back
+    return app.savedStatus;
+  };
 
   // Metrics
-  const totalCount = allApplications.length;
-  const allottedCount = allApplications.filter((a) => a.status === "ALLOTTED").length;
-  const refundedCount = allApplications.filter((a) => a.status === "REFUNDED").length;
-  const awaitingCount = allApplications.filter((a) => a.status === "AWAITING").length;
-  const allotmentRate = totalCount > 0 ? Math.round((allottedCount / totalCount) * 100) : 0;
+  const markedAllotted = filteredApplicants.filter((a) => getEffectiveStatus(a) === "ALLOTTED").length;
+  const markedNotAllotted = filteredApplicants.filter((a) => getEffectiveStatus(a) === "NOT_ALLOTTED").length;
+  const stillAwaiting = filteredApplicants.filter((a) => getEffectiveStatus(a) === "AWAITING").length;
+  const hasUnpublishedChanges = Object.keys(localMarks).length > 0;
 
   const togglePan = (appId: string) => {
     setRevealedPans((prev) => ({ ...prev, [appId]: !prev[appId] }));
   };
 
-  // ── Admin manually updates status (persists to shared_ipos.json → user side syncs) ──
-  const handleManualStatusUpdate = async (ipoId: string, applicationId: string, newStatus: "ALLOTTED" | "REFUNDED" | "AWAITING") => {
-    setUpdatingAppId(applicationId);
+  // Mark as allotted
+  const markAllotted = (appId: string) => {
+    setLocalMarks((prev) => ({ ...prev, [appId]: true }));
+    setPublishResult(null);
+  };
+
+  // Edit (undo mark — set back to awaiting)
+  const undoMark = (appId: string) => {
+    setLocalMarks((prev) => {
+      const copy = { ...prev };
+      // If it was already saved as ALLOTTED in DB, set to false (awaiting)
+      // Otherwise just remove the local mark
+      copy[appId] = false;
+      return copy;
+    });
+    setPublishResult(null);
+  };
+
+  // Remove local mark entirely (for items that were already saved)
+  const removeMark = (appId: string) => {
+    setLocalMarks((prev) => {
+      const copy = { ...prev };
+      delete copy[appId];
+      return copy;
+    });
+    setPublishResult(null);
+  };
+
+  // ── PUBLISH ALL: marked = ALLOTTED, unmarked awaiting = NOT_ALLOTTED ──
+  const publishAllResults = async () => {
+    setIsPublishing(true);
+    setPublishResult(null);
+
+    let allottedCount = 0;
+    let notAllottedCount = 0;
+
     try {
-      await fetch("/api/registrar-sync", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          action: "updateStatus",
-          ipoId,
-          applicationId,
-          newStatus,
-        }),
-      });
+      // Process all visible applicants
+      for (const app of filteredApplicants) {
+        const effectiveStatus = getEffectiveStatus(app);
+        let targetStatus: string;
+
+        if (effectiveStatus === "ALLOTTED") {
+          targetStatus = "ALLOTTED";
+          allottedCount++;
+        } else {
+          // Everything not marked as ALLOTTED becomes NOT_ALLOTTED
+          targetStatus = "REFUNDED";
+          notAllottedCount++;
+        }
+
+        await fetch("/api/registrar-sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            action: "updateStatus",
+            ipoId: app.ipoId,
+            applicationId: app.appId,
+            newStatus: targetStatus,
+          }),
+        });
+      }
+
       window.dispatchEvent(new Event("storage"));
       await refreshIpos();
+      setLocalMarks({});
+      setPublishResult(`✓ Published! ${allottedCount} Allotted, ${notAllottedCount} Not Allotted — User side updated.`);
     } catch (err) {
-      console.warn("Failed to update status:", err);
+      console.warn("Publish error:", err);
+      setPublishResult("✗ Error publishing results. Try again.");
     } finally {
-      setUpdatingAppId(null);
+      setIsPublishing(false);
     }
   };
 
-  // ── Admin checks a real PAN on registrar ──
+  // Check real PAN
   const handleCheckRealPanSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!customPan.trim()) return;
     setIsCheckingSingle(true);
     setCheckResult(null);
-
     const targetIpo = ipos.find((i) => i.id === customIpoId) || ipos[0];
     try {
       const res = await fetch("/api/registrar-sync", {
@@ -173,9 +232,8 @@ export function RegistrarCheckerTab() {
           ipoName: targetIpo?.name || "IPO",
         }),
       });
-      const data = await res.json();
-      setCheckResult(data);
-    } catch (err) {
+      setCheckResult(await res.json());
+    } catch {
       setCheckResult({ success: false, message: "Error connecting to registrar." });
     } finally {
       setIsCheckingSingle(false);
@@ -192,18 +250,14 @@ export function RegistrarCheckerTab() {
           <div className="space-y-1.5">
             <div className="flex items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider">
-                Manual Registrar Check
-              </span>
-              <span className="flex items-center gap-1 text-[11px] font-bold text-amber-400">
-                <Hourglass size={12} weight="bold" />
-                Default: Awaiting — Admin updates manually
+                Registrar Allotment Manager
               </span>
             </div>
             <h1 className="text-2xl font-black tracking-tight text-white">
-              Registrar Allotment Checker
+              Allotment Status Manager
             </h1>
             <p className="text-xs text-slate-400 max-w-xl font-medium leading-relaxed">
-              View all applicants, manually check PAN on registrar websites, and update allotment status. Status changes are reflected on the user side instantly.
+              Mark applicants as <strong className="text-emerald-400">Allotted</strong>, then click <strong className="text-blue-400">Publish Results</strong> to send statuses to the user side. Unmarked applicants will be set as <strong className="text-rose-400">Not Allotted</strong>.
             </p>
           </div>
 
@@ -213,29 +267,41 @@ export function RegistrarCheckerTab() {
               className="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer"
             >
               <IdentificationCard size={16} className="text-amber-400" />
-              <span>Check Real PAN</span>
+              <span>Check PAN</span>
             </button>
 
             <button
-              onClick={async () => { await refreshIpos(); }}
-              className="px-4 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all cursor-pointer"
+              onClick={publishAllResults}
+              disabled={isPublishing || filteredApplicants.length === 0}
+              className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <ArrowClockwise size={16} weight="bold" />
-              <span>Refresh Data</span>
+              <PaperPlaneTilt size={16} weight="fill" />
+              <span>{isPublishing ? "Publishing..." : "Publish Results to Users"}</span>
             </button>
           </div>
         </div>
+
+        {/* Publish Result Banner */}
+        {publishResult && (
+          <div className={`mt-4 p-3 rounded-xl border text-xs font-bold ${
+            publishResult.startsWith("✓")
+              ? "bg-emerald-900/30 border-emerald-700/50 text-emerald-300"
+              : "bg-rose-900/30 border-rose-700/50 text-rose-300"
+          }`}>
+            {publishResult}
+          </div>
+        )}
       </div>
 
       {/* ── METRICS ── */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-2xs space-y-1">
+      <div className="grid grid-cols-3 gap-4">
+        <div className="p-4 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-2xs space-y-1">
           <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">Total Applicants</span>
-            <IdentificationCard size={18} className="text-slate-400" />
+            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Marked Allotted ✓</span>
+            <CheckCircle size={18} className="text-emerald-600" weight="fill" />
           </div>
-          <p className="text-xl font-black text-slate-900">{totalCount}</p>
-          <p className="text-[10px] font-bold text-slate-400">across all IPOs</p>
+          <p className="text-xl font-black text-emerald-900">{markedAllotted}</p>
+          <p className="text-[10px] font-bold text-emerald-700">Will be published as Allotted</p>
         </div>
 
         <div className="p-4 bg-amber-50/50 border border-amber-200/80 rounded-2xl shadow-2xs space-y-1">
@@ -243,17 +309,8 @@ export function RegistrarCheckerTab() {
             <span className="text-[11px] font-bold text-amber-800 uppercase tracking-wider">Awaiting ⏳</span>
             <Hourglass size={18} className="text-amber-600" weight="bold" />
           </div>
-          <p className="text-xl font-black text-amber-900">{awaitingCount}</p>
-          <p className="text-[10px] font-bold text-amber-700">Pending admin check</p>
-        </div>
-
-        <div className="p-4 bg-emerald-50/50 border border-emerald-200/80 rounded-2xl shadow-2xs space-y-1">
-          <div className="flex items-center justify-between">
-            <span className="text-[11px] font-bold text-emerald-800 uppercase tracking-wider">Allotted ✓</span>
-            <CheckCircle size={18} className="text-emerald-600" weight="fill" />
-          </div>
-          <p className="text-xl font-black text-emerald-900">{allottedCount}</p>
-          <p className="text-[10px] font-bold text-emerald-700">{allotmentRate}% success rate</p>
+          <p className="text-xl font-black text-amber-900">{stillAwaiting}</p>
+          <p className="text-[10px] font-bold text-amber-700">Will become Not Allotted on publish</p>
         </div>
 
         <div className="p-4 bg-rose-50/50 border border-rose-200/80 rounded-2xl shadow-2xs space-y-1">
@@ -261,12 +318,12 @@ export function RegistrarCheckerTab() {
             <span className="text-[11px] font-bold text-rose-800 uppercase tracking-wider">Not Allotted ✗</span>
             <XCircle size={18} className="text-rose-600" weight="fill" />
           </div>
-          <p className="text-xl font-black text-rose-900">{refundedCount}</p>
-          <p className="text-[10px] font-bold text-rose-700">Refunded / Not allotted</p>
+          <p className="text-xl font-black text-rose-900">{markedNotAllotted}</p>
+          <p className="text-[10px] font-bold text-rose-700">Already published as Not Allotted</p>
         </div>
       </div>
 
-      {/* ── SEARCH & FILTERS ── */}
+      {/* ── SEARCH & FILTER ── */}
       <div className="p-4 bg-white border border-slate-200 rounded-2xl shadow-2xs">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
           <div className="relative flex-1">
@@ -282,7 +339,6 @@ export function RegistrarCheckerTab() {
               <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 text-xs font-bold cursor-pointer">✕</button>
             )}
           </div>
-
           <div className="flex items-center gap-2">
             <Funnel size={16} className="text-slate-400 shrink-0" />
             <select value={selectedIpoId} onChange={(e) => setSelectedIpoId(e.target.value)} className="h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer">
@@ -290,12 +346,6 @@ export function RegistrarCheckerTab() {
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>{ipo.name} ({ipo.applications?.length || 0})</option>
               ))}
-            </select>
-            <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="h-10 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-800 focus:outline-none focus:border-blue-500 cursor-pointer">
-              <option value="ALL">All Statuses</option>
-              <option value="AWAITING">Awaiting ⏳</option>
-              <option value="ALLOTTED">Allotted ✓</option>
-              <option value="REFUNDED">Not Allotted ✗</option>
             </select>
           </div>
         </div>
@@ -306,10 +356,14 @@ export function RegistrarCheckerTab() {
         <div className="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
           <h2 className="text-sm font-extrabold text-slate-900 flex items-center gap-2">
             Applicant Records
-            <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">{filteredApplicants.length} Listed</span>
+            <span className="text-xs font-bold text-slate-500 bg-slate-200 px-2 py-0.5 rounded-full">{filteredApplicants.length}</span>
+            {hasUnpublishedChanges && (
+              <span className="text-xs font-bold text-amber-600 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-full animate-pulse">
+                Unpublished Changes
+              </span>
+            )}
           </h2>
           <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
-            <span>Registrar Portals:</span>
             <a href="https://linkintime.co.in/initial_offer/public-issues.html" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">Link Intime <ArrowSquareOut size={12} /></a>
             <span>•</span>
             <a href="https://ris.kfintech.com/ipostatus/" target="_blank" rel="noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">KFintech <ArrowSquareOut size={12} /></a>
@@ -322,7 +376,7 @@ export function RegistrarCheckerTab() {
           <div className="p-12 text-center space-y-2">
             <IdentificationCard size={36} className="text-slate-300 mx-auto" />
             <h3 className="text-sm font-extrabold text-slate-800">No applicants found</h3>
-            <p className="text-xs text-slate-500 font-medium">Adjust your search or filters above.</p>
+            <p className="text-xs text-slate-500 font-medium">Adjust your search or filters.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -334,20 +388,34 @@ export function RegistrarCheckerTab() {
                   <th className="py-3 px-4">IPO</th>
                   <th className="py-3 px-4 text-right">Amount (₹)</th>
                   <th className="py-3 px-4">Registrar</th>
-                  <th className="py-3 px-4 text-center">Status</th>
-                  <th className="py-3 px-4 text-center">Update Status</th>
+                  <th className="py-3 px-4 text-center">Current Status</th>
+                  <th className="py-3 px-4 text-center">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200 text-xs font-semibold text-slate-800">
                 {filteredApplicants.map((app) => {
                   const isRevealed = revealedPans[app.appId];
-                  const isUpdating = updatingAppId === app.appId;
+                  const effectiveStatus = getEffectiveStatus(app);
+                  const hasLocalMark = app.appId in localMarks;
 
                   return (
-                    <tr key={app.appId} className="hover:bg-slate-50/80 transition-colors">
+                    <tr
+                      key={app.appId}
+                      className={`transition-colors ${
+                        effectiveStatus === "ALLOTTED"
+                          ? "bg-emerald-50/40 hover:bg-emerald-50/70"
+                          : effectiveStatus === "NOT_ALLOTTED"
+                          ? "bg-rose-50/30 hover:bg-rose-50/50"
+                          : "hover:bg-slate-50/80"
+                      }`}
+                    >
                       <td className="py-3.5 px-4">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-full bg-blue-100 text-blue-700 font-black text-xs flex items-center justify-center border border-blue-200 uppercase shrink-0">
+                          <div className={`w-8 h-8 rounded-full font-black text-xs flex items-center justify-center border uppercase shrink-0 ${
+                            effectiveStatus === "ALLOTTED"
+                              ? "bg-emerald-100 text-emerald-700 border-emerald-200"
+                              : "bg-blue-100 text-blue-700 border-blue-200"
+                          }`}>
                             {app.applicantName.slice(0, 2)}
                           </div>
                           <div>
@@ -386,59 +454,62 @@ export function RegistrarCheckerTab() {
                         </a>
                       </td>
 
-                      {/* Status Badge */}
+                      {/* Current Status Badge */}
                       <td className="py-3.5 px-4 text-center">
-                        {app.status === "ALLOTTED" && (
+                        {effectiveStatus === "ALLOTTED" && (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300 text-xs font-extrabold">
                             <CheckCircle size={14} weight="fill" className="text-emerald-600" /> Allotted
                           </span>
                         )}
-                        {app.status === "REFUNDED" && (
+                        {effectiveStatus === "NOT_ALLOTTED" && (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-rose-100 text-rose-800 border border-rose-300 text-xs font-extrabold">
                             <XCircle size={14} weight="fill" className="text-rose-600" /> Not Allotted
                           </span>
                         )}
-                        {app.status === "AWAITING" && (
+                        {effectiveStatus === "AWAITING" && (
                           <span className="inline-flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-800 border border-amber-300 text-xs font-extrabold">
                             <Hourglass size={14} className="text-amber-600" /> Awaiting
                           </span>
                         )}
                       </td>
 
-                      {/* Manual Status Update Buttons */}
+                      {/* Action: One Allotted button OR Edit button */}
                       <td className="py-3.5 px-4 text-center">
-                        {isUpdating ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-blue-600 font-bold">
-                            <span className="w-3.5 h-3.5 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin" />
-                            Updating...
-                          </span>
+                        {effectiveStatus === "ALLOTTED" ? (
+                          /* Already marked — show Edit button to undo */
+                          <button
+                            onClick={() => {
+                              // If it was a local mark, undo it
+                              if (hasLocalMark) {
+                                removeMark(app.appId);
+                              } else {
+                                // It was saved in DB as allotted, set local override to awaiting
+                                undoMark(app.appId);
+                              }
+                            }}
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-[11px] font-extrabold transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
+                          >
+                            <PencilSimple size={13} weight="bold" />
+                            Edit
+                          </button>
+                        ) : effectiveStatus === "NOT_ALLOTTED" ? (
+                          /* Already published as Not Allotted — show Edit to change */
+                          <button
+                            onClick={() => markAllotted(app.appId)}
+                            className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 text-[11px] font-extrabold transition-all flex items-center gap-1.5 mx-auto cursor-pointer"
+                          >
+                            <PencilSimple size={13} weight="bold" />
+                            Edit
+                          </button>
                         ) : (
-                          <div className="flex items-center justify-center gap-1.5">
-                            <button
-                              onClick={() => handleManualStatusUpdate(app.ipoId, app.appId, "ALLOTTED")}
-                              disabled={app.status === "ALLOTTED"}
-                              title="Set Allotted"
-                              className="px-2.5 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-[11px] font-extrabold transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                              Allotted ✓
-                            </button>
-                            <button
-                              onClick={() => handleManualStatusUpdate(app.ipoId, app.appId, "REFUNDED")}
-                              disabled={app.status === "REFUNDED"}
-                              title="Set Not Allotted"
-                              className="px-2.5 py-1 rounded-lg bg-rose-600 hover:bg-rose-500 text-white text-[11px] font-extrabold transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                              Not Allotted ✗
-                            </button>
-                            <button
-                              onClick={() => handleManualStatusUpdate(app.ipoId, app.appId, "AWAITING")}
-                              disabled={app.status === "AWAITING"}
-                              title="Reset to Awaiting"
-                              className="px-2.5 py-1 rounded-lg bg-amber-500 hover:bg-amber-400 text-white text-[11px] font-extrabold transition-all disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                            >
-                              Awaiting ⏳
-                            </button>
-                          </div>
+                          /* Awaiting — show Allotted button */
+                          <button
+                            onClick={() => markAllotted(app.appId)}
+                            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 active:scale-[0.97] text-white text-[11px] font-extrabold transition-all shadow-sm flex items-center gap-1.5 mx-auto cursor-pointer"
+                          >
+                            <CheckCircle size={14} weight="fill" />
+                            Allotted ✓
+                          </button>
                         )}
                       </td>
                     </tr>
@@ -446,6 +517,25 @@ export function RegistrarCheckerTab() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {/* Bottom Publish Bar */}
+        {filteredApplicants.length > 0 && (
+          <div className="p-4 border-t border-slate-200 bg-slate-50/80 flex items-center justify-between">
+            <div className="text-xs font-bold text-slate-600 space-x-3">
+              <span className="text-emerald-700">✓ {markedAllotted} Allotted</span>
+              <span className="text-amber-700">⏳ {stillAwaiting} Awaiting</span>
+              <span className="text-rose-700">✗ {markedNotAllotted} Not Allotted</span>
+            </div>
+            <button
+              onClick={publishAllResults}
+              disabled={isPublishing || filteredApplicants.length === 0}
+              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            >
+              <PaperPlaneTilt size={14} weight="fill" />
+              <span>{isPublishing ? "Publishing..." : "Publish All Results to Users"}</span>
+            </button>
           </div>
         )}
       </div>
@@ -459,54 +549,35 @@ export function RegistrarCheckerTab() {
             </button>
 
             <div className="space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="w-2.5 h-2.5 rounded-full bg-blue-600 animate-pulse" />
-                <h3 className="text-lg font-black text-slate-900">Check Real PAN on Registrar</h3>
-              </div>
+              <h3 className="text-lg font-black text-slate-900">Check PAN on Registrar</h3>
               <p className="text-xs text-slate-500 font-medium">
-                Enter a real PAN card number to check allotment status on the registrar. You will still need to manually update the status based on the result.
+                Enter a real PAN card to check on registrar. Use the result to decide which applicants to mark as Allotted above.
               </p>
             </div>
 
             <form onSubmit={handleCheckRealPanSubmit} className="space-y-4">
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  PAN Card Number <span className="text-rose-500">*</span>
-                </label>
-                <input
-                  type="text"
-                  required
-                  maxLength={10}
-                  value={customPan}
-                  onChange={(e) => setCustomPan(e.target.value.toUpperCase())}
-                  placeholder="e.g. ABCDE1234F"
-                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-all"
-                />
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">PAN Card Number <span className="text-rose-500">*</span></label>
+                <input type="text" required maxLength={10} value={customPan} onChange={(e) => setCustomPan(e.target.value.toUpperCase())} placeholder="e.g. ABCDE1234F"
+                  className="w-full h-11 px-3.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono font-bold text-slate-900 uppercase placeholder:normal-case placeholder:font-sans placeholder:text-slate-400 focus:outline-none focus:border-blue-600 focus:bg-white transition-all" />
               </div>
-
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-                  Target Registrar <span className="text-rose-500">*</span>
-                </label>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Registrar <span className="text-rose-500">*</span></label>
                 <select value={customRegistrar} onChange={(e) => setCustomRegistrar(e.target.value)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer">
-                  <option value="Link Intime India">Link Intime India Pvt Ltd</option>
-                  <option value="KFin Technologies">KFin Technologies (KFintech)</option>
-                  <option value="Bigshare Services">Bigshare Services Pvt Ltd</option>
+                  <option value="Link Intime India">Link Intime India</option>
+                  <option value="KFin Technologies">KFin Technologies</option>
+                  <option value="Bigshare Services">Bigshare Services</option>
                 </select>
               </div>
-
               <div className="space-y-1">
-                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">Target IPO</label>
+                <label className="block text-xs font-extrabold text-slate-700 uppercase tracking-wider">IPO</label>
                 <select value={customIpoId} onChange={(e) => setCustomIpoId(e.target.value)} className="w-full h-11 px-3 bg-slate-50 border border-slate-200 rounded-xl text-xs font-extrabold text-slate-900 focus:outline-none focus:border-blue-600 cursor-pointer">
-                  {ipos.map((ipo) => (
-                    <option key={ipo.id} value={ipo.id}>{ipo.name}</option>
-                  ))}
+                  {ipos.map((ipo) => (<option key={ipo.id} value={ipo.id}>{ipo.name}</option>))}
                 </select>
               </div>
 
-              {/* Result */}
               {checkResult && (
-                <div className={`p-3.5 rounded-xl border text-xs font-bold space-y-1.5 ${
+                <div className={`p-3.5 rounded-xl border text-xs font-bold space-y-1 ${
                   checkResult.status === "ALLOTTED" ? "bg-emerald-50 border-emerald-200 text-emerald-800"
                   : checkResult.status === "REFUNDED" ? "bg-rose-50 border-rose-200 text-rose-800"
                   : "bg-amber-50 border-amber-200 text-amber-800"
@@ -516,33 +587,19 @@ export function RegistrarCheckerTab() {
                     : checkResult.status === "REFUNDED" ? <XCircle size={16} className="text-rose-600" weight="fill" />
                     : <Hourglass size={16} className="text-amber-600" />}
                     <span className="font-extrabold uppercase">
-                      {checkResult.status === "ALLOTTED" ? "ALLOTTED ✓"
-                      : checkResult.status === "REFUNDED" ? "NOT ALLOTTED ✗"
-                      : "AWAITING — Check registrar manually"}
+                      {checkResult.status === "ALLOTTED" ? "ALLOTTED ✓" : checkResult.status === "REFUNDED" ? "NOT ALLOTTED ✗" : "AWAITING — Check manually"}
                     </span>
                   </div>
                   <p className="text-[11px] font-medium">{checkResult.message}</p>
-                  <p className="text-[10px] text-slate-500 font-medium italic">
-                    Go to the table above and click the correct status button to update. This result is for reference only.
-                  </p>
                 </div>
               )}
 
-              <button
-                type="submit"
-                disabled={isCheckingSingle || !customPan.trim()}
-                className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer"
-              >
+              <button type="submit" disabled={isCheckingSingle || !customPan.trim()}
+                className="w-full h-11 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 cursor-pointer">
                 {isCheckingSingle ? (
-                  <>
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Querying Registrar...
-                  </>
+                  <><span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" /> Checking...</>
                 ) : (
-                  <>
-                    <Sparkle size={16} />
-                    <span>Check on Registrar</span>
-                  </>
+                  <><Sparkle size={16} /> Check on Registrar</>
                 )}
               </button>
             </form>
