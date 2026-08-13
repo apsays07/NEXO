@@ -13,6 +13,7 @@ import {
   DotsThree,
   CaretUp,
   ChatCircleDots,
+  ShieldCheck,
 } from "@phosphor-icons/react";
 import { MoreDrawer } from "./MoreDrawer";
 import { ProfileAvatar } from "../profile/ProfileAvatar";
@@ -173,7 +174,7 @@ export function Sidebar() {
           <>
             <div>
               {/* Brand Header */}
-              <div className="h-16 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0">
+              <div className="h-20 px-4 border-b border-line bg-surface/40 flex items-center justify-between shrink-0">
                 <div className="flex items-center gap-1.5">
                   <span className="text-xl font-black tracking-tight text-ink font-sans">NEXO</span>
                   <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shadow-2xs shadow-blue-500/40" />
@@ -245,6 +246,29 @@ export function Sidebar() {
                     );
                   })}
                 </div>
+
+                {/* ADMIN MANAGEMENT */}
+                {(adminMember?.role === "ADMIN" || activeUser?.role === "ADMIN") && (
+                  <div className="space-y-1 pt-2 border-t border-line">
+                    <div className="px-2 py-1 text-[11px] font-medium text-ink-secondary uppercase tracking-wider flex items-center justify-between">
+                      <span>ADMINISTRATION</span>
+                      <span className="text-[9px] font-mono text-blue-600 bg-blue-50 px-1 rounded border border-blue-200">ADMIN</span>
+                    </div>
+                    <button
+                      onClick={() => setActiveTab("admin" as any)}
+                      className={`w-full h-8.5 flex items-center justify-between px-2.5 rounded-lg text-sm transition-colors group cursor-pointer ${
+                        activeTab === "admin"
+                          ? "bg-accent-soft text-accent font-semibold"
+                          : "text-ink-secondary hover:text-ink hover:bg-surface-hover font-medium"
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0 overflow-hidden">
+                        <ShieldCheck size={16} className={`shrink-0 ${activeTab === "admin" ? "text-accent" : "text-blue-600 group-hover:text-blue-700"}`} />
+                        <span className="truncate whitespace-nowrap">IPO Management</span>
+                      </div>
+                    </button>
+                  </div>
+                )}
               </nav>
             </div>
 

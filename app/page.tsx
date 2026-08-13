@@ -12,6 +12,7 @@ import { MembersView } from "@/components/views/MembersView";
 import { ApplicationsView } from "@/components/views/ApplicationsView";
 import { ProfileView } from "@/components/views/ProfileView";
 import { MessagesView } from "@/components/views/MessagesView";
+import { AdminIPOManagement } from "@/components/admin/AdminIPOManagement";
 import { IPODetailDrawer } from "@/components/views/IPODetailDrawer";
 import { ApplicationModal } from "@/components/application/ApplicationModal";
 import { AddIPOModal } from "@/components/ipo/AddIPOModal";
@@ -46,6 +47,7 @@ export default function Home() {
           {activeTab === "messages" && <MessagesView />}
           {activeTab === "members" && <MembersView />}
           {activeTab === "profile" && <ProfileView />}
+          {activeTab === "admin" && <AdminIPOManagement />}
         </main>
       </div>
 

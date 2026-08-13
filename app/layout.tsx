@@ -1,16 +1,9 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import { NexoProvider } from "@/context/NexoContext";
 import { ThemeProvider } from "@/components/providers/ThemeProvider";
-
-const geist = Geist({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-geist",
-  weight: ["400", "500", "600", "700", "800"],
-});
 
 const inter = Inter({
   subsets: ["latin"],
@@ -38,10 +31,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${geist.variable} ${inter.variable} h-full antialiased`} suppressHydrationWarning>
+    <html lang="en" className={`${inter.variable} h-full antialiased`} suppressHydrationWarning>
       <head>
         {/* Inline script to prevent flash of wrong theme */}
-        <script
+        <Script
+          id="nexo-theme-script"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('nexo-theme');if(t==='dark')document.documentElement.classList.add('dark')}catch(e){}})()`,
           }}

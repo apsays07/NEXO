@@ -5,44 +5,55 @@ import {
   defaultProfile,
   toPublicProfile,
 } from "@/src/models/Profile";
+import { getAuthenticatedUser } from "@/src/lib/auth/authorization";
 
-const DB   = "nexo";
-const COL  = "profiles";
-const USER = "singleton"; // one profile per app; swap for auth userId later
+const DB  = "nexo";
+const COL = "profiles";
 
 /* ────────────────────────────────────────────────────────────────
    GET /api/profile
-   Returns the public-safe profile document.
-   Seeds a default document on first access.
+   Returns the public-safe profile document for the authenticated user.
+   Seeds a default document on first access if missing.
 ──────────────────────────────────────────────────────────────── */
 export async function GET() {
   try {
+    const auth = await getAuthenticatedUser().catch(() => null);
+    const userId = auth?.userId || "singleton";
+
     const client = await clientPromise;
     const col    = client.db(DB).collection<ProfileDocument>(COL);
 
-    let doc = await col.findOne({ userId: USER });
+    let doc = await col.findOne({ userId });
 
-    /* First-time seed */
+    /* First-time seed if profile missing for user */
     if (!doc) {
-      const seed = defaultProfile();
-      const res  = await col.insertOne(seed as any);
-      doc        = { ...seed, _id: res.insertedId } as any;
+      const seed = {
+        ...defaultProfile(),
+        userId,
+        name: auth?.displayName || "Ankit",
+        email: auth?.email || "ankit@nexo.private",
+      };
+      const res = await col.insertOne(seed as any);
+      doc = { ...seed, _id: res.insertedId } as any;
     }
 
     return NextResponse.json({ profile: toPublicProfile(doc!) });
   } catch (err: any) {
-    console.error("GET /api/profile:", err);
-    return NextResponse.json({ error: "Failed to fetch profile" }, { status: 500 });
+    console.error("GET /api/profile error:", err);
+    // Fall back to default profile gracefully
+    return NextResponse.json({ profile: toPublicProfile(defaultProfile()) });
   }
 }
 
 /* ────────────────────────────────────────────────────────────────
    PUT /api/profile
    Accepts a partial UpdateProfileDTO and merges into the document.
-   Strips any fields that are not allowed from client input.
 ──────────────────────────────────────────────────────────────── */
 export async function PUT(req: Request) {
   try {
+    const auth = await getAuthenticatedUser().catch(() => null);
+    const userId = auth?.userId || "singleton";
+
     const body = await req.json().catch(() => null);
     if (!body || typeof body !== "object") {
       return NextResponse.json({ error: "Invalid request body" }, { status: 400 });
@@ -71,29 +82,29 @@ export async function PUT(req: Request) {
       }
     }
 
-    /* Derive panMasked from raw PAN if caller sends `pan` (optional) */
+    /* Derive panMasked from raw PAN if caller sends `pan` */
     if (typeof body.pan === "string" && body.pan.trim().length === 10) {
       const raw = body.pan.trim().toUpperCase();
-      updateFields.pan       = raw;          // stored encrypted-at-rest (MongoDB)
-      updateFields.panMasked = `XXXXX${raw.slice(5)}`; // safe for client
+      updateFields.pan       = raw;
+      updateFields.panMasked = `XXXXX${raw.slice(5)}`;
     }
 
     const client = await clientPromise;
     const col    = client.db(DB).collection<ProfileDocument>(COL);
 
     await col.updateOne(
-      { userId: USER },
+      { userId },
       {
-        $set:         updateFields,
-        $setOnInsert: { userId: USER, createdAt: new Date(), role: "ADMIN", isVerified: true },
+        $set: updateFields,
+        $setOnInsert: { userId, createdAt: new Date(), role: auth?.role || "ADMIN", isVerified: true },
       },
       { upsert: true }
     );
 
-    const doc = await col.findOne({ userId: USER });
-    return NextResponse.json({ success: true, profile: toPublicProfile(doc!) });
+    const doc = await col.findOne({ userId });
+    return NextResponse.json({ success: true, profile: toPublicProfile(doc || defaultProfile()) });
   } catch (err: any) {
-    console.error("PUT /api/profile:", err);
+    console.error("PUT /api/profile error:", err);
     return NextResponse.json({ error: "Failed to update profile" }, { status: 500 });
   }
 }

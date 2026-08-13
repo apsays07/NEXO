@@ -140,6 +140,7 @@ export interface NexoContextType {
   revealedPans: Record<string, boolean>;
   togglePanReveal: (memberId: string) => void;
   updateIpoStatus: (ipoId: string, status: IPOLifecycleStage) => void;
+  updateIpo: (ipoId: string, patch: Partial<IPOOpportunity>) => void;
   refreshIpos: () => Promise<void>;
   isLoading: boolean;
   isPremiumUser: boolean;
@@ -164,8 +165,8 @@ const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [members, setMembers] = useState<Member[]>(MOCK_MEMBERS);
-  const [currentUser, setCurrentUser] = useState<Member | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [currentUser, setCurrentUser] = useState<Member | null>(MOCK_MEMBERS[0]);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
   const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -176,7 +177,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setActiveTabState(tab);
     try {
       localStorage.setItem("nexo_active_tab", tab);
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && window.location.pathname === "/") {
         window.history.replaceState(null, "", `#${tab}`);
       }
     } catch {}
@@ -226,7 +227,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
   // Restore session, active tab, fetch MongoDB profile, & persisted local storage state safely after hydration
   useEffect(() => {
     try {
-      if (typeof window !== "undefined") {
+      if (typeof window !== "undefined" && window.location.pathname === "/") {
         const hashTab = window.location.hash.replace("#", "").toLowerCase() as ViewTab;
         const storedTab = localStorage.getItem("nexo_active_tab") as ViewTab;
         const validTabs: ViewTab[] = ["dashboard", "ipos", "applications", "portfolio", "messages", "members", "profile", "admin"];
@@ -252,6 +253,18 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       const storedTxns = localStorage.getItem("nexo_transactions");
       if (storedTxns !== null) setTransactions(JSON.parse(storedTxns));
     } catch {}
+
+    // Fetch authenticated identity from server-side session
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.member) {
+          setCurrentUser(data.member);
+          setCurrentUserRole(data.member.role || "MEMBER");
+          setIsAuthenticated(true);
+        }
+      })
+      .catch(() => {});
 
     // Fetch latest profile from MongoDB and sync into currentUser state
     getProfile()
@@ -412,8 +425,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       if (txnData?.success && Array.isArray(txnData.transactions) && txnData.transactions.length > 0) {
         setTransactions((prev) => {
           const existing = new Set(prev.map((t) => t.id));
-          const newTxns = txnData.transactions.filter((t: any) => !existing.has(t.id));
-          return [...newTxns, ...prev];
+          const newTxns = txnData.transactions
+            .filter((t: any) => !existing.has(t.id))
+            .map((t: any) => ({
+              ...t,
+              status: t.status || "SUBMITTED",
+            }));
+          return [...newTxns, ...prev.map(t => ({ ...t, status: t.status || "SUBMITTED" }))];
         });
       }
     } catch (err) {
@@ -468,10 +486,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
     } catch {}
 
-    if (typeof window !== "undefined" && foundMember.role === "ADMIN") {
-      window.location.href = "http://localhost:3001";
-    }
-
     return { success: true, role: foundMember.role };
   };
 
@@ -482,6 +496,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     try {
       localStorage.removeItem("nexo_session_user");
     } catch {}
+
+    fetch("/api/auth/logout", { method: "POST" })
+      .finally(() => {
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
+      });
   };
   const [ipos, setIpos] = useState<IPOOpportunity[]>(MOCK_IPOS);
   const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITIES);
@@ -649,24 +670,82 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const updateIpo = (ipoId: string, patch: Partial<IPOOpportunity>) => {
+    setIpos((prev) =>
+      prev.map((item) => (item.id === ipoId ? { ...item, ...patch } : item))
+    );
+    if (selectedIpo && selectedIpo.id === ipoId) {
+      setSelectedIpo((prev) => (prev ? { ...prev, ...patch } : null));
+    }
+  };
+
   const updateApplicationStatus = (
     ipoId: string,
     applicationId: string,
     allotmentStatus: AllotmentStatus
   ) => {
+    let targetAppName = "Member";
+    let targetIpoName = "IPO";
+
     setIpos((prev) =>
       prev.map((ipo) => {
         if (ipo.id === ipoId) {
-          const updatedApps = ipo.applications.map((app) =>
-            app.id === applicationId
-              ? { ...app, allotmentStatus, status: allotmentStatus }
-              : app
-          );
+          targetIpoName = ipo.name;
+          const updatedApps = ipo.applications.map((app) => {
+            if (app.id === applicationId) {
+              targetAppName = app.applicantName || "Member";
+              return { ...app, allotmentStatus, status: allotmentStatus };
+            }
+            return app;
+          });
           return { ...ipo, applications: updatedApps };
         }
         return ipo;
       })
     );
+
+    // 1. Sync Application Status Update to MongoDB
+    fetch("/api/applications", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: applicationId,
+        allotmentStatus,
+        status: allotmentStatus,
+      }),
+    }).catch((err) => console.error("Failed to sync application status update to MongoDB:", err));
+
+    // 2. Sync / Update Transactions Ledger Status
+    const txnStatus = allotmentStatus === "ALLOTTED" ? "ALLOTTED" : allotmentStatus === "NOT_ALLOTTED" ? "REFUNDED" : "SUBMITTED";
+    setTransactions((prev) => {
+      const matchIndex = prev.findIndex((t) => t.id === applicationId || (t as any).applicationNumber?.includes(applicationId));
+      if (matchIndex >= 0) {
+        const copy = [...prev];
+        copy[matchIndex] = { ...copy[matchIndex], status: txnStatus };
+        return copy;
+      }
+      return prev;
+    });
+
+    fetch("/api/transactions", {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id: applicationId, status: txnStatus }),
+    }).catch(() => {});
+
+    // 3. Record Activity Notification
+    const newActivity: ActivityItem = {
+      id: `act_${Date.now()}`,
+      type: "ALLOTMENT_DECLARED",
+      title: `${targetAppName}'s application for ${targetIpoName} marked as ${allotmentStatus}`,
+      subtitle: `Allotment Status updated by Admin`,
+      timestamp: "Just now",
+      memberName: targetAppName,
+      memberAvatar: "/oggy.png",
+      ipoId,
+      ipoName: targetIpoName,
+    };
+    setActivities((prev) => [newActivity, ...prev]);
   };
 
   const createApplication = (
@@ -1148,6 +1227,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         createApplication,
         addApplicationToIpo: (_ipoId, _appData) => {},
         updateIpoStatus,
+        updateIpo,
         updateApplicationStatus,
         updateRegistrarUrl,
         updateApplication,

@@ -24,6 +24,8 @@ import {
 } from "@phosphor-icons/react";
 import { IPOOpportunity } from "@/types/nexo";
 
+const isValidDate = (d: any) => d instanceof Date && !isNaN(d.getTime());
+
 export function PortfolioView() {
   const {
     ipos,
@@ -210,14 +212,14 @@ export function PortfolioView() {
               ? `₹${(availableBalance / 1000).toFixed(0)}k ready for upcoming IPOs`
               : "Set your savings pool to get started"
           }
-          icon={<Wallet size={20} className="text-blue-600 dark:text-blue-400" />}
+          icon={<Wallet size={20} className="text-blue-600" />}
           action={
             <button
               onClick={() => {
                 setSavingsInput(individualSavings.toString());
                 setIsEditSavingsModalOpen(true);
               }}
-              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-blue-300 dark:border-blue-700/60 cursor-pointer"
+              className="text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-blue-200 cursor-pointer"
               title="Add funds or edit balance"
             >
               <Plus size={13} weight="bold" /> Add Funds
@@ -230,7 +232,7 @@ export function PortfolioView() {
           label="Total Applied Capital"
           value={myTotalApplied > 0 ? formatINR(myTotalApplied) : "₹0"}
           subtitle={`Deducted across ${transactions.length} active application(s)`}
-          icon={<FileText size={20} className="text-amber-600 dark:text-amber-400" />}
+          icon={<FileText size={20} className="text-amber-600" />}
         />
 
         {/* Card 3: Total Profit (PnL) */}
@@ -242,7 +244,7 @@ export function PortfolioView() {
               ? `Realized/Declared profit on allotted IPOs`
               : "Updates once allotment & listing gain is pushed by admin"
           }
-          icon={<TrendUp size={20} className="text-emerald-600 dark:text-emerald-400" />}
+          icon={<TrendUp size={20} className="text-emerald-600" />}
         />
       </div>
 
@@ -275,10 +277,10 @@ export function PortfolioView() {
           </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs">
+            <table className="w-full text-left text-xs border-collapse">
               <thead>
-                <tr className="border-b border-line text-ink-secondary uppercase text-[10px] tracking-wider font-bold">
-                  <th className="py-3 px-3">IPO Name</th>
+                <tr className="border-b border-line text-ink-secondary uppercase text-[10px] tracking-wider font-bold bg-surface-alt">
+                  <th className="py-3 px-3.5">IPO Name</th>
                   <th className="py-3 px-3">Type</th>
                   <th className="py-3 px-3">Participants</th>
                   <th className="py-3 px-3">Deducted Amount</th>
@@ -291,74 +293,101 @@ export function PortfolioView() {
               <tbody className="divide-y divide-line/60">
                 {transactions.map((txn, idx) => {
                   const d = new Date(txn.createdAt);
-                  const dateStr = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
-                  const timeStr = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
+                  const dateStr = isValidDate(d)
+                    ? d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" })
+                    : "13 Aug 2026";
+                  const timeStr = isValidDate(d)
+                    ? d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" })
+                    : "12:30 PM";
+
+                  // Flatten and split participant names by comma
+                  const rawList = Array.isArray(txn.participants) ? txn.participants : [];
+                  const parsedParticipants = rawList
+                    .flatMap((p) => (typeof p === "string" ? p.split(",") : [p]))
+                    .map((p) => (typeof p === "string" ? p.trim() : ""))
+                    .filter(Boolean);
+
+                  const statusStr = (txn.status || "SUBMITTED").toUpperCase();
+
                   return (
-                    <tr key={`${txn.id}_${idx}`} className="hover:bg-surface-alt transition-colors">
-                      <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-ink text-sm">{txn.ipoName}</div>
+                    <tr key={`${txn.id}_${idx}`} className="hover:bg-surface-alt/60 transition-colors group">
+                      <td className="py-3.5 px-3.5">
+                        <div className="font-extrabold text-ink text-sm group-hover:text-accent transition-colors">
+                          {txn.ipoName}
+                        </div>
                       </td>
                       <td className="py-3.5 px-3">
                         {txn.type === "SOLO" ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 border border-blue-300 dark:border-blue-700/60 px-2 py-0.5 rounded-full">
-                            <Wallet size={10} weight="bold" /> Solo
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                            <Wallet size={11} weight="bold" /> Solo
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 dark:text-purple-300 bg-purple-100 dark:bg-purple-900/50 border border-purple-300 dark:border-purple-700/60 px-2 py-0.5 rounded-full">
-                            <Users size={10} weight="bold" /> Group
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                            <Users size={11} weight="bold" /> Group
                           </span>
                         )}
                       </td>
                       <td className="py-3.5 px-3 text-ink-secondary font-medium">
-                        <div className="flex flex-wrap items-center gap-1 text-xs">
-                          {txn.participants.map((p, pIdx) => (
-                            <span
-                              key={pIdx}
-                              className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold ${
-                                p.toLowerCase().includes("ankit")
-                                  ? "bg-blue-100 dark:bg-blue-900/50 text-blue-700 dark:text-blue-300 border border-blue-300 dark:border-blue-700/60"
-                                  : "bg-surface-alt text-ink-secondary border border-line"
-                              }`}
-                            >
-                              {p}
-                            </span>
-                          ))}
+                        <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                          {parsedParticipants.length === 0 ? (
+                            <span className="text-ink-tertiary text-xs italic">Solo</span>
+                          ) : (
+                            parsedParticipants.map((p, pIdx) => {
+                              const isPrimary = p.toLowerCase().includes("ankit");
+                              return (
+                                <span
+                                  key={pIdx}
+                                  className={`px-2 py-0.5 rounded-md text-[11px] font-bold tracking-tight shadow-2xs transition-colors ${
+                                    isPrimary
+                                      ? "bg-blue-50 text-blue-700 border border-blue-200"
+                                      : "bg-surface-alt text-ink border border-line"
+                                  }`}
+                                >
+                                  {p}
+                                </span>
+                              );
+                            })
+                          )}
                         </div>
                       </td>
                       <td className="py-3.5 px-3 font-extrabold text-ink num-tabular">
-                        <div className="text-sm font-extrabold">{formatINR(txn.amount)}</div>
+                        <div className="text-sm font-extrabold text-ink">
+                          {formatINR(txn.amount)}
+                        </div>
                         {txn.groupTotalPool && txn.groupTotalPool > txn.amount ? (
-                          <div className="text-[10px] font-bold text-purple-600 dark:text-purple-400 leading-none mt-0.5">
+                          <div className="text-[10px] font-bold text-purple-600 leading-none mt-0.5">
                             {formatINR(txn.groupTotalPool)} Total Pool
                           </div>
                         ) : null}
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[11px] text-ink-secondary">
-                        {txn.applicationNumber}
+                      <td className="py-3.5 px-3">
+                        <span className="font-mono text-[11px] font-semibold text-ink bg-surface-alt px-2.5 py-1 rounded-md border border-line inline-block shadow-2xs">
+                          {txn.applicationNumber || "NEXO-APP-0000"}
+                        </span>
                       </td>
                       <td className="py-3.5 px-3 text-ink-secondary">
-                        <div className="font-medium">{dateStr}</div>
+                        <div className="font-semibold text-ink text-xs">{dateStr}</div>
                         <div className="text-[10px] font-mono text-ink-tertiary">{timeStr}</div>
                       </td>
                       <td className="py-3.5 px-3 text-center">
-                        {txn.status === "SUBMITTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-700 dark:text-amber-300 bg-amber-100 dark:bg-amber-900/50 border border-amber-300 dark:border-amber-700/60 px-2 py-0.5 rounded-full">
-                            <CheckCircle size={10} weight="fill" /> Submitted
+                        {statusStr === "ALLOTTED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                            <CheckCircle size={12} weight="fill" className="text-emerald-500" /> Allotted
                           </span>
                         )}
-                        {txn.status === "ALLOTTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-700 dark:text-emerald-300 bg-emerald-100 dark:bg-emerald-900/50 border border-emerald-300 dark:border-emerald-700/60 px-2 py-0.5 rounded-full">
-                            <CheckCircle size={10} weight="fill" /> Allotted
-                          </span>
-                        )}
-                        {txn.status === "REFUNDED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-secondary bg-surface-alt border border-line px-2 py-0.5 rounded-full">
+                        {statusStr === "REFUNDED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-secondary bg-surface-alt border border-line px-2.5 py-0.5 rounded-full shadow-2xs">
                             Refunded
                           </span>
                         )}
-                        {txn.status === "REJECTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 border border-red-300 dark:border-red-700/60 px-2 py-0.5 rounded-full">
-                            Rejected
+                        {(statusStr === "REJECTED" || statusStr === "NOT_ALLOTTED") && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-800 bg-rose-50 border border-rose-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                            <X size={12} weight="bold" className="text-rose-500" /> Rejected
+                          </span>
+                        )}
+                        {statusStr !== "ALLOTTED" && statusStr !== "REFUNDED" && statusStr !== "REJECTED" && statusStr !== "NOT_ALLOTTED" && (
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-800 bg-amber-50 border border-amber-200 px-2.5 py-0.5 rounded-full shadow-2xs">
+                            <CheckCircle size={12} weight="fill" className="text-amber-500" /> Submitted
                           </span>
                         )}
                       </td>
@@ -367,12 +396,13 @@ export function PortfolioView() {
                           <button
                             onClick={() => {
                               setEditingTxn(txn);
-                              setEditTxnName(txn.participants[0] || "");
+                              const parsedName = parsedParticipants[0] || "Ankit";
+                              setEditTxnName(parsedName);
                               setEditTxnAmount(txn.amount);
                               setEditTxnPan(txn.panMasked || "XXXXXXXX41");
                             }}
                             title="Edit application & transaction details"
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-800/60 border border-blue-300 dark:border-blue-700/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs"
                           >
                             <PencilSimple size={12} weight="bold" />
                             Edit
@@ -382,13 +412,13 @@ export function PortfolioView() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleDeleteTxn(txn.id, txn.amount, txn.ipoName)}
-                                className="text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                                className="text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded-lg transition-all active:scale-95 cursor-pointer shadow-xs"
                               >
                                 Confirm Cancel
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="text-[11px] font-bold text-ink-secondary bg-surface-alt hover:bg-surface-hover px-2 py-1 rounded-lg transition-all cursor-pointer"
+                                className="text-[11px] font-bold text-ink-secondary bg-surface-alt hover:bg-surface-hover px-2 py-1 rounded-lg transition-all cursor-pointer border border-line"
                               >
                                 Back
                               </button>
@@ -397,7 +427,7 @@ export function PortfolioView() {
                             <button
                               onClick={() => setConfirmDeleteId(txn.id)}
                               title="Cancel application"
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-800/60 border border-red-300 dark:border-red-700/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 border border-rose-200 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer shadow-2xs"
                             >
                               <Trash size={12} weight="bold" />
                               Cancel

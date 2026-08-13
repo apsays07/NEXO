@@ -40,7 +40,7 @@ export function TopBar() {
 
   return (
     <>
-      <header className="h-16 border-b border-line bg-surface/75 backdrop-blur-md px-4 sm:px-6 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-line/20 font-sans">
+      <header className="h-20 border-b border-line bg-surface/75 backdrop-blur-md px-6 sm:px-8 flex items-center justify-between sticky top-0 z-20 shadow-xs shadow-line/20 font-sans">
         {/* Page Title & Sidebar Toggle */}
         <div className="flex items-center gap-2.5 text-sm font-semibold text-ink-tertiary">
           <button

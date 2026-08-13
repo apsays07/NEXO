@@ -20,7 +20,7 @@ import {
   Phone,
   ChatCircleDots,
 } from "@phosphor-icons/react";
-import { Member } from "@/types/nexo";
+import { Member, MemberRole } from "@/types/nexo";
 
 export function MembersView() {
   const { members, ipos, addMember, updateMember, currentUser, openDirectChatWithUser } = useNexo();
@@ -46,7 +46,7 @@ export function MembersView() {
   const [editName, setEditName] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editPan, setEditPan] = useState("");
-  const [editRole, setEditRole] = useState<"ADMIN" | "MEMBER">("MEMBER");
+  const [editRole, setEditRole] = useState<MemberRole>("MEMBER");
 
   // Calculate applied IPO count for a member
   const getAppliedIpoCount = (member: Member): number => {
@@ -82,21 +82,23 @@ export function MembersView() {
 
   // Filtered members list
   const filteredMembers = useMemo(() => {
-    return members.filter((member) => {
-      const mUsername = member.username || member.name.toLowerCase();
-      const mPhone = member.phone || "";
-      const matchesSearch =
-        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        mPhone.includes(searchQuery);
-      
-      const matchesRole =
-        roleFilter === "ALL" ||
-        (roleFilter === "ADMIN" && member.role === "ADMIN") ||
-        (roleFilter === "MEMBER" && member.role === "MEMBER");
+    return members
+      .filter((m) => m.role !== "SUPER_ADMIN") // hide super admin from user-side member list
+      .filter((member) => {
+        const mUsername = member.username || member.name.toLowerCase();
+        const mPhone = member.phone || "";
+        const matchesSearch =
+          member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          mPhone.includes(searchQuery);
 
-      return matchesSearch && matchesRole;
-    });
+        const matchesRole =
+          roleFilter === "ALL" ||
+          (roleFilter === "ADMIN" && member.role === "ADMIN") ||
+          (roleFilter === "MEMBER" && member.role === "MEMBER");
+
+        return matchesSearch && matchesRole;
+      });
   }, [members, searchQuery, roleFilter]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {

@@ -19,7 +19,7 @@ export type ParticipationType = "INDIVIDUAL" | "COMBINED" | "SOLO" | "COMBO";
 
 export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
 
-export type MemberRole = "ADMIN" | "MEMBER";
+export type MemberRole = "SUPER_ADMIN" | "ADMIN" | "MEMBER";
 
 export interface Member {
   id: string;
