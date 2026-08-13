@@ -234,20 +234,24 @@ export function MembersView() {
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-surface/60 border border-line p-2.5 rounded-2xl">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 bg-surface/90 dark:bg-[#11131A]/90 backdrop-blur-md border border-line/80 p-2.5 rounded-2xl shadow-lg focus-within:border-accent/50 focus-within:ring-2 focus-within:ring-accent/15 transition-all font-sans select-none">
         <div className="relative flex-1">
-          <MagnifyingGlass size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-tertiary" />
+          <MagnifyingGlass
+            size={18}
+            className="absolute left-3.5 top-1/2 -translate-y-1/2 text-accent"
+          />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search member by name, @username, or phone number..."
-            className="w-full pl-9 pr-4 py-1.5 bg-surface-alt/70 border border-line/80 rounded-xl text-xs text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-accent transition-colors"
+            className="w-full pl-10 pr-9 py-2 bg-surface-alt/80 dark:bg-[#151821] border border-line/70 rounded-xl text-xs sm:text-sm text-ink placeholder:text-ink-tertiary focus:outline-none font-sans transition-all"
           />
           {searchQuery && (
             <button
               onClick={() => setSearchQuery("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-ink-tertiary hover:text-ink"
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1 rounded-md text-ink-tertiary hover:text-ink hover:bg-surface-hover cursor-pointer transition-colors"
+              title="Clear search"
             >
               <X size={14} />
             </button>
@@ -255,15 +259,15 @@ export function MembersView() {
         </div>
 
         {/* Role Filter Tabs */}
-        <div className="flex items-center gap-1 bg-surface-alt/80 p-1 rounded-xl border border-line shrink-0">
+        <div className="flex items-center gap-1 bg-surface-alt/80 dark:bg-[#151821] p-1 rounded-xl border border-line/70 shrink-0 font-sans">
           {(["ALL", "ADMIN", "MEMBER"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setRoleFilter(tab)}
-              className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all cursor-pointer ${
+              className={`px-3.5 py-1.5 rounded-lg text-xs transition-all cursor-pointer ${
                 roleFilter === tab
-                  ? "bg-surface text-ink shadow-2xs font-bold"
-                  : "text-ink-tertiary hover:text-ink"
+                  ? "bg-accent text-white font-extrabold shadow-xs shadow-accent/25"
+                  : "text-ink-tertiary hover:text-ink font-semibold hover:bg-surface-hover/50"
               }`}
             >
               {tab === "ALL" ? "All" : tab === "ADMIN" ? "Admins" : "Members"}
