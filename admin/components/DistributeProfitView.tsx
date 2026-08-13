@@ -7,8 +7,8 @@ import { useAdmin } from "../context/AdminContext";
 export function DistributeProfitView() {
   const { ipos, publishProfitDistribution } = useAdmin();
 
-  // Filter visible IPOs
-  const activeIpos = ipos.filter((ipo) => !ipo.isHidden);
+  // Show all IPOs (active + historical/hidden) for profit distribution
+  const activeIpos = ipos;
 
   const [selectedIpoId, setSelectedIpoId] = useState(activeIpos[0]?.id || "");
   const [allottedLots, setAllottedLots] = useState<number | "">(1);
@@ -189,7 +189,7 @@ export function DistributeProfitView() {
               )}
               {activeIpos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
-                  {ipo.name} ({ipo.metrics.issueSize})
+                  {ipo.name} {ipo.isHidden ? "(History)" : ""} ({ipo.metrics.issueSize})
                 </option>
               ))}
             </select>
