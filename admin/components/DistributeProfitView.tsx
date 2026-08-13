@@ -178,8 +178,12 @@ export function DistributeProfitView() {
                 placeholder="e.g. 3"
                 value={allottedLots}
                 onChange={(e) => {
-                  const val = e.target.value === "" ? "" : Number(e.target.value);
-                  setAllottedLots(val);
+                  const raw = e.target.value === "" ? "" : Number(e.target.value);
+                  if (typeof raw === "number" && raw > totalApplications) {
+                    setAllottedLots(totalApplications);
+                  } else {
+                    setAllottedLots(raw);
+                  }
                 }}
                 className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-10 pr-4 py-3 text-xs sm:text-sm font-mono font-black text-slate-900 focus:bg-white focus:border-blue-600 focus:outline-none shadow-xs"
               />
