@@ -22,11 +22,11 @@ export function DistributeProfitView() {
   const memberApplications = React.useMemo(() => {
     if (!selectedIpo || !selectedIpo.applications || selectedIpo.applications.length === 0) {
       return [
-        { id: "mem_1", name: "Ashay (Member)", lots: 2, pan: "ABCDE1234F" },
-        { id: "mem_2", name: "Niranjan", lots: 2, pan: "BCDEF2345G" },
-        { id: "mem_3", name: "Rohan Verma", lots: 1, pan: "CDEFG3456H" },
-        { id: "mem_4", name: "Priya Patel", lots: 3, pan: "DEFGH4567I" },
-        { id: "mem_5", name: "Vikram Malhotra", lots: 2, pan: "EFGHI5678J" },
+        { id: "mem_1", name: "Ashay (Member)", lots: 1, pan: "ABCDE1234F" },
+        { id: "mem_2", name: "Niranjan", lots: 0.5, pan: "BCDEF2345G" },
+        { id: "mem_3", name: "Shivam Prasad", lots: 1, pan: "CDEFG3456H" },
+        { id: "mem_4", name: "Rahul Sharma", lots: 0.5, pan: "DEFGH4567I" },
+        { id: "mem_5", name: "Ankit", lots: 1, pan: "EFGHI5678J" },
       ];
     }
 
@@ -40,7 +40,7 @@ export function DistributeProfitView() {
           const pKey = (p.memberId || pName).toLowerCase();
           const pPan = p.panMasked || app.panMasked || "XXXXXXXX41";
           const minInv = selectedIpo.metrics?.minInvestment || 15000;
-          const lotVal = p.contribution ? Math.max(1, Math.round(p.contribution / minInv)) : (app.lotCount || 1);
+          const lotVal = p.contribution ? (p.contribution / minInv) : (app.lotCount || 1);
 
           if (membersMap.has(pKey)) {
             const existing = membersMap.get(pKey)!;
@@ -244,7 +244,7 @@ export function DistributeProfitView() {
                     <td className="p-3.5 font-mono text-xs text-slate-500">{m.pan}</td>
                     <td className="p-3.5 text-center">
                       <span className="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 font-extrabold font-mono text-xs border border-blue-200">
-                        {m.lots} Lot{m.lots > 1 ? "s" : ""}
+                        {m.lots % 1 === 0 ? m.lots : m.lots.toFixed(1)} Lot{m.lots > 1 ? "s" : ""}
                       </span>
                     </td>
                     <td className="p-3.5 text-right font-mono font-bold text-slate-600">

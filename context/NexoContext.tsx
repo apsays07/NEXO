@@ -15,6 +15,7 @@ import {
   ActionItem,
   RecommendationType,
   Transaction,
+  ListedIPO,
 } from "@/types/nexo";
 import {
   MOCK_IPOS,
@@ -250,7 +251,52 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         };
       });
 
+      const publishedCards: ListedIPO[] = [];
+      combined.forEach((ipo) => {
+        if (ipo.profitDistribution) {
+          const dist = ipo.profitDistribution;
+          const userProfits = (ipo.applications || []).flatMap((app) => {
+            if (Array.isArray(app.participants) && app.participants.length > 0) {
+              return app.participants.map((p: any) => ({
+                memberId: p.memberId,
+                memberName: p.memberName || p.name,
+                profit: Math.round(((p.contribution || 15000) / (ipo.metrics?.minInvestment || 15000)) * dist.oneLotProfit),
+              }));
+            }
+            return [
+              {
+                memberId: app.memberId,
+                memberName: app.applicantName,
+                profit: Math.round((app.lotCount || 1) * dist.oneLotProfit),
+              },
+            ];
+          });
+
+          publishedCards.push({
+            id: `pub_${ipo.id}`,
+            name: ipo.name,
+            category: ipo.category || "Mainboard",
+            logo: ipo.logo || ipo.name.substring(0, 2).toUpperCase(),
+            lotsAllotted: dist.totalLots || 1,
+            totalProfit: dist.totalProfit || 0,
+            applicantsCount: new Set((ipo.applications || []).map((a) => a.memberId || a.applicantName)).size || 1,
+            oneLotProfit: dist.oneLotProfit || 0,
+            listingDate: dist.publishedAt
+              ? new Date(dist.publishedAt).toLocaleDateString("en-GB", {
+                  day: "2-digit",
+                  month: "short",
+                  year: "numeric",
+                })
+              : "Sep 2026",
+            userProfits,
+          });
+        }
+      });
+
       setIpos(combined);
+      if (publishedCards.length > 0) {
+        setListedIpos(publishedCards);
+      }
     } catch (err) {
       console.warn("Failed to refresh IPOs from API in NexoContext:", err);
     }
@@ -891,30 +937,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setActiveTab("applications");
   };
 
-  const [listedIpos, setListedIpos] = useState<import("@/types/nexo").ListedIPO[]>([
-    {
-      id: "l_1",
-      name: "Premier Energies",
-      category: "Mainboard",
-      logo: "⚡",
-      lotsAllotted: 2,
-      totalProfit: 42000,
-      applicantsCount: 5,
-      oneLotProfit: 21000,
-      listingDate: "Sep 2024",
-    },
-    {
-      id: "l_2",
-      name: "Bajaj Housing Finance",
-      category: "Mainboard",
-      logo: "🏦",
-      lotsAllotted: 3,
-      totalProfit: 68500,
-      applicantsCount: 6,
-      oneLotProfit: 22833,
-      listingDate: "Sep 2024",
-    },
-  ]);
+  const [listedIpos, setListedIpos] = useState<import("@/types/nexo").ListedIPO[]>([]);
 
   const addListedIpo = (ipoData: Omit<import("@/types/nexo").ListedIPO, "id">) => {
     const newListedItem = {
