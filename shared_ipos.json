@@ -71,8 +71,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "REFUNDED",
+        "status": "REFUNDED",
         "createdAt": "2026-08-13T12:13:17.490Z",
         "applicationNumber": "NEXO-APP-5506",
         "participants": [
@@ -96,7 +96,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786623102957",
@@ -111,8 +112,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T12:11:42.957Z",
         "applicationNumber": "NEXO-APP-4580",
         "participants": [
@@ -126,7 +127,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786619040328",
@@ -141,8 +143,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T11:04:00.328Z",
         "applicationNumber": "NEXO-APP-3286",
         "participants": [
@@ -156,7 +158,8 @@
             "panFull": "GXPPI8988T",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786618763173",
@@ -171,8 +174,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:59:23.173Z",
         "applicationNumber": "NEXO-APP-9985",
         "participants": [
@@ -196,7 +199,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786618716376",
@@ -211,8 +215,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:58:36.376Z",
         "applicationNumber": "NEXO-APP-8764",
         "participants": [
@@ -226,7 +230,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ],
     "profitDistribution": {
@@ -279,8 +284,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:33:59.629Z",
         "applicationNumber": "NEXO-APP-4415",
         "participants": [
@@ -304,7 +309,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786617210921",
@@ -319,8 +325,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:33:30.921Z",
         "applicationNumber": "NEXO-APP-5114",
         "participants": [
@@ -334,7 +340,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ],
     "profitDistribution": {
@@ -417,8 +424,8 @@
         "totalContribution": 14893,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:16:50.913Z",
         "applicationNumber": "NEXO-APP-6851",
         "participants": [
@@ -442,7 +449,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786616188871",
@@ -457,8 +465,8 @@
         "totalContribution": 14893,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:16:28.871Z",
         "applicationNumber": "NEXO-APP-2931",
         "participants": [
@@ -472,7 +480,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ]
   },
@@ -518,8 +527,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:11:53.084Z",
         "applicationNumber": "NEXO-APP-3632",
         "participants": [
@@ -533,7 +542,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786615547592",
@@ -548,8 +558,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:05:47.592Z",
         "applicationNumber": "NEXO-APP-6055",
         "participants": [
@@ -573,7 +583,8 @@
             "panFull": "UTRID8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786615529363",
@@ -588,8 +599,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:05:29.363Z",
         "applicationNumber": "NEXO-APP-7962",
         "participants": [
@@ -603,7 +614,8 @@
             "panFull": "UTRID8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ],
     "profitDistribution": {
@@ -655,8 +667,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:02:11.751Z",
         "applicationNumber": "NEXO-APP-7425",
         "participants": [
@@ -680,7 +692,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786605370801",
@@ -695,8 +708,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T07:16:10.801Z",
         "applicationNumber": "NEXO-APP-3341",
         "participants": [
@@ -720,7 +733,8 @@
             "panFull": "BCDEF2345G",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786605327433",
@@ -735,8 +749,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T07:15:27.433Z",
         "applicationNumber": "NEXO-APP-4357",
         "participants": [
@@ -750,7 +764,8 @@
             "panFull": "FGRRI8988N",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       },
       {
         "id": "app_1786604840168",
@@ -765,8 +780,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T07:07:20.168Z",
         "applicationNumber": "NEXO-APP-7716",
         "participants": [
@@ -780,7 +795,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ],
     "profitDistribution": {
@@ -860,8 +876,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T06:48:52.669Z",
         "applicationNumber": "NEXO-APP-9528",
         "participants": [
@@ -875,7 +891,8 @@
             "panFull": "IKXPP8988P",
             "status": "SUBMITTED"
           }
-        ]
+        ],
+        "registrarCheckedAt": "2026-08-13T13:13:00.614Z"
       }
     ]
   },

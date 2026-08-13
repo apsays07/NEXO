@@ -36,6 +36,36 @@ export function RegistrarCheckerTab(_props: RegistrarCheckerTabProps) {
   const [currentSyncTarget, setCurrentSyncTarget] = useState<string | null>(null);
   const [syncLogs, setSyncLogs] = useState<string[]>([]);
   const [rowStatusOverrides, setRowStatusOverrides] = useState<Record<string, "ALLOTTED" | "REFUNDED" | "AWAITING">>({});
+  const [lastSyncedTime, setLastSyncedTime] = useState<string>("Just now");
+
+  // Automatic Background Registrar Sync Effect on Mount & Periodic Interval
+  React.useEffect(() => {
+    let isMounted = true;
+
+    const performAutoServerSync = async () => {
+      try {
+        const res = await fetch("/api/registrar-sync", { method: "POST" });
+        const data = await res.json();
+        if (data.success && isMounted) {
+          setLastSyncedTime(new Date().toLocaleTimeString());
+          await refreshIpos();
+        }
+      } catch (err) {
+        console.warn("Auto registrar sync error:", err);
+      }
+    };
+
+    // Trigger immediately on mount
+    performAutoServerSync();
+
+    // Continuously check & sync every 6 seconds
+    const interval = setInterval(performAutoServerSync, 6000);
+
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   // Flatten all applications across all IPOs
   const allApplications = useMemo(() => {
