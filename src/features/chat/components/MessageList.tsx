@@ -74,7 +74,7 @@ export function MessageList({
 
           return (
             <MessageBubble
-              key={msg.id || index}
+              key={msg.id ? `${msg.id}_${index}` : `msg_idx_${index}`}
               message={msg}
               isSelf={isSelf}
               showSenderHeader={showSenderHeader}

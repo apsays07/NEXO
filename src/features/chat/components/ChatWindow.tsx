@@ -134,6 +134,14 @@ export function ChatWindow({
       if (msg.conversationId === conversation.id) {
         setMessages((prev) => {
           if (prev.some((m) => m.id === msg.id)) return prev;
+          const tempIndex = prev.findIndex(
+            (m) => m.id.startsWith("msg_temp_") && m.senderId === msg.senderId && m.text === msg.text
+          );
+          if (tempIndex !== -1) {
+            const copy = [...prev];
+            copy[tempIndex] = msg;
+            return copy;
+          }
           return [...prev, msg];
         });
         markAsRead();
@@ -190,7 +198,12 @@ export function ChatWindow({
       });
       const data = await res.json();
       if (data?.success && data.message) {
-        setMessages((prev) => prev.map((m) => (m.id === tempId ? data.message : m)));
+        setMessages((prev) => {
+          if (prev.some((m) => m.id === data.message.id)) {
+            return prev.filter((m) => m.id !== tempId);
+          }
+          return prev.map((m) => (m.id === tempId ? data.message : m));
+        });
         chatRealtime.notifyNewMessage(data.message);
       }
     } catch (err) {
