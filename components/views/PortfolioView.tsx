@@ -153,14 +153,14 @@ export function PortfolioView() {
     <div className="space-y-6 animate-fade-in font-sans">
       {/* Dynamic Refund Toast Notification */}
       {deleteNotification && (
-        <div className="p-3.5 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] text-[#059669] text-xs font-bold flex items-center justify-between shadow-xs animate-fadeIn">
+        <div className="p-3.5 rounded-2xl bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 text-emerald-600 dark:text-emerald-400 text-xs font-bold flex items-center justify-between shadow-xs animate-fadeIn">
           <div className="flex items-center gap-2">
-            <CheckCircle size={18} weight="fill" className="text-[#059669]" />
+            <CheckCircle size={18} weight="fill" className="text-emerald-600 dark:text-emerald-400" />
             <span>{deleteNotification}</span>
           </div>
           <button
             onClick={() => setDeleteNotification(null)}
-            className="text-[#059669] hover:text-[#047857] p-1"
+            className="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 p-1"
           >
             <X size={14} weight="bold" />
           </button>
@@ -168,16 +168,16 @@ export function PortfolioView() {
       )}
 
       {/* Portfolio Mode Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-[#EFF6FF] via-[#F0F9FF] to-[#ECFDF5] border border-[#BFDBFE] p-4 sm:p-5 rounded-2xl gap-3 shadow-2xs">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-blue-50/80 via-sky-50/60 to-emerald-50/60 dark:from-blue-950/30 dark:via-sky-950/20 dark:to-emerald-950/20 border border-blue-200/60 dark:border-blue-800/30 p-4 sm:p-5 rounded-2xl gap-3 shadow-2xs">
         <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-[#2563EB] text-white rounded-xl shadow-xs shrink-0">
+          <div className="p-3 bg-blue-600 text-white rounded-xl shadow-xs shrink-0">
             <Wallet size={24} weight="bold" />
           </div>
           <div>
-            <h2 className="text-base font-extrabold text-[#1E3A8A]">
+            <h2 className="text-base font-extrabold text-blue-900 dark:text-blue-200">
               Personal Fund &amp; Capital Management
             </h2>
-            <p className="text-xs text-[#3B82F6] font-medium mt-0.5">
+            <p className="text-xs text-blue-500 font-medium mt-0.5">
               Manage your savings pool, monitor IPO application deductions, and check available funds in real-time.
             </p>
           </div>
@@ -210,14 +210,14 @@ export function PortfolioView() {
               ? `₹${(availableBalance / 1000).toFixed(0)}k ready for upcoming IPOs`
               : "Set your savings pool to get started"
           }
-          icon={<Wallet size={20} className="text-[#2563EB]" />}
+          icon={<Wallet size={20} className="text-blue-600 dark:text-blue-400" />}
           action={
             <button
               onClick={() => {
                 setSavingsInput(individualSavings.toString());
                 setIsEditSavingsModalOpen(true);
               }}
-              className="text-xs font-bold text-[#2563EB] hover:text-[#1D4ED8] bg-[#EFF6FF] hover:bg-[#DBEAFE] px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-[#BFDBFE] cursor-pointer"
+              className="text-xs font-bold text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-2.5 py-1 rounded-lg transition-colors flex items-center gap-1 border border-blue-200 dark:border-blue-800/60 cursor-pointer"
               title="Add funds or edit balance"
             >
               <Plus size={13} weight="bold" /> Add Funds
@@ -230,7 +230,7 @@ export function PortfolioView() {
           label="Total Applied Capital"
           value={myTotalApplied > 0 ? formatINR(myTotalApplied) : "₹0"}
           subtitle={`Deducted across ${transactions.length} active application(s)`}
-          icon={<FileText size={20} className="text-[#D97706]" />}
+          icon={<FileText size={20} className="text-amber-600 dark:text-amber-400" />}
         />
 
         {/* Card 3: Total Profit (PnL) */}
@@ -242,33 +242,33 @@ export function PortfolioView() {
               ? `Realized/Declared profit on allotted IPOs`
               : "Updates once allotment & listing gain is pushed by admin"
           }
-          icon={<TrendUp size={20} className="text-[#059669]" />}
+          icon={<TrendUp size={20} className="text-emerald-600 dark:text-emerald-400" />}
         />
       </div>
 
       {/* Transactions Section */}
-      <Card className="border-[#E2E8F0]">
+      <Card className="border-line">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <Receipt size={18} className="text-[#2563EB]" />
-            <h3 className="text-base font-extrabold text-[#0F172A]">My IPO Transactions &amp; Deductions</h3>
+            <Receipt size={18} className="text-blue-600 dark:text-blue-400" />
+            <h3 className="text-base font-extrabold text-ink">My IPO Transactions &amp; Deductions</h3>
             {transactions.length > 0 && (
-              <span className="text-[10px] font-bold text-white bg-[#2563EB] px-2 py-0.5 rounded-full">
+              <span className="text-[10px] font-bold text-white bg-blue-600 px-2 py-0.5 rounded-full">
                 {transactions.length}
               </span>
             )}
           </div>
-          <span className="text-xs text-[#64748B] font-medium">All active applications — Solo &amp; Group</span>
+          <span className="text-xs text-ink-secondary font-medium">All active applications — Solo &amp; Group</span>
         </div>
 
         {transactions.length === 0 ? (
           <div className="py-10 flex flex-col items-center justify-center gap-3 text-center">
-            <div className="w-12 h-12 rounded-2xl bg-[#F1F5F9] flex items-center justify-center">
-              <Receipt size={24} className="text-[#94A3B8]" />
+            <div className="w-12 h-12 rounded-2xl bg-surface-alt flex items-center justify-center">
+              <Receipt size={24} className="text-ink-tertiary" />
             </div>
             <div>
-              <p className="text-sm font-bold text-[#64748B]">No transactions recorded yet</p>
-              <p className="text-xs text-[#94A3B8] mt-1">
+              <p className="text-sm font-bold text-ink-secondary">No transactions recorded yet</p>
+              <p className="text-xs text-ink-tertiary mt-1">
                 Apply to any IPO (Solo or Multi-Friend Group) to see capital deductions listed here
               </p>
             </div>
@@ -277,7 +277,7 @@ export function PortfolioView() {
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
-                <tr className="border-b border-[#E2E8F0] text-[#64748B] uppercase text-[10px] tracking-wider font-bold">
+                <tr className="border-b border-line text-ink-secondary uppercase text-[10px] tracking-wider font-bold">
                   <th className="py-3 px-3">IPO Name</th>
                   <th className="py-3 px-3">Type</th>
                   <th className="py-3 px-3">Participants</th>
@@ -288,36 +288,36 @@ export function PortfolioView() {
                   <th className="py-3 px-3 text-center">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#F1F5F9]">
+              <tbody className="divide-y divide-line/60">
                 {transactions.map((txn, idx) => {
                   const d = new Date(txn.createdAt);
                   const dateStr = d.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
                   const timeStr = d.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" });
                   return (
-                    <tr key={`${txn.id}_${idx}`} className="hover:bg-[#F8FAFC] transition-colors">
+                    <tr key={`${txn.id}_${idx}`} className="hover:bg-surface-alt transition-colors">
                       <td className="py-3.5 px-3">
-                        <div className="font-extrabold text-[#0F172A] text-sm">{txn.ipoName}</div>
+                        <div className="font-extrabold text-ink text-sm">{txn.ipoName}</div>
                       </td>
                       <td className="py-3.5 px-3">
                         {txn.type === "SOLO" ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-[#EFF6FF] border border-[#BFDBFE] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-800/60 px-2 py-0.5 rounded-full">
                             <Wallet size={10} weight="bold" /> Solo
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#7C3AED] bg-[#F5F3FF] border border-[#DDD6FE] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-purple-600 dark:text-purple-400 bg-purple-50 dark:bg-purple-950/40 border border-purple-200 dark:border-purple-800/60 px-2 py-0.5 rounded-full">
                             <Users size={10} weight="bold" /> Group
                           </span>
                         )}
                       </td>
-                      <td className="py-3.5 px-3 text-[#475569] font-medium">
+                      <td className="py-3.5 px-3 text-ink-secondary font-medium">
                         <div className="flex flex-wrap items-center gap-1 text-xs">
                           {txn.participants.map((p, pIdx) => (
                             <span
                               key={pIdx}
                               className={`px-1.5 py-0.5 rounded-md text-[11px] font-bold ${
                                 p.toLowerCase().includes("ankit")
-                                  ? "bg-[#EFF6FF] text-[#2563EB] border border-[#BFDBFE]"
-                                  : "bg-slate-100 text-slate-700 border border-slate-200"
+                                  ? "bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 border border-blue-200 dark:border-blue-800/60"
+                                  : "bg-surface-alt text-ink-secondary border border-line"
                               }`}
                             >
                               {p}
@@ -325,39 +325,39 @@ export function PortfolioView() {
                           ))}
                         </div>
                       </td>
-                      <td className="py-3.5 px-3 font-extrabold text-[#0F172A] num-tabular">
+                      <td className="py-3.5 px-3 font-extrabold text-ink num-tabular">
                         <div className="text-sm font-extrabold">{formatINR(txn.amount)}</div>
                         {txn.groupTotalPool && txn.groupTotalPool > txn.amount ? (
-                          <div className="text-[10px] font-bold text-[#7C3AED] leading-none mt-0.5">
+                          <div className="text-[10px] font-bold text-purple-600 dark:text-purple-400 leading-none mt-0.5">
                             {formatINR(txn.groupTotalPool)} Total Pool
                           </div>
                         ) : null}
                       </td>
-                      <td className="py-3.5 px-3 font-mono text-[11px] text-[#64748B]">
+                      <td className="py-3.5 px-3 font-mono text-[11px] text-ink-secondary">
                         {txn.applicationNumber}
                       </td>
-                      <td className="py-3.5 px-3 text-[#64748B]">
+                      <td className="py-3.5 px-3 text-ink-secondary">
                         <div className="font-medium">{dateStr}</div>
-                        <div className="text-[10px] font-mono text-[#94A3B8]">{timeStr}</div>
+                        <div className="text-[10px] font-mono text-ink-tertiary">{timeStr}</div>
                       </td>
                       <td className="py-3.5 px-3 text-center">
                         {txn.status === "SUBMITTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#D97706] bg-[#FEF3C7] border border-[#FDE68A] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2 py-0.5 rounded-full">
                             <CheckCircle size={10} weight="fill" /> Submitted
                           </span>
                         )}
                         {txn.status === "ALLOTTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#059669] bg-[#ECFDF5] border border-[#A7F3D0] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 px-2 py-0.5 rounded-full">
                             <CheckCircle size={10} weight="fill" /> Allotted
                           </span>
                         )}
                         {txn.status === "REFUNDED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#64748B] bg-[#F1F5F9] border border-[#CBD5E1] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-ink-secondary bg-surface-alt border border-line px-2 py-0.5 rounded-full">
                             Refunded
                           </span>
                         )}
                         {txn.status === "REJECTED" && (
-                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-[#DC2626] bg-[#FEF2F2] border border-[#FECACA] px-2 py-0.5 rounded-full">
+                          <span className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800/60 px-2 py-0.5 rounded-full">
                             Rejected
                           </span>
                         )}
@@ -372,7 +372,7 @@ export function PortfolioView() {
                               setEditTxnPan(txn.panMasked || "XXXXXXXX41");
                             }}
                             title="Edit application & transaction details"
-                            className="inline-flex items-center gap-1 text-[11px] font-bold text-[#2563EB] bg-[#EFF6FF] hover:bg-[#DBEAFE] border border-[#BFDBFE] px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                            className="inline-flex items-center gap-1 text-[11px] font-bold text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50 hover:bg-blue-100 dark:hover:bg-blue-900/50 border border-blue-200 dark:border-blue-800/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
                           >
                             <PencilSimple size={12} weight="bold" />
                             Edit
@@ -382,13 +382,13 @@ export function PortfolioView() {
                             <div className="flex items-center gap-1">
                               <button
                                 onClick={() => handleDeleteTxn(txn.id, txn.amount, txn.ipoName)}
-                                className="text-[11px] font-bold text-white bg-[#DC2626] hover:bg-[#B91C1C] px-2 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                                className="text-[11px] font-bold text-white bg-red-600 hover:bg-red-700 px-2 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
                               >
                                 Confirm Cancel
                               </button>
                               <button
                                 onClick={() => setConfirmDeleteId(null)}
-                                className="text-[11px] font-bold text-[#64748B] bg-[#F1F5F9] hover:bg-[#E2E8F0] px-2 py-1 rounded-lg transition-all cursor-pointer"
+                                className="text-[11px] font-bold text-ink-secondary bg-surface-alt hover:bg-surface-hover px-2 py-1 rounded-lg transition-all cursor-pointer"
                               >
                                 Back
                               </button>
@@ -397,7 +397,7 @@ export function PortfolioView() {
                             <button
                               onClick={() => setConfirmDeleteId(txn.id)}
                               title="Cancel application"
-                              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#DC2626] bg-[#FEF2F2] hover:bg-[#FEE2E2] border border-[#FECACA] px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
+                              className="inline-flex items-center gap-1 text-[11px] font-bold text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-950/40 hover:bg-red-100 dark:hover:bg-red-900/50 border border-red-200 dark:border-red-800/60 px-2.5 py-1 rounded-lg transition-all active:scale-95 cursor-pointer"
                             >
                               <Trash size={12} weight="bold" />
                               Cancel
@@ -416,27 +416,27 @@ export function PortfolioView() {
 
       {/* EDIT / ADD SAVINGS MODAL */}
       {isEditSavingsModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E2E8F0] relative">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl border border-line relative">
             <button
               onClick={() => {
                 setIsEditSavingsModalOpen(false);
                 setQuickAddFeedback("");
               }}
-              className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] p-1 rounded-lg hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+              className="absolute top-4 right-4 text-ink-tertiary hover:text-ink p-1 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
             >
               <X size={18} weight="bold" />
             </button>
 
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-2.5 bg-[#EFF6FF] text-[#2563EB] rounded-xl border border-[#BFDBFE]">
+              <div className="p-2.5 bg-blue-50 dark:bg-blue-950/40 text-blue-600 dark:text-blue-400 rounded-xl border border-blue-200 dark:border-blue-800/60">
                 <Wallet size={24} weight="bold" />
               </div>
               <div>
-                <h3 className="text-lg font-extrabold text-[#0F172A]">
+                <h3 className="text-lg font-extrabold text-ink">
                   Edit Total Savings Pool
                 </h3>
-                <p className="text-xs text-[#64748B]">
+                <p className="text-xs text-ink-secondary">
                   Update your overall personal savings pool. Applied IPO capital will automatically deduct from this amount.
                 </p>
               </div>
@@ -444,11 +444,11 @@ export function PortfolioView() {
 
             <form onSubmit={handleSaveSavings} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-[#475569] uppercase tracking-wider mb-1.5">
+                <label className="block text-xs font-bold text-ink-secondary uppercase tracking-wider mb-1.5">
                   Total Personal Savings (₹)
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-extrabold text-[#64748B]">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 font-extrabold text-ink-secondary">
                     ₹
                   </span>
                   <input
@@ -456,7 +456,7 @@ export function PortfolioView() {
                     value={savingsInput}
                     onChange={(e) => setSavingsInput(e.target.value)}
                     placeholder="Enter total savings amount"
-                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 text-base font-bold text-[#0F172A] outline-none transition-all"
+                    className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-line focus:border-accent focus:ring-2 focus:ring-accent/20 text-base font-bold text-ink outline-none transition-all"
                     required
                     min="0"
                   />
@@ -465,7 +465,7 @@ export function PortfolioView() {
 
               {/* Quick Add Preset Buttons */}
               <div>
-                <span className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">
+                <span className="block text-[11px] font-bold text-ink-secondary uppercase tracking-wider mb-2">
                   Quick Add Funds Presets
                 </span>
                 <div className="grid grid-cols-4 gap-2">
@@ -474,7 +474,7 @@ export function PortfolioView() {
                       key={amt}
                       type="button"
                       onClick={() => handleQuickAddSavings(amt)}
-                      className="py-1.5 px-2 bg-[#F8FAFC] hover:bg-[#EFF6FF] border border-[#E2E8F0] hover:border-[#BFDBFE] rounded-lg text-xs font-bold text-[#1E3A8A] transition-all flex items-center justify-center gap-0.5 active:scale-95 cursor-pointer"
+                      className="py-1.5 px-2 bg-surface-alt hover:bg-blue-50 dark:bg-blue-950/40 border border-line hover:border-blue-200 dark:border-blue-800/60 rounded-lg text-xs font-bold text-blue-900 dark:text-blue-200 transition-all flex items-center justify-center gap-0.5 active:scale-95 cursor-pointer"
                     >
                       <Plus size={12} weight="bold" />₹{amt / 1000}k
                     </button>
@@ -483,21 +483,21 @@ export function PortfolioView() {
               </div>
 
               {quickAddFeedback && (
-                <div className="p-2 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg text-xs text-[#059669] font-bold flex items-center gap-1.5 animate-fadeIn">
+                <div className="p-2 bg-emerald-50 dark:bg-emerald-950/40 border border-emerald-200 dark:border-emerald-800/60 rounded-lg text-xs text-emerald-600 dark:text-emerald-400 font-bold flex items-center gap-1.5 animate-fadeIn">
                   <CheckCircle size={14} weight="fill" />
                   {quickAddFeedback}
                 </div>
               )}
 
               {/* Calculation Preview */}
-              <div className="p-3 bg-[#F8FAFC] rounded-xl border border-[#E2E8F0] text-xs space-y-1.5 text-[#64748B]">
+              <div className="p-3 bg-surface-alt rounded-xl border border-line text-xs space-y-1.5 text-ink-secondary">
                 <div className="flex justify-between">
                   <span>Total Applied (Capital Deployed):</span>
-                  <span className="font-bold text-[#0F172A]">{formatINR(myTotalApplied)}</span>
+                  <span className="font-bold text-ink">{formatINR(myTotalApplied)}</span>
                 </div>
-                <div className="flex justify-between border-t border-[#E2E8F0] pt-1">
-                  <span className="font-semibold text-[#0F172A]">Available Funds (Remaining):</span>
-                  <span className="font-extrabold text-[#2563EB]">
+                <div className="flex justify-between border-t border-line pt-1">
+                  <span className="font-semibold text-ink">Available Funds (Remaining):</span>
+                  <span className="font-extrabold text-blue-600 dark:text-blue-400">
                     {formatINR(
                       Math.max(
                         0,
@@ -531,8 +531,8 @@ export function PortfolioView() {
 
       {/* EDIT TRANSACTION MODAL (NAME, PRICE & PAN ONLY) */}
       {editingTxn && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+          <div className="bg-surface rounded-2xl border border-slate-200 shadow-2xl p-6 w-full max-w-md space-y-4">
             <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
                 <PencilSimple size={18} className="text-blue-600" /> Edit Application Details
@@ -555,7 +555,7 @@ export function PortfolioView() {
                   type="text"
                   value={editTxnName}
                   onChange={(e) => setEditTxnName(e.target.value)}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-bold focus:border-blue-600 focus:bg-white outline-none"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-bold focus:border-blue-600 focus:bg-surface outline-none"
                   placeholder="e.g. Ankit 1"
                 />
               </div>
@@ -569,7 +569,7 @@ export function PortfolioView() {
                   type="number"
                   value={editTxnAmount}
                   onChange={(e) => setEditTxnAmount(Number(e.target.value))}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-extrabold focus:border-blue-600 focus:bg-white outline-none"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-extrabold focus:border-blue-600 focus:bg-surface outline-none"
                 />
               </div>
 
@@ -582,7 +582,7 @@ export function PortfolioView() {
                   type="text"
                   value={editTxnPan}
                   onChange={(e) => setEditTxnPan(e.target.value.toUpperCase())}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono font-bold focus:border-blue-600 focus:bg-white outline-none tracking-wider"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 font-mono font-bold focus:border-blue-600 focus:bg-surface outline-none tracking-wider"
                   placeholder="e.g. ABCDE1234F or XXXXXXXX41"
                 />
               </div>
@@ -624,29 +624,29 @@ export function PortfolioView() {
           editingIpo.metrics.lotSize * editingIpo.metrics.priceBand.max;
 
         return (
-          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0F172A]/50 backdrop-blur-xs animate-fade-in">
-            <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl border border-[#E2E8F0] relative">
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-xs animate-fade-in">
+            <div className="bg-surface rounded-2xl max-w-md w-full p-6 shadow-xl border border-line relative">
               <button
                 onClick={() => {
                   setEditingIpo(null);
                   setContributionInput("");
                 }}
-                className="absolute top-4 right-4 text-[#94A3B8] hover:text-[#0F172A] p-1 rounded-lg hover:bg-[#F1F5F9] transition-colors cursor-pointer"
+                className="absolute top-4 right-4 text-ink-tertiary hover:text-ink p-1 rounded-lg hover:bg-surface-alt transition-colors cursor-pointer"
               >
                 <X size={18} weight="bold" />
               </button>
 
               <div className="flex items-center gap-3 mb-4">
-                <div className="p-2.5 bg-[#FEF3C7] text-[#D97706] rounded-xl border border-[#FDE68A]">
+                <div className="p-2.5 bg-amber-50 dark:bg-amber-950/40 text-amber-600 dark:text-amber-400 rounded-xl border border-amber-200 dark:border-amber-800/60">
                   <FileText size={24} weight="bold" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-extrabold text-[#0F172A]">
+                  <h3 className="text-lg font-extrabold text-ink">
                     Edit Contribution: {editingIpo.name}
                   </h3>
-                  <p className="text-xs text-[#64748B]">
+                  <p className="text-xs text-ink-secondary">
                     1 Lot minimum investment ={" "}
-                    <span className="font-bold text-[#0F172A]">{formatINR(ipoLotVal)}</span> (
+                    <span className="font-bold text-ink">{formatINR(ipoLotVal)}</span> (
                     {editingIpo.metrics.lotSize} shares @ ₹{editingIpo.metrics.priceBand.max})
                   </p>
                 </div>
@@ -654,11 +654,11 @@ export function PortfolioView() {
 
               <form onSubmit={handleSaveContribution} className="space-y-4">
                 <div>
-                  <label className="block text-xs font-bold text-[#475569] uppercase tracking-wider mb-1.5">
+                  <label className="block text-xs font-bold text-ink-secondary uppercase tracking-wider mb-1.5">
                     My Individual Contribution Amount (₹)
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-extrabold text-[#64748B]">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 font-extrabold text-ink-secondary">
                       ₹
                     </span>
                     <input
@@ -666,7 +666,7 @@ export function PortfolioView() {
                       value={contributionInput}
                       onChange={(e) => setContributionInput(e.target.value)}
                       placeholder={`Enter amount (1 Lot = ₹${ipoLotVal})`}
-                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-[#CBD5E1] focus:border-[#2563EB] focus:ring-2 focus:ring-[#2563EB]/20 text-base font-bold text-[#0F172A] outline-none transition-all"
+                      className="w-full pl-8 pr-4 py-2.5 rounded-xl border border-line focus:border-accent focus:ring-2 focus:ring-accent/20 text-base font-bold text-ink outline-none transition-all"
                       required
                       min="0"
                     />
@@ -675,7 +675,7 @@ export function PortfolioView() {
 
                 {/* Preset Contribution Pills */}
                 <div>
-                  <span className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">
+                  <span className="block text-[11px] font-bold text-ink-secondary uppercase tracking-wider mb-2">
                     Quick Lot Presets
                   </span>
                   <div className="grid grid-cols-4 gap-2">
@@ -689,11 +689,11 @@ export function PortfolioView() {
                         key={item.label}
                         type="button"
                         onClick={() => setContributionInput(item.val.toString())}
-                        className="py-1.5 px-2 bg-[#F8FAFC] hover:bg-[#FEF3C7] border border-[#E2E8F0] hover:border-[#FDE68A] rounded-lg text-xs font-bold text-[#D97706] transition-all flex flex-col items-center justify-center active:scale-95 cursor-pointer"
+                        className="py-1.5 px-2 bg-surface-alt hover:bg-amber-50 dark:bg-amber-950/40 border border-line hover:border-amber-300 dark:hover:border-amber-700 rounded-lg text-xs font-bold text-amber-600 dark:text-amber-400 transition-all flex flex-col items-center justify-center active:scale-95 cursor-pointer"
                       >
                         <span>{item.label}</span>
                         {item.val > 0 && (
-                          <span className="text-[10px] text-[#64748B] font-semibold">
+                          <span className="text-[10px] text-ink-secondary font-semibold">
                             ₹{(item.val / 1000).toFixed(1)}k
                           </span>
                         )}
