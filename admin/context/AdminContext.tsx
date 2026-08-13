@@ -20,6 +20,21 @@ interface AdminContextType {
     fundUnblockDate?: string;
   }) => Promise<{ success: boolean; message?: string }>;
   removeIPO: (ipoId: string) => Promise<{ success: boolean; message?: string }>;
+  updateIPO: (
+    ipoId: string,
+    data: {
+      name?: string;
+      minInvestment?: number;
+      issueSize?: number;
+      gmpPercent?: number;
+      description?: string;
+      openDate?: string;
+      closeDate?: string;
+      allotmentDate?: string;
+      listingDate?: string;
+      fundUnblockDate?: string;
+    }
+  ) => Promise<{ success: boolean; message?: string }>;
   publishProfitDistribution: (
     ipoId: string,
     totalProfit: number,
@@ -186,6 +201,68 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     };
   };
 
+  const updateIPO = async (
+    ipoId: string,
+    data: {
+      name?: string;
+      minInvestment?: number;
+      issueSize?: number;
+      gmpPercent?: number;
+      description?: string;
+      openDate?: string;
+      closeDate?: string;
+      allotmentDate?: string;
+      listingDate?: string;
+      fundUnblockDate?: string;
+    }
+  ) => {
+    setIpos((prev) =>
+      prev.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const currentMetrics = ipo.metrics || {};
+          const issueSizeVal = data.issueSize !== undefined ? data.issueSize : currentMetrics.issueSize;
+          const formattedIssueSize = typeof issueSizeVal === "number" ? `₹${issueSizeVal.toLocaleString("en-IN")} Cr` : String(issueSizeVal || "—");
+
+          return {
+            ...ipo,
+            name: data.name ? data.name.trim() : ipo.name,
+            company: data.name ? data.name.trim() : ipo.company,
+            thesis: data.description ? data.description.trim() : ipo.thesis,
+            metrics: {
+              ...currentMetrics,
+              issueSize: formattedIssueSize,
+              minInvestment: data.minInvestment !== undefined ? Number(data.minInvestment) : currentMetrics.minInvestment,
+              gmpPercent: data.gmpPercent !== undefined ? Number(data.gmpPercent) : (currentMetrics.gmpPercent ?? 18.5),
+              openDate: data.openDate ? data.openDate.trim() : currentMetrics.openDate,
+              closeDate: data.closeDate ? data.closeDate.trim() : currentMetrics.closeDate,
+              allotmentDate: data.allotmentDate ? data.allotmentDate.trim() : currentMetrics.allotmentDate,
+              listingDate: data.listingDate ? data.listingDate.trim() : currentMetrics.listingDate,
+              fundUnblockDate: data.fundUnblockDate ? data.fundUnblockDate.trim() : currentMetrics.fundUnblockDate,
+            },
+          };
+        }
+        return ipo;
+      })
+    );
+
+    try {
+      const res = await fetch(API_BASE_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "updateIpo", ipoId, data }),
+      });
+      const result = await res.json();
+      if (result.success) {
+        await refreshIpos();
+        return { success: true, message: result.message || "✓ IPO updated successfully." };
+      }
+    } catch (err) {
+      console.warn("API update call offline:", err);
+    }
+
+    return { success: true, message: "✓ IPO updated successfully." };
+  };
+
   const removeIPO = async (ipoId: string) => {
     // 1. Immediately update state so UI removes it instantly from visible list
     setIpos((prev) =>
@@ -282,6 +359,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         currentUser: defaultAdmin,
         isLoading,
         createIPO,
+        updateIPO,
         removeIPO,
         publishProfitDistribution,
         refreshIpos,

@@ -3,13 +3,15 @@
 import React, { useState } from "react";
 import { useAdmin } from "../context/AdminContext";
 import { IPOOpportunity } from "../types/nexo";
-import { Plus, Trash, CheckCircle, Buildings } from "@phosphor-icons/react";
+import { Plus, Trash, CheckCircle, Buildings, PencilSimple } from "@phosphor-icons/react";
 import { AddIPODrawer } from "./AddIPODrawer";
+import { EditIPODrawer } from "./EditIPODrawer";
 
 export function AdminIPOManagement() {
   const { ipos, removeIPO } = useAdmin();
 
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [editingIpo, setEditingIpo] = useState<IPOOpportunity | null>(null);
   const [selectedIpoToRemove, setSelectedIpoToRemove] = useState<IPOOpportunity | null>(null);
   const [feedbackMsg, setFeedbackMsg] = useState<string | null>(null);
 
@@ -117,6 +119,11 @@ export function AdminIPOManagement() {
                     <span className="text-[10px] font-extrabold px-2 py-0.5 rounded bg-slate-100 text-slate-700 border border-slate-200">
                       {ipo.category || "MAINBOARD"}
                     </span>
+                    {ipo.metrics?.gmpPercent !== undefined && (
+                      <span className="text-[10px] font-mono font-extrabold px-2 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                        GMP +{ipo.metrics.gmpPercent}%
+                      </span>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-slate-500 font-medium">
@@ -141,7 +148,14 @@ export function AdminIPOManagement() {
                   </div>
                 </div>
 
-                <div className="shrink-0">
+                <div className="shrink-0 flex items-center gap-2">
+                  <button
+                    onClick={() => setEditingIpo(ipo)}
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 border border-blue-200 transition-colors cursor-pointer"
+                  >
+                    <PencilSimple size={15} />
+                    <span>Edit</span>
+                  </button>
                   <button
                     onClick={() => setSelectedIpoToRemove(ipo)}
                     className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 transition-colors cursor-pointer"
@@ -196,6 +210,14 @@ export function AdminIPOManagement() {
       <AddIPODrawer
         isOpen={isDrawerOpen}
         onClose={() => setIsDrawerOpen(false)}
+        onSuccess={handleAddSuccess}
+      />
+
+      {/* EDIT IPO DRAWER */}
+      <EditIPODrawer
+        ipo={editingIpo}
+        isOpen={!!editingIpo}
+        onClose={() => setEditingIpo(null)}
         onSuccess={handleAddSuccess}
       />
     </div>

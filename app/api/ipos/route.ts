@@ -103,6 +103,39 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: true, message: "Application saved to IPO." }, { headers: corsHeaders });
     }
 
+    // 3. Action: Update Existing IPO Opportunity
+    if (body.action === "updateIpo") {
+      const { ipoId, data } = body;
+      const updated = allIpos.map((ipo) => {
+        if (ipo.id === ipoId) {
+          const currentMetrics = ipo.metrics || {};
+          const issueSizeVal = data.issueSize !== undefined ? data.issueSize : currentMetrics.issueSize;
+          const formattedIssueSize = typeof issueSizeVal === "number" ? `₹${issueSizeVal.toLocaleString("en-IN")} Cr` : String(issueSizeVal || "—");
+
+          return {
+            ...ipo,
+            name: data.name ? data.name.trim() : ipo.name,
+            company: data.name ? data.name.trim() : ipo.company,
+            thesis: data.description ? data.description.trim() : ipo.thesis,
+            metrics: {
+              ...currentMetrics,
+              issueSize: formattedIssueSize,
+              minInvestment: data.minInvestment !== undefined ? Number(data.minInvestment) : currentMetrics.minInvestment,
+              gmpPercent: data.gmpPercent !== undefined ? Number(data.gmpPercent) : (currentMetrics.gmpPercent ?? 18.5),
+              openDate: data.openDate ? data.openDate.trim() : currentMetrics.openDate,
+              closeDate: data.closeDate ? data.closeDate.trim() : currentMetrics.closeDate,
+              allotmentDate: data.allotmentDate ? data.allotmentDate.trim() : currentMetrics.allotmentDate,
+              listingDate: data.listingDate ? data.listingDate.trim() : currentMetrics.listingDate,
+              fundUnblockDate: data.fundUnblockDate ? data.fundUnblockDate.trim() : currentMetrics.fundUnblockDate,
+            },
+          };
+        }
+        return ipo;
+      });
+      writeSharedIpos(updated);
+      return NextResponse.json({ success: true, message: "IPO updated successfully." }, { headers: corsHeaders });
+    }
+
     // 2. Action: Create New IPO Opportunity
     const name = body.name || body.company || "";
     const minInvestment = Number(body.minInvestment || body.minimumInvestment) || 15000;
