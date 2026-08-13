@@ -4,7 +4,6 @@ import React from "react";
 import { useNexo } from "@/context/NexoContext";
 import { DashboardHeader } from "../dashboard/DashboardHeader";
 import { FeaturedOpportunity } from "../dashboard/FeaturedOpportunity";
-import { MessagesWidget } from "../dashboard/MessagesWidget";
 
 export function DashboardView() {
   const { ipos, openIpoDetail, openApplicationModal } = useNexo();
@@ -24,9 +23,6 @@ export function DashboardView() {
     <div className="space-y-4 max-w-5xl mx-auto animate-fade-in pb-6 font-sans">
       {/* GREETING HEADER */}
       <DashboardHeader />
-
-      {/* MESSAGES PREVIEW WIDGET */}
-      <MessagesWidget />
 
       {/* ACTIVE IPO OPPORTUNITIES */}
       {activeIpos.length > 0 && (
