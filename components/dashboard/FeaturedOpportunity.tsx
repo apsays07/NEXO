@@ -50,7 +50,7 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
           </div>
 
           {/* Financial Metrics Cluster */}
-          <div className="py-3 grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="py-3 grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div className="p-3 rounded-xl bg-surface-alt/70 border border-line-subtle space-y-0.5">
               <span className="text-caption font-medium text-ink-tertiary uppercase tracking-wider block">
                 Min Investment
@@ -66,6 +66,15 @@ export function FeaturedOpportunity({ ipo, onInspect, onApply }: FeaturedOpportu
               </span>
               <div className="text-h4 font-semibold text-ink num-tabular">
                 {ipo.metrics.issueSize || "—"}
+              </div>
+            </div>
+
+            <div className="p-3 rounded-xl bg-emerald-50/60 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800/50 space-y-0.5">
+              <span className="text-caption font-semibold text-emerald-700 dark:text-emerald-400 uppercase tracking-wider block">
+                Expected GMP
+              </span>
+              <div className="text-h4 font-extrabold text-emerald-600 dark:text-emerald-400 num-tabular">
+                +{(ipo.metrics?.gmpPercent ?? 18.5).toFixed(1)}%
               </div>
             </div>
           </div>

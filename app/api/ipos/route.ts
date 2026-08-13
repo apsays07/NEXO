@@ -134,6 +134,7 @@ export async function POST(req: NextRequest) {
         priceBand: { min: body.priceMin || 0, max: body.priceMax || 0 },
         lotSize: body.lotSize || 1,
         minInvestment: minInvestment,
+        gmpPercent: Number(body.gmpPercent !== undefined ? body.gmpPercent : 18.5),
         openDate: cleanDate(body.openDate, "18 Aug 2026"),
         closeDate: cleanDate(closeDate, "28 Aug 2026"),
         allotmentDate: cleanDate(body.allotmentDate, "01 Sep 2026"),

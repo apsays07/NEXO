@@ -86,7 +86,7 @@ export function IPODetailDrawer() {
               <div className="text-[12px] font-semibold text-ink-secondary uppercase tracking-wider">
                 Offer Details
               </div>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
                 <div className="p-3 rounded-xl bg-page border border-line">
                   <span className="text-[12px] text-ink-secondary block font-medium uppercase">Price Band</span>
                   <span className="text-xs font-semibold text-ink num-tabular">
@@ -105,6 +105,13 @@ export function IPODetailDrawer() {
                   <span className="text-[12px] text-ink-secondary block font-medium uppercase">Min Investment</span>
                   <span className="text-xs font-semibold text-ink num-tabular">
                     {formatINR(selectedIpo.metrics.minInvestment)}
+                  </span>
+                </div>
+
+                <div className="p-3 rounded-xl bg-emerald-50/80 border border-emerald-200">
+                  <span className="text-[12px] text-emerald-800 block font-semibold uppercase">Expected GMP</span>
+                  <span className="text-xs font-extrabold text-emerald-600 num-tabular">
+                    +{(selectedIpo.metrics?.gmpPercent ?? 18.5).toFixed(1)}%
                   </span>
                 </div>
 
