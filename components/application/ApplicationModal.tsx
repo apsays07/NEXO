@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNexo } from "@/context/NexoContext";
 import { formatINR } from "@/lib/mockData";
 import {
@@ -20,6 +20,7 @@ import {
 
 
 import { ApplicationSuccessModal } from "./ApplicationSuccessModal";
+import { SearchableUserSelect } from "@/components/common/SearchableUserSelect";
 
 interface ContributorEntry {
   memberId: string;
@@ -55,12 +56,27 @@ export function ApplicationModal() {
   const minInvest = activeApplicationIpo?.metrics?.minInvestment || 14964;
   const targetRequiredCapital = minInvest * effectiveIpos;
 
-  const activeUserName = currentUser?.name || members[0]?.name || "Member";
+  // Filter out ADMIN and SUPER_ADMIN usernames from form filling options
+  const selectableMembers = useMemo(() => {
+    const regular = members.filter(
+      (m) =>
+        m.role !== "ADMIN" &&
+        m.role !== "SUPER_ADMIN" &&
+        m.username !== "ankitgod" &&
+        m.username !== "admin"
+    );
+    return regular.length > 0 ? regular : members;
+  }, [members]);
+
+  const defaultMember0 = selectableMembers[0] || members[0];
+  const defaultMember1 = selectableMembers[1] || selectableMembers[0] || members[0];
+
+  const activeUserUsername = (currentUser?.role === "MEMBER" ? currentUser?.username : defaultMember0?.username) || defaultMember0?.username || defaultMember0?.name || "user";
 
   // Dynamic Contributors State
   const [contributors, setContributors] = useState<ContributorEntry[]>([
-    { memberId: currentUser?.id || members[0]?.id || "mem_1", memberName: activeUserName, amount: Math.floor(targetRequiredCapital / 2) },
-    { memberId: members[1]?.id || "mem_2", memberName: members[1]?.name || "Partner", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
+    { memberId: defaultMember0?.id || "mem_1", memberName: activeUserUsername, amount: Math.floor(targetRequiredCapital / 2) },
+    { memberId: defaultMember1?.id || "mem_2", memberName: defaultMember1?.username || defaultMember1?.name || "partner", amount: targetRequiredCapital - Math.floor(targetRequiredCapital / 2) },
   ]);
 
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
@@ -82,12 +98,12 @@ export function ApplicationModal() {
     }
   }, [isApplicationModalOpen]);
 
-  // Set default applicant name only when modal opens
+  // Set default applicant username only when modal opens
   useEffect(() => {
     if (isApplicationModalOpen) {
-      setApplicantName(currentUser?.name || members[0]?.name || "Member");
+      setApplicantName((currentUser?.role === "MEMBER" ? currentUser?.username : selectableMembers[0]?.username) || selectableMembers[0]?.username || "user");
     }
-  }, [isApplicationModalOpen, currentUser, members]);
+  }, [isApplicationModalOpen, currentUser, selectableMembers]);
 
   // Synchronize array length: 1 PAN per IPO
   useEffect(() => {
@@ -104,21 +120,23 @@ export function ApplicationModal() {
     });
   }, [effectiveIpos]);
 
-  // Auto-fetch friend names into Primary Applicant Name when in Multi-Friend mode
+  // Auto-fetch friend usernames into Primary Applicant Name when in Multi-Friend mode
   useEffect(() => {
     if (applicantMode === "JOINT") {
       const validNames = contributors
-        .map((c) => c.memberName.trim())
-        .filter((n) => n.length > 0);
+        .map((c) => (c.memberName.startsWith("@") ? c.memberName : `@${c.memberName.trim()}`))
+        .filter((n) => n.length > 1);
       if (validNames.length > 0) {
         setApplicantName(validNames.join(", "));
       }
     } else {
       if (!applicantName || applicantName.includes(",")) {
-        setApplicantName(members[0]?.name || "Member");
+        const rawUname = selectableMembers[0]?.username || selectableMembers[0]?.name || "user";
+        const formatted = rawUname.trim().startsWith("@") ? rawUname.trim() : `@${rawUname.trim()}`;
+        setApplicantName(formatted);
       }
     }
-  }, [applicantMode, contributors, members]);
+  }, [applicantMode, contributors, selectableMembers]);
 
   const handleEqualSplit = () => {
     const count = contributors.length || 1;
@@ -145,14 +163,13 @@ export function ApplicationModal() {
 
   const handleAddContributor = () => {
     const remainingNeeded = Math.max(0, targetRequiredCapital - totalPooledCapital);
-    const nextIdx = contributors.length + 1;
-    const defaultFriendName = members[contributors.length]?.name || `Friend #${nextIdx}`;
+    const unselectedMember = selectableMembers[contributors.length % selectableMembers.length] || selectableMembers[0];
 
     setContributors((prev) => [
       ...prev,
       {
-        memberId: `mem_custom_${Date.now()}`,
-        memberName: defaultFriendName,
+        memberId: unselectedMember.id,
+        memberName: unselectedMember.username || unselectedMember.name,
         amount: remainingNeeded > 0 ? remainingNeeded : 0,
       },
     ]);
@@ -208,14 +225,61 @@ export function ApplicationModal() {
     setPanNumbers(updated);
   };
 
+  // Set of existing PAN card numbers for the current active IPO
+  const existingIpoPans = useMemo(() => {
+    const set = new Set<string>();
+    if (activeApplicationIpo?.applications) {
+      activeApplicationIpo.applications.forEach((app) => {
+        if (app.panMasked) set.add(app.panMasked.trim().toUpperCase());
+        if (Array.isArray(app.panNumbers)) {
+          app.panNumbers.forEach((p) => {
+            if (p) set.add(p.trim().toUpperCase());
+          });
+        }
+        if (Array.isArray(app.participants)) {
+          app.participants.forEach((p) => {
+            if (p.panMasked) set.add(p.panMasked.trim().toUpperCase());
+            if (p.panFull) set.add(p.panFull.trim().toUpperCase());
+          });
+        }
+      });
+    }
+    return set;
+  }, [activeApplicationIpo]);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const isSuperAdminUser = currentUser?.role === "SUPER_ADMIN" || currentUser?.username === "ankitgod";
+    if (isSuperAdminUser) {
+      setErrorMsg("Super Admin (ankitgod) cannot submit IPO applications on the user portal. Applications can only be submitted by members added by Admin.");
+      return;
+    }
 
     // Validate PAN card numbers (must be exactly 10 characters matching standard regex format)
     const anyInvalid = panNumbers.some((pan) => !isValidPan(pan));
     if (anyInvalid) {
       setErrorMsg("Please enter a valid 10-character PAN card number for all entries.");
       return;
+    }
+
+    // 1. Intra-form duplicate check
+    const normalizedPanList = panNumbers.map((p) => p.trim().toUpperCase());
+    const seenPans = new Set<string>();
+    for (const pan of normalizedPanList) {
+      if (seenPans.has(pan)) {
+        setErrorMsg(`Duplicate PAN card number "${pan}" found in form entries. Each PAN card entry must be unique.`);
+        return;
+      }
+      seenPans.add(pan);
+    }
+
+    // 2. Current IPO Application List uniqueness check
+    for (const pan of normalizedPanList) {
+      if (existingIpoPans.has(pan)) {
+        setErrorMsg(`PAN card "${pan}" has already been used in an application for ${activeApplicationIpo?.name || "this IPO"}. Each PAN card can only apply once per IPO.`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -304,6 +368,14 @@ export function ApplicationModal() {
 
         {/* Content Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-5 overflow-y-auto max-h-[calc(92vh-90px)]">
+          {(currentUser?.role === "SUPER_ADMIN" || currentUser?.username === "ankitgod") && (
+            <div className="p-3.5 bg-amber-500/10 border border-amber-500/30 text-amber-600 dark:text-amber-300 rounded-2xl text-xs font-semibold flex items-center gap-2.5">
+              <ShieldCheck size={18} className="text-amber-500 shrink-0" />
+              <span>
+                <strong>Super Admin Restriction:</strong> As Super Admin (<code>ankitgod</code>), you are restricted from applying for IPO lots. Only regular syndicate members added by Admin can submit IPO applications.
+              </span>
+            </div>
+          )}
           {errorMsg && (
             <div className="p-3.5 bg-negative-soft border border-negative/30 text-negative rounded-2xl text-xs font-semibold flex items-center gap-2.5 animate-modal-pop-in">
               <svg className="w-4 h-4 text-negative shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
@@ -346,18 +418,16 @@ export function ApplicationModal() {
             </div>
           </div>
 
-          {/* 1. Primary Applicant Name */}
+          {/* 1. Primary Applicant Username (Searchable Dropdown Selection) */}
           <div className="space-y-1.5">
             <label className="block text-xs font-bold text-ink flex items-center gap-1.5">
-              <User size={15} className="text-accent" /> Primary Applicant Name <span className="text-rose-500">*</span>
+              <User size={15} className="text-accent" /> Primary Applicant Username <span className="text-rose-500">*</span>
             </label>
-            <input
-              type="text"
-              required
-              placeholder="Enter applicant name"
-              value={applicantName}
-              onChange={(e) => setApplicantName(e.target.value)}
-              className="w-full bg-surface-alt/80 border border-line hover:border-line-strong rounded-xl px-4 py-2.5 text-sm font-semibold text-ink tracking-tight focus:bg-surface focus:border-accent focus:ring-4 focus:ring-accent/10 focus:outline-none transition-all placeholder:text-ink-muted"
+            <SearchableUserSelect
+              members={selectableMembers}
+              selectedUsername={applicantName}
+              onSelect={(m) => setApplicantName(m.username || m.name)}
+              placeholder="Type to search username..."
             />
           </div>
 
@@ -402,14 +472,23 @@ export function ApplicationModal() {
                         #{idx + 1}
                       </span>
 
-                      {/* Clean Friend Name Input */}
-                      <input
-                        type="text"
-                        required
-                        placeholder={`Friend #${idx + 1} Name`}
-                        value={c.memberName}
-                        onChange={(e) => handleContributorNameChange(idx, e.target.value)}
-                        className="flex-1 min-w-0 bg-surface-alt/80 border border-line focus:bg-surface focus:border-accent rounded-lg px-2.5 py-1.5 text-xs font-bold text-ink outline-none transition-all placeholder:text-ink-muted placeholder:font-normal"
+                      {/* Clean Searchable Friend Username Dropdown Selection */}
+                      <SearchableUserSelect
+                        members={selectableMembers}
+                        selectedMemberId={c.memberId}
+                        onSelect={(selectedMember) => {
+                          setContributors((prev) => {
+                            const updated = [...prev];
+                            updated[idx] = {
+                              ...updated[idx],
+                              memberId: selectedMember.id,
+                              memberName: selectedMember.username || selectedMember.name,
+                            };
+                            return updated;
+                          });
+                        }}
+                        placeholder="Search friend..."
+                        className="flex-1 min-w-0"
                       />
 
                       {/* Clean Custom Amount Input */}
@@ -558,10 +637,19 @@ export function ApplicationModal() {
             <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
               {panNumbers.map((pan, idx) => {
                 const valid = isValidPan(pan);
+                const norm = pan.trim().toUpperCase();
+                const isFormDuplicate = norm.length === 10 && panNumbers.filter((p) => p.trim().toUpperCase() === norm).length > 1;
+                const isIpoDuplicate = norm.length === 10 && existingIpoPans.has(norm);
+                const hasDuplicateError = isFormDuplicate || isIpoDuplicate;
+
                 return (
                   <div
                     key={idx}
-                    className="flex items-center gap-2.5 p-2 bg-surface-alt/80 border border-line/80 hover:border-line-strong rounded-2xl transition-all"
+                    className={`flex items-center gap-2.5 p-2 rounded-2xl transition-all ${
+                      hasDuplicateError
+                        ? "bg-rose-500/10 border border-rose-500/50"
+                        : "bg-surface-alt/80 border border-line/80 hover:border-line-strong"
+                    }`}
                   >
                     <span className="text-[11px] font-bold text-ink-tertiary w-16 shrink-0 font-mono text-center bg-surface py-1.5 px-2 rounded-xl border border-line shadow-2xs">
                       PAN #{idx + 1}
@@ -574,14 +662,23 @@ export function ApplicationModal() {
                         placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
                         value={pan}
                         onChange={(e) => handlePanChange(idx, e.target.value)}
-                        className="w-full bg-surface border border-line hover:border-line-strong rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-ink tracking-widest uppercase focus:border-accent focus:ring-3 focus:ring-accent/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-muted"
+                        className={`w-full bg-surface border rounded-xl px-3.5 py-2 text-xs font-mono font-bold tracking-widest uppercase focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-muted ${
+                          hasDuplicateError
+                            ? "border-rose-500 text-rose-600 focus:ring-2 focus:ring-rose-500/20"
+                            : "border-line hover:border-line-strong text-ink focus:border-accent focus:ring-3 focus:ring-accent/10"
+                        }`}
                       />
-                      {valid && (
+                      {valid && !hasDuplicateError && (
                         <div className="absolute right-3 top-1/2 -translate-y-1/2 text-positive animate-fade-in">
                           <CheckCircle size={16} weight="fill" />
                         </div>
                       )}
                     </div>
+                    {hasDuplicateError && (
+                      <span className="text-[10px] font-bold text-rose-500 shrink-0 bg-rose-100 dark:bg-rose-950/40 px-2 py-1 rounded-lg border border-rose-300 dark:border-rose-800/40">
+                        {isIpoDuplicate ? "Already Applied" : "Duplicate in Form"}
+                      </span>
+                    )}
                   </div>
                 );
               })}
@@ -600,12 +697,16 @@ export function ApplicationModal() {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting}
-              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 hover:from-slate-800 hover:to-blue-800 disabled:opacity-75 text-white font-bold text-xs shadow-lg shadow-blue-950/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer touch-target"
+              disabled={isSubmitting || Boolean(currentUser?.role === "SUPER_ADMIN" || currentUser?.username === "ankitgod")}
+              className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-slate-900 via-blue-900 to-slate-900 hover:from-slate-800 hover:to-blue-800 disabled:opacity-50 text-white font-bold text-xs shadow-lg shadow-blue-950/20 flex items-center gap-2 transition-all hover:scale-[1.01] active:scale-[0.99] cursor-pointer touch-target"
             >
               {isSubmitting ? (
                 <>
                   <CircleNotch size={18} className="animate-spin" /> Filing Application...
+                </>
+              ) : (currentUser?.role === "SUPER_ADMIN" || currentUser?.username === "ankitgod") ? (
+                <>
+                  <ShieldCheck size={18} weight="bold" /> Super Admin Cannot Apply
                 </>
               ) : (
                 <>

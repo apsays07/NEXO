@@ -52,11 +52,11 @@ export function validatePasswordStrength(password: string): {
   isValid: boolean;
   feedback?: string;
 } {
-  if (!password || password.length < 12) {
+  if (!password || password.length < 6) {
     return {
       strength: "Weak",
       isValid: false,
-      feedback: "Password must be at least 12 characters long.",
+      feedback: "Password must be at least 6 characters long.",
     };
   }
 
@@ -75,6 +75,6 @@ export function validatePasswordStrength(password: string): {
 
   return {
     strength,
-    isValid: password.length >= 12,
+    isValid: password.length >= 6,
   };
 }

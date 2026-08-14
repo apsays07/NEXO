@@ -70,3 +70,15 @@ export async function requireAdmin(): Promise<AuthContext> {
   }
   return auth;
 }
+
+/**
+ * Requires an authenticated user session WITH explicit SUPER_ADMIN role privileges.
+ */
+export async function requireSuperAdmin(): Promise<AuthContext> {
+  const auth = await requireUser();
+  if (auth.role !== "SUPER_ADMIN") {
+    throw new Error("FORBIDDEN");
+  }
+  return auth;
+}
+

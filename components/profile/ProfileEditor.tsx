@@ -1,10 +1,10 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { X, Camera, CircleNotch, CheckCircle, Warning, UploadSimple } from "@phosphor-icons/react";
+import { X, CircleNotch, CheckCircle, Warning, UploadSimple, Lock } from "@phosphor-icons/react";
 import { updateProfile, uploadAvatar } from "@/src/features/profile/api";
 
-/* ─── Oggy and the Cockroaches Presets ─── */
+/* ─── Cartoon Presets ─── */
 const CARTOON_PRESETS = [
   {
     id: "preset_1",
@@ -38,13 +38,15 @@ interface ProfileEditorProps {
   onClose: () => void;
   currentName: string;
   currentDisplayName: string;
-  currentEmail: string;
+  currentEmail?: string;
+  currentUsername?: string;
   currentPhone: string;
   currentAvatar: string;
+  isSuperAdmin?: boolean;
   onSuccess: (updated: {
     name: string;
     displayName: string;
-    email: string;
+    username: string;
     phone: string;
     avatar: string;
   }) => void;
@@ -55,14 +57,15 @@ export function ProfileEditor({
   onClose,
   currentName,
   currentDisplayName,
-  currentEmail,
+  currentUsername = "ankitgod",
   currentPhone,
   currentAvatar,
+  isSuperAdmin = false,
   onSuccess,
 }: ProfileEditorProps) {
   const [name, setName] = useState(currentName);
   const [displayName, setDisplayName] = useState(currentDisplayName);
-  const [email, setEmail] = useState(currentEmail);
+  const [username, setUsername] = useState(currentUsername || "ankitgod");
   const [phone, setPhone] = useState(currentPhone);
   const [avatar, setAvatar] = useState(currentAvatar);
 
@@ -76,13 +79,13 @@ export function ProfileEditor({
     if (isOpen) {
       setName(currentName);
       setDisplayName(currentDisplayName || currentName);
-      setEmail(currentEmail);
+      setUsername(currentUsername || "ankitgod");
       setPhone(currentPhone);
       setAvatar(currentAvatar);
       setError(null);
       setToastMessage(null);
     }
-  }, [isOpen, currentName, currentDisplayName, currentEmail, currentPhone, currentAvatar]);
+  }, [isOpen, currentName, currentDisplayName, currentUsername, currentPhone, currentAvatar]);
 
   if (!isOpen) return null;
 
@@ -104,7 +107,6 @@ export function ProfileEditor({
       setError("Failed to upload image. Please try again.");
     } finally {
       setIsUploading(false);
-      // reset so same file can be re-selected
       if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
@@ -121,14 +123,13 @@ export function ProfileEditor({
       await updateProfile({
         name: name.trim(),
         displayName: displayName.trim() || name.trim(),
-        email: email.trim(),
         phone: phone.trim(),
         avatar,
       });
       onSuccess({
         name: name.trim(),
         displayName: displayName.trim() || name.trim(),
-        email: email.trim(),
+        username: username.trim().toLowerCase(),
         phone: phone.trim(),
         avatar,
       });
@@ -145,28 +146,29 @@ export function ProfileEditor({
     : "?";
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-overlay backdrop-blur-xs p-4 animate-fade-in font-sans">
-      <div className="w-full max-w-lg bg-surface border border-line rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-3 sm:p-4 animate-fade-in font-sans">
+      <div className="w-full max-w-lg bg-surface border border-line rounded-3xl overflow-hidden shadow-2xl flex flex-col max-h-[85vh] sm:max-h-[88vh] my-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col flex-1 min-h-0">
 
-        {/* ── Header ── */}
-        <div className="p-5 border-b border-line flex items-center justify-between bg-surface shrink-0">
-          <div>
-            <h3 className="text-h4 font-semibold text-ink">Edit Profile</h3>
-            <p className="text-caption text-ink-tertiary font-medium">
-              Choose an avatar &amp; update your info
-            </p>
+          {/* ── Fixed Top Header ── */}
+          <div className="p-4 sm:p-5 border-b border-line flex items-center justify-between bg-surface shrink-0">
+            <div>
+              <h3 className="text-h4 font-semibold text-ink">Edit Profile</h3>
+              <p className="text-caption text-ink-tertiary font-medium">
+                Choose an avatar &amp; update your info
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={onClose}
+              className="p-2 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer"
+            >
+              <X size={18} />
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="p-2 rounded-xl text-ink-tertiary hover:text-ink hover:bg-surface-alt transition-colors cursor-pointer"
-          >
-            <X size={18} />
-          </button>
-        </div>
 
-        {/* ── Scrollable body ── */}
-        <form onSubmit={handleSubmit} className="overflow-y-auto flex-1">
-          <div className="p-6 space-y-6 text-small font-medium">
+          {/* ── Scrollable Body Content ── */}
+          <div className="p-5 sm:p-6 space-y-6 text-small font-medium overflow-y-auto flex-1">
 
             {/* Alerts */}
             {error && (
@@ -197,25 +199,25 @@ export function ProfileEditor({
                     <img
                       src={avatar}
                       alt="Current avatar"
-                      className="w-20 h-20 rounded-full object-cover ring-4 ring-accent/40 shadow-lg"
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full object-cover ring-4 ring-accent/40 shadow-lg"
                     />
                   ) : (
                     <div
-                      className="w-20 h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white ring-4 ring-accent/40 shadow-lg select-none"
+                      className="w-16 h-16 sm:w-20 sm:h-20 rounded-full flex items-center justify-center text-2xl font-bold text-white ring-4 ring-accent/40 shadow-lg select-none"
                       style={{ background: "linear-gradient(135deg, #4f52ff 0%, #6b93ff 50%, #29b6f6 100%)" }}
                     >
                       {initials}
                     </div>
                   )}
                   <span
-                    className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 border-surface"
+                    className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 sm:w-4 sm:h-4 rounded-full border-2 border-surface"
                     style={{ background: "#32C98B" }}
                   />
                 </div>
               </div>
 
               {/* 5 Cartoon presets */}
-              <div className="grid grid-cols-5 gap-2.5">
+              <div className="grid grid-cols-5 gap-2">
                 {CARTOON_PRESETS.map((preset) => {
                   const isSelected = avatar === preset.url;
                   return (
@@ -228,9 +230,8 @@ export function ProfileEditor({
                         setTimeout(() => setToastMessage(null), 2000);
                       }}
                       title={preset.label}
-                      className="relative flex flex-col items-center gap-1.5 group focus:outline-none"
+                      className="relative flex flex-col items-center gap-1 group focus:outline-none cursor-pointer"
                     >
-                      {/* Ring container */}
                       <div
                         className={`relative rounded-full transition-all duration-200 ${
                           isSelected
@@ -241,13 +242,12 @@ export function ProfileEditor({
                         <img
                           src={preset.url}
                           alt={preset.label}
-                          className="w-14 h-14 rounded-full object-contain p-1.5 bg-surface-alt border border-line-subtle shadow-2xs"
+                          className="w-12 h-12 sm:w-14 sm:h-14 rounded-full object-contain p-1 bg-surface-alt border border-line-subtle shadow-2xs"
                           loading="lazy"
                         />
-                        {/* Checkmark overlay */}
                         {isSelected && (
                           <div className="absolute inset-0 rounded-full flex items-center justify-center bg-accent/20">
-                            <CheckCircle size={20} weight="fill" className="text-accent drop-shadow" />
+                            <CheckCircle size={18} weight="fill" className="text-accent drop-shadow" />
                           </div>
                         )}
                       </div>
@@ -266,7 +266,7 @@ export function ProfileEditor({
               {/* Upload from file */}
               <div className="pt-1">
                 <label
-                  className={`w-full flex items-center justify-center gap-2.5 py-2.5 px-4 rounded-xl border border-dashed cursor-pointer transition-all duration-150 ${
+                  className={`w-full flex items-center justify-center gap-2 py-2 px-4 rounded-xl border border-dashed cursor-pointer transition-all duration-150 ${
                     isUploading
                       ? "border-accent/40 bg-accent/5 text-accent/60"
                       : "border-line-strong hover:border-accent/50 hover:bg-surface-alt text-ink-tertiary hover:text-ink"
@@ -292,7 +292,7 @@ export function ProfileEditor({
                     disabled={isUploading}
                   />
                 </label>
-                <p className="text-center text-[10px] text-ink-tertiary mt-1.5">
+                <p className="text-center text-[10px] text-ink-tertiary mt-1">
                   JPG, PNG, WEBP · max 5 MB
                 </p>
               </div>
@@ -306,7 +306,7 @@ export function ProfileEditor({
                 Personal info
               </p>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
                   <label className="block text-caption font-semibold text-ink-secondary mb-1">
                     Full Name <span className="text-negative">*</span>
@@ -335,18 +335,37 @@ export function ProfileEditor({
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
                 <div>
-                  <label className="block text-caption font-semibold text-ink-secondary mb-1">
-                    Email Address
+                  <label className="block text-caption font-semibold text-ink-secondary mb-1 flex items-center justify-between">
+                    <span>Username</span>
+                    <span className="text-[10px] text-ink-tertiary font-mono flex items-center gap-1">
+                      {isSuperAdmin ? (
+                        <span className="text-accent font-bold">⚡ Super Admin Editable</span>
+                      ) : (
+                        <>
+                          <Lock size={11} /> Super Admin Only
+                        </>
+                      )}
+                    </span>
                   </label>
-                  <input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none transition-colors"
-                  />
+                  <div className="relative flex items-center">
+                    <input
+                      type="text"
+                      readOnly={!isSuperAdmin}
+                      disabled={!isSuperAdmin}
+                      value={username}
+                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                      className={`w-full border rounded-xl px-3 py-2 text-small font-mono font-bold transition-colors ${
+                        isSuperAdmin
+                          ? "bg-surface-alt border-line-strong text-ink focus:border-accent focus:bg-surface outline-none"
+                          : "bg-surface-alt/70 border-line-subtle text-ink-secondary opacity-75 cursor-not-allowed select-none"
+                      }`}
+                    />
+                    {!isSuperAdmin && (
+                      <Lock size={14} className="absolute right-3 text-ink-tertiary pointer-events-none" />
+                    )}
+                  </div>
                 </div>
 
                 <div>
@@ -365,8 +384,8 @@ export function ProfileEditor({
             </div>
           </div>
 
-          {/* ── Footer controls ── */}
-          <div className="px-6 pb-6 pt-2 flex items-center justify-end gap-3 shrink-0">
+          {/* ── Fixed Bottom Footer Controls ── */}
+          <div className="p-4 sm:p-5 border-t border-line bg-surface flex items-center justify-end gap-3 shrink-0">
             <button
               type="button"
               onClick={onClose}

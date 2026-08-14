@@ -90,7 +90,16 @@ export async function GET(req: Request) {
       })
     );
 
-    return NextResponse.json({ success: true, conversations: enriched });
+    // Deduplicate conversations by conversation ID
+    const uniqueMap = new Map<string, (typeof enriched)[0]>();
+    for (const c of enriched) {
+      if (c && c.id && !uniqueMap.has(c.id)) {
+        uniqueMap.set(c.id, c);
+      }
+    }
+    const uniqueConversations = Array.from(uniqueMap.values());
+
+    return NextResponse.json({ success: true, conversations: uniqueConversations });
   } catch (err: any) {
     console.error("GET /api/conversations error:", err);
     return NextResponse.json(
@@ -295,97 +304,43 @@ export async function POST(req: Request) {
   }
 }
 
-/* Helper to seed initial default conversations */
+/* Helper to seed initial default conversations for registered workspace members */
 async function seedDefaultConversations(db: any) {
   const convCol = db.collection(COL_CONV);
   const memberCol = db.collection(COL_MEMBERS);
-  const msgCol = db.collection(COL_MSG);
+  const userCol = db.collection(COL_USERS);
+
+  const registeredMembers = await userCol.find({}).toArray();
+  if (!registeredMembers || registeredMembers.length === 0) return;
 
   const now = new Date();
-  const t1 = new Date(now.getTime() - 2 * 60 * 1000);
-  const t2 = new Date(now.getTime() - 14 * 60 * 1000);
-  const t3 = new Date(now.getTime() - 60 * 60 * 1000);
+  const owner = registeredMembers[0];
 
-  // 1. IPO Chat: Dhoot Transmission
-  const ipoConvId = "conv_ipo_ipo_abc";
-  await convCol.insertOne({
-    id: ipoConvId,
-    type: "IPO",
-    title: "Dhoot Transmission",
-    avatar: "/oggy.png",
-    ipoId: "ipo_abc",
-    createdBy: "mem_1",
-    lastMessage: "Application submitted ✓",
-    lastMessageAt: t1,
-    createdAt: t3,
-    updatedAt: t1,
-  });
+  for (let i = 1; i < registeredMembers.length; i++) {
+    const target = registeredMembers[i];
+    const pair = [owner.id, target.id].sort();
+    const directKey = `${pair[0]}_${pair[1]}`;
+    const convId = `conv_dir_${directKey}`;
 
-  await memberCol.insertMany([
-    { id: `cm_${ipoConvId}_mem_1`, conversationId: ipoConvId, memberId: "mem_1", role: "OWNER", joinedAt: t3, lastReadAt: t1 },
-    { id: `cm_${ipoConvId}_mem_2`, conversationId: ipoConvId, memberId: "mem_2", role: "MEMBER", joinedAt: t3, lastReadAt: t3 },
-    { id: `cm_${ipoConvId}_mem_3`, conversationId: ipoConvId, memberId: "mem_3", role: "MEMBER", joinedAt: t3, lastReadAt: t3 },
-  ]);
+    const existing = await convCol.findOne({ directKey });
+    if (!existing) {
+      const uName = (target.username || target.name).toLowerCase();
+      await convCol.insertOne({
+        id: convId,
+        type: "DIRECT",
+        title: `@${uName}`,
+        createdBy: owner.id,
+        directKey,
+        lastMessage: `Start chatting with @${uName}`,
+        lastMessageAt: now,
+        createdAt: now,
+        updatedAt: now,
+      });
 
-  await msgCol.insertMany([
-    { id: "msg_1", conversationId: ipoConvId, senderId: "mem_2", text: "I think we should apply for 2 lots.", type: "TEXT", createdAt: new Date(t1.getTime() - 5 * 60 * 1000) },
-    { id: "msg_2", conversationId: ipoConvId, senderId: "mem_1", text: "Agreed. I'll contribute ₹40,000.", type: "TEXT", createdAt: new Date(t1.getTime() - 3 * 60 * 1000) },
-    { id: "msg_3", conversationId: ipoConvId, senderId: "mem_3", text: "Application submitted ✓", type: "TEXT", createdAt: t1 },
-  ]);
-
-  // 2. Direct Chat with Ashay (mem_2)
-  const dir1Id = "conv_dir_mem_1_mem_2";
-  await convCol.insertOne({
-    id: dir1Id,
-    type: "DIRECT",
-    title: "Ashay",
-    createdBy: "mem_1",
-    directKey: "mem_1_mem_2",
-    lastMessage: "Let's discuss the lot size.",
-    lastMessageAt: t2,
-    createdAt: t3,
-    updatedAt: t2,
-  });
-
-  await memberCol.insertMany([
-    { id: `cm_${dir1Id}_mem_1`, conversationId: dir1Id, memberId: "mem_1", role: "OWNER", joinedAt: t3, lastReadAt: t2 },
-    { id: `cm_${dir1Id}_mem_2`, conversationId: dir1Id, memberId: "mem_2", role: "MEMBER", joinedAt: t3, lastReadAt: t3 },
-  ]);
-
-  await msgCol.insertOne({
-    id: "msg_dir_1",
-    conversationId: dir1Id,
-    senderId: "mem_2",
-    text: "Let's discuss the lot size.",
-    type: "TEXT",
-    createdAt: t2,
-  });
-
-  // 3. Direct Chat with Ranveer (mem_3)
-  const dir2Id = "conv_dir_mem_1_mem_3";
-  await convCol.insertOne({
-    id: dir2Id,
-    type: "DIRECT",
-    title: "Ranveer",
-    createdBy: "mem_1",
-    directKey: "mem_1_mem_3",
-    lastMessage: "Allotment results are out.",
-    lastMessageAt: t3,
-    createdAt: t3,
-    updatedAt: t3,
-  });
-
-  await memberCol.insertMany([
-    { id: `cm_${dir2Id}_mem_1`, conversationId: dir2Id, memberId: "mem_1", role: "OWNER", joinedAt: t3, lastReadAt: t3 },
-    { id: `cm_${dir2Id}_mem_3`, conversationId: dir2Id, memberId: "mem_3", role: "MEMBER", joinedAt: t3, lastReadAt: t3 },
-  ]);
-
-  await msgCol.insertOne({
-    id: "msg_dir_2",
-    conversationId: dir2Id,
-    senderId: "mem_3",
-    text: "Allotment results are out.",
-    type: "TEXT",
-    createdAt: t3,
-  });
+      await memberCol.insertMany([
+        { id: `cm_${convId}_${owner.id}`, conversationId: convId, memberId: owner.id, role: "OWNER", joinedAt: now, lastReadAt: now },
+        { id: `cm_${convId}_${target.id}`, conversationId: convId, memberId: target.id, role: "MEMBER", joinedAt: now, lastReadAt: now },
+      ]);
+    }
+  }
 }

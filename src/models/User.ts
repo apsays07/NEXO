@@ -19,6 +19,7 @@ export interface UserDocument {
   role: MemberRole;               // "ADMIN" | "MEMBER"
   status: UserStatus;             // "ACTIVE" | "SUSPENDED" | "DISABLED"
   emailVerified: boolean;         // Email verification flag
+  mustChangePassword?: boolean;   // Force user to change password on login
   createdAt: Date;
   updatedAt: Date;
   lastLoginAt?: Date;

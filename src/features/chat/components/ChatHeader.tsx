@@ -27,9 +27,10 @@ export function ChatHeader({
   let subtitle = `${conversation.participants?.length || 2} members`;
 
   if (isDirect && conversation.otherMember) {
-    title = conversation.otherMember.name;
+    const handle = (conversation.otherMember.username || conversation.otherMember.name).toLowerCase();
+    title = `@${handle}`;
     avatar = conversation.otherMember.avatar || "/oggy.png";
-    subtitle = `@${conversation.otherMember.username || conversation.otherMember.name.toLowerCase()}`;
+    subtitle = conversation.otherMember.name;
   } else if (isIpo) {
     subtitle = `IPO Group Chat • ${conversation.participants?.length || 3} participants`;
   }

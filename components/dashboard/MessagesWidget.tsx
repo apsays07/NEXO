@@ -15,7 +15,11 @@ export function MessagesWidget() {
       .then((res) => res.json())
       .then((data) => {
         if (data?.success && Array.isArray(data.conversations)) {
-          setConversations(data.conversations.slice(0, 3));
+          const uniqueConversations = data.conversations.filter(
+            (c: Conversation, index: number, self: Conversation[]) =>
+              index === self.findIndex((item) => item.id === c.id)
+          );
+          setConversations(uniqueConversations.slice(0, 3));
         }
       })
       .catch((err) => console.error("Failed to fetch dashboard messages:", err));

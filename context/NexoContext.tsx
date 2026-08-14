@@ -26,6 +26,9 @@ import {
 } from "@/lib/mockData";
 import { getProfile, updateProfile } from "@/src/features/profile/api";
 import { mapIPOToOpportunity } from "@/src/features/ipo/mappers";
+import { logActivity } from "@/src/features/activity/activityService";
+import { UserLogoutModal } from "@/components/auth/UserLogoutModal";
+import { LoginSuccessModal } from "@/components/auth/LoginSuccessModal";
 
 type ViewTab = "dashboard" | "ipos" | "applications" | "portfolio" | "messages" | "members" | "profile" | "admin";
 
@@ -34,7 +37,7 @@ export interface NexoContextType {
   isAuthLoaded: boolean;
   currentUser: Member | null;
   currentMember: Member;
-  login: (userId: string, pass: string) => { success: boolean; role?: MemberRole; message?: string };
+  login: (userId: string, pass: string) => Promise<{ success: boolean; role?: MemberRole; message?: string }> | { success: boolean; role?: MemberRole; message?: string };
   logout: () => void;
   authError: string | null;
   setAuthError: (err: string | null) => void;
@@ -153,6 +156,7 @@ export interface NexoContextType {
   updateCurrentUser: (patch: Partial<Member>) => void;
   addMember: (memberData: Partial<Member> & { name: string; username: string; password: string }) => Promise<void>;
   updateMember: (id: string, patch: Partial<Member>) => Promise<void>;
+  deleteMember: (id: string) => Promise<void>;
   unreadMessageCount: number;
   activeConversationId: string | null;
   setActiveConversationId: (id: string | null) => void;
@@ -160,14 +164,22 @@ export interface NexoContextType {
   openIpoGroupChat: (ipoId: string, ipoTitle?: string) => Promise<void>;
   isSidebarCollapsed: boolean;
   toggleSidebar: () => void;
+  isUserLogoutModalOpen: boolean;
+  openUserLogoutModal: () => void;
+  closeUserLogoutModal: () => void;
 }
 
 const NexoContext = createContext<NexoContextType | undefined>(undefined);
 
 export function NexoProvider({ children }: { children: React.ReactNode }) {
   const [members, setMembers] = useState<Member[]>(MOCK_MEMBERS);
-  const [currentUser, setCurrentUser] = useState<Member | null>(MOCK_MEMBERS[0]);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<Member | null>(null);
+  const [isUserLogoutModalOpen, setIsUserLogoutModalOpen] = useState(false);
+  const [isLoginSuccessOpen, setIsLoginSuccessOpen] = useState(false);
+
+  const openUserLogoutModal = () => setIsUserLogoutModalOpen(true);
+  const closeUserLogoutModal = () => setIsUserLogoutModalOpen(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
   const [isAuthLoaded, setIsAuthLoaded] = useState<boolean>(false);
   const [authError, setAuthError] = useState<string | null>(null);
 
@@ -296,6 +308,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
                   memberId: p.memberId || app.memberId,
                   memberName: pName,
                   profit: Math.round(lotVal * oneLotProfit),
+                  lotsApplied: Math.round(lotVal) || 1,
                 };
               });
             }
@@ -306,17 +319,19 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
                 memberId: app.memberId,
                 memberName: aName,
                 profit: Math.round((app.lotCount || 1) * oneLotProfit),
+                lotsApplied: app.lotCount || 1,
               },
             ];
           });
 
           // Aggregate profits by member so members with multiple applications get their full sum
-          const aggregatedMap = new Map<string, { memberId: string; memberName: string; profit: number }>();
+          const aggregatedMap = new Map<string, { memberId: string; memberName: string; profit: number; lotsApplied: number }>();
           rawUserProfits.forEach((item) => {
             const key = (item.memberName || item.memberId).toLowerCase().trim();
             if (aggregatedMap.has(key)) {
               const existing = aggregatedMap.get(key)!;
               existing.profit += item.profit;
+              existing.lotsApplied += item.lotsApplied;
             } else {
               aggregatedMap.set(key, { ...item });
             }
@@ -329,6 +344,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
             category: ipo.category || "Mainboard",
             logo: ipo.logo || ipo.name.substring(0, 2).toUpperCase(),
             lotsAllotted: dist.allottedLots || 1,
+            lotsApplied: totalAppliedLots,
             totalProfit: dist.totalProfit || 0,
             applicantsCount:
               new Set(
@@ -350,10 +366,21 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       });
 
       // Deduplicate published cards by IPO name to keep only the latest uploaded card for each IPO
+      let customListed: ListedIPO[] = [];
+      try {
+        customListed = JSON.parse(localStorage.getItem("nexo_custom_listed_ipos") || "[]");
+      } catch {}
+
       const cardMap = new Map<string, ListedIPO>();
       publishedCards.forEach((card) => {
         const key = card.name.trim().toLowerCase();
         cardMap.set(key, card);
+      });
+      customListed.forEach((card) => {
+        const key = card.name.trim().toLowerCase();
+        if (!cardMap.has(key)) {
+          cardMap.set(key, card);
+        }
       });
       const uniquePublishedCards = Array.from(cardMap.values());
 
@@ -380,10 +407,14 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
 
       const storedUser = localStorage.getItem("nexo_session_user");
       if (storedUser) {
-        const parsed = JSON.parse(storedUser);
-        setCurrentUser(parsed);
-        setCurrentUserRole(parsed.role || "ADMIN");
-        setIsAuthenticated(true);
+        try {
+          const parsed = JSON.parse(storedUser);
+          if (parsed && parsed.id) {
+            setCurrentUser(parsed);
+            setCurrentUserRole(parsed.role || "MEMBER");
+            setIsAuthenticated(true);
+          }
+        } catch {}
       }
 
       const storedSavings = localStorage.getItem("nexo_individualSavings");
@@ -404,22 +435,38 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
           setCurrentUser(data.member);
           setCurrentUserRole(data.member.role || "MEMBER");
           setIsAuthenticated(true);
+
+          try {
+            if (sessionStorage.getItem("nexo_just_logged_in") === "true") {
+              sessionStorage.removeItem("nexo_just_logged_in");
+              setIsLoginSuccessOpen(true);
+            }
+          } catch {}
+        } else if (data.authenticated === false) {
+          setIsAuthenticated(false);
+          setCurrentUser(null);
+          try {
+            localStorage.removeItem("nexo_session_user");
+          } catch {}
         }
       })
-      .catch(() => {});
+      .catch(() => {})
+      .finally(() => {
+        setIsAuthLoaded(true);
+      });
 
     // Fetch latest profile from MongoDB and sync into currentUser state
     getProfile()
       .then(({ profile }) => {
         if (profile) {
           setCurrentUser((prev) => {
-            const base = prev || MOCK_MEMBERS[0];
+            if (!prev) return prev;
             const updated: Member = {
-              ...base,
-              name: profile.name || profile.displayName || base.name,
-              email: profile.email || base.email,
-              phone: profile.phone || base.phone,
-              avatar: profile.avatar || base.avatar,
+              ...prev,
+              name: profile.name || profile.displayName || prev.name,
+              email: profile.email || prev.email,
+              phone: profile.phone || prev.phone,
+              avatar: profile.avatar || prev.avatar,
             };
             try {
               localStorage.setItem("nexo_session_user", JSON.stringify(updated));
@@ -430,7 +477,6 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       })
       .catch((err) => console.error("MongoDB profile fetch error:", err));
 
-    setIsAuthLoaded(true);
     refreshMembers();
     refreshIpos().then(() => {
       refreshApplications();
@@ -515,6 +561,18 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const deleteMember = async (id: string) => {
+    setMembers((prev) => prev.filter((m) => m.id !== id));
+
+    try {
+      await fetch(`/api/admin/members/${id}`, {
+        method: "DELETE",
+      });
+    } catch (err) {
+      console.error("Failed to delete member in MongoDB:", err);
+    }
+  };
+
   const refreshApplications = async () => {
     try {
       const res = await fetch("/api/applications");
@@ -588,13 +646,13 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const login = (userIdInput: string, passInput: string): { success: boolean; role?: MemberRole; message?: string } => {
+  const login = async (userIdInput: string, passInput: string): Promise<{ success: boolean; role?: MemberRole; message?: string }> => {
     setAuthError(null);
     const cleanUser = userIdInput.trim().toLowerCase();
     const cleanPass = passInput.trim();
 
     if (!cleanUser) {
-      const msg = "Please enter your Username or User ID";
+      const msg = "Please enter your Email or Username";
       setAuthError(msg);
       return { success: false, message: msg };
     }
@@ -605,24 +663,57 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       return { success: false, message: msg };
     }
 
-    // Match against assigned credentials (username, name, email, or id)
+    // 1. Try server-side authentication API against database (members provisioned by Admin)
+    try {
+      const res = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ usernameOrEmail: cleanUser, password: cleanPass, context: "USER" }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success && data.member) {
+        setCurrentUser(data.member);
+        setCurrentUserRole(data.member.role || "MEMBER");
+        setIsAuthenticated(true);
+        setActiveTabState("dashboard");
+        try {
+          localStorage.setItem("nexo_session_user", JSON.stringify(data.member));
+          localStorage.setItem("nexo_active_tab", "dashboard");
+          if (typeof window !== "undefined") window.history.replaceState(null, "", "#dashboard");
+        } catch {}
+        return { success: true, role: data.member.role };
+      } else if (data.error && res.status !== 404 && res.status !== 500) {
+        setAuthError(data.error);
+        return { success: false, message: data.error };
+      }
+    } catch (err) {
+      console.warn("API login attempt failed, attempting local verification:", err);
+    }
+
+    // 2. Fallback: Match against assigned credentials in local state
     let foundMember = members.find((m) => {
       const uName = (m.username || m.name).toLowerCase();
       const uEmail = m.email.toLowerCase();
       const uId = m.id.toLowerCase();
-      return uName === cleanUser || uEmail === cleanUser || uId === cleanUser || (cleanUser === "admin" && m.role === "ADMIN");
+      return uName === cleanUser || uEmail === cleanUser || uId === cleanUser;
     });
 
     if (!foundMember) {
-      const msg = "Invalid Username or User ID. Please check the username assigned by your Admin.";
+      const msg = "Invalid Username. Access restricted to registered members added in the Member Section by Admin.";
       setAuthError(msg);
       return { success: false, message: msg };
     }
 
-    // Verify assigned password (or fallback for demo accounts)
-    const expectedPass = foundMember.password || (foundMember.role === "ADMIN" ? "admin123" : "user123");
-    if (cleanPass !== expectedPass && cleanPass !== "admin123" && cleanPass !== "user123" && cleanPass.length < 4) {
-      const msg = "Incorrect password. Please enter the password assigned by your Admin.";
+    if (foundMember.role === "SUPER_ADMIN" || foundMember.role === "ADMIN") {
+      const msg = "Access Denied: Admins and Super Admins cannot access the User Workspace. Please log in at the Admin Portal (/admin/login).";
+      setAuthError(msg);
+      return { success: false, message: msg };
+    }
+
+    // Verify assigned password
+    const expectedPass = foundMember.password || "admin123";
+    if (cleanPass !== expectedPass) {
+      const msg = "Incorrect password. Please enter the password provisioned by your Admin.";
       setAuthError(msg);
       return { success: false, message: msg };
     }
@@ -631,8 +722,11 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     setCurrentUser(foundMember);
     setCurrentUserRole(foundMember.role);
     setIsAuthenticated(true);
+    setActiveTabState("dashboard");
     try {
       localStorage.setItem("nexo_session_user", JSON.stringify(foundMember));
+      localStorage.setItem("nexo_active_tab", "dashboard");
+      if (typeof window !== "undefined") window.history.replaceState(null, "", "#dashboard");
     } catch {}
 
     return { success: true, role: foundMember.role };
@@ -906,10 +1000,40 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
     applicantNameInput?: string,
     panNumbersInput?: string[]
   ) => {
+    const isSuperAdminUser = currentUser?.role === "SUPER_ADMIN" || currentUser?.username === "ankitgod";
+    if (isSuperAdminUser) {
+      console.warn("Blocked IPO application attempt: Super Admin (ankitgod) cannot submit IPO applications on the user portal.");
+      return "";
+    }
+
     const canonicalType: ApplicationType =
       type === "SOLO" || type === "INDIVIDUAL" ? "INDIVIDUAL" : "COMBINED";
 
     const targetIpo = ipos.find((i) => i.id === ipoId);
+
+    // Validate PAN card uniqueness against current IPO application list
+    if (targetIpo && targetIpo.applications && panNumbersInput && panNumbersInput.length > 0) {
+      const existingIpoPans = new Set<string>();
+      targetIpo.applications.forEach((app) => {
+        if (app.panMasked) existingIpoPans.add(app.panMasked.trim().toUpperCase());
+        if (Array.isArray(app.panNumbers)) {
+          app.panNumbers.forEach((p) => p && existingIpoPans.add(p.trim().toUpperCase()));
+        }
+        if (Array.isArray(app.participants)) {
+          app.participants.forEach((p) => {
+            if (p.panMasked) existingIpoPans.add(p.panMasked.trim().toUpperCase());
+            if (p.panFull) existingIpoPans.add(p.panFull.trim().toUpperCase());
+          });
+        }
+      });
+
+      const duplicatePan = panNumbersInput.find((p) => p && existingIpoPans.has(p.trim().toUpperCase()));
+      if (duplicatePan) {
+        console.warn(`Blocked creation of duplicate application: PAN card "${duplicatePan}" has already been used for IPO "${targetIpo.name}".`);
+        return "";
+      }
+    }
+
     const total = participantContributions.reduce((sum, p) => sum + p.contribution, 0);
 
     const applicantMember = applicantMemberId
@@ -1097,11 +1221,25 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
       ...ipoData,
       id: `l_${Date.now()}`,
     };
-    setListedIpos((prev) => [newListedItem, ...prev]);
+    setListedIpos((prev) => {
+      const updated = [newListedItem, ...prev];
+      try {
+        const customOnly = updated.filter((item) => item.id.startsWith("l_"));
+        localStorage.setItem("nexo_custom_listed_ipos", JSON.stringify(customOnly));
+      } catch {}
+      return updated;
+    });
   };
 
   const deleteListedIpo = (id: string) => {
-    setListedIpos((prev) => prev.filter((item) => item.id !== id));
+    setListedIpos((prev) => {
+      const updated = prev.filter((item) => item.id !== id);
+      try {
+        const customOnly = updated.filter((item) => item.id.startsWith("l_"));
+        localStorage.setItem("nexo_custom_listed_ipos", JSON.stringify(customOnly));
+      } catch {}
+      return updated;
+    });
   };
 
   const deleteApplication = (ipoId: string, applicationId: string) => {
@@ -1413,6 +1551,7 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         updateCurrentUser,
         addMember,
         updateMember,
+        deleteMember,
         unreadMessageCount: 3,
         activeConversationId,
         setActiveConversationId,
@@ -1463,9 +1602,14 @@ export function NexoProvider({ children }: { children: React.ReactNode }) {
         },
         isSidebarCollapsed,
         toggleSidebar,
+        isUserLogoutModalOpen,
+        openUserLogoutModal,
+        closeUserLogoutModal,
       }}
     >
       {children}
+      <UserLogoutModal isOpen={isUserLogoutModalOpen} onClose={closeUserLogoutModal} />
+      <LoginSuccessModal isOpen={isLoginSuccessOpen} onClose={() => setIsLoginSuccessOpen(false)} user={currentUser} />
     </NexoContext.Provider>
   );
 }

@@ -21,6 +21,16 @@ export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
 
 export type MemberRole = "SUPER_ADMIN" | "ADMIN" | "MEMBER";
 
+export interface MemberPermissions {
+  canSubmitApplications: boolean;
+  canDistributeProfit: boolean;
+  canEditIpos: boolean;
+  canAccessAdminConsole: boolean;
+  canManageMembers: boolean;
+}
+
+export type MemberStatus = "ACTIVE" | "SUSPENDED";
+
 export interface Member {
   id: string;
   name: string;
@@ -29,12 +39,16 @@ export interface Member {
   email: string;
   avatar: string;
   role: MemberRole;
+  status?: MemberStatus;
   panMasked: string;
   panFull: string;
   defaultContribution: number;
   joinedAt: string;
   phone?: string;
   upiId?: string;
+  permissions?: MemberPermissions;
+  sessionsRevokedAt?: string;
+  lastLoginAt?: string;
 }
 
 export interface ApplicationParticipant {
@@ -118,6 +132,7 @@ export interface IPOOpportunity {
   profitDistribution?: {
     totalProfit: number;
     totalLots: number;
+    allottedLots?: number;
     oneLotProfit: number;
     publishedAt?: string;
   };
@@ -127,6 +142,7 @@ export interface ListedIPOUserProfit {
   memberId: string;
   memberName: string;
   profit: number;
+  lotsApplied?: number;
 }
 
 export interface ListedIPO {
@@ -135,6 +151,7 @@ export interface ListedIPO {
   category?: string;
   logo?: string;
   lotsAllotted: number;
+  lotsApplied?: number;
   totalProfit: number;
   applicantsCount: number;
   oneLotProfit: number;

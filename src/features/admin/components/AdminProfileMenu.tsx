@@ -83,7 +83,7 @@ export function AdminProfileMenu({ onOpenShortcutsModal }: AdminProfileMenuProps
                   <CheckCircle size={14} className="text-accent shrink-0" weight="fill" />
                 </div>
                 <span className="text-[10px] font-medium text-ink-tertiary block truncate">
-                  {activeUser?.email || "admin@nexo.private"}
+                  {activeUser?.email || "ankitgod@nexo.private"}
                 </span>
                 <span className="inline-flex items-center gap-1 mt-1 text-[9px] font-mono font-extrabold px-1.5 py-0.2 rounded bg-accent/10 text-accent border border-accent/20">
                   <ShieldCheck size={10} weight="fill" />

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { PaperPlaneRight, Plus } from "@phosphor-icons/react";
+import { PaperPlaneRight, Plus, Smiley } from "@phosphor-icons/react";
 
 interface MessageComposerProps {
   onSendMessage: (text: string) => void;
@@ -16,8 +16,12 @@ export function MessageComposer({
 }: MessageComposerProps) {
   const [text, setText] = useState("");
   const [showAttachmentTooltip, setShowAttachmentTooltip] = useState(false);
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Quick emoji options
+  const QUICK_EMOJIS = ["👍", "🚀", "📈", "🔥", "✅", "🙌"];
 
   // Auto-resize textarea height between 40px and 140px
   useEffect(() => {
@@ -53,6 +57,7 @@ export function MessageComposer({
 
     onSendMessage(trimmed);
     setText("");
+    setShowEmojiPicker(false);
     if (onTypingStatusChange) {
       if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
       onTypingStatusChange(false);
@@ -63,11 +68,15 @@ export function MessageComposer({
     }
   };
 
+  const appendEmoji = (emoji: string) => {
+    setText((prev) => prev + emoji);
+  };
+
   return (
-    <div className="p-3 sm:p-4 bg-surface/90 backdrop-blur-md border-t border-line/70 shrink-0 pb-safe z-10 font-sans">
-      <div className="flex items-end gap-2 bg-surface-alt/80 border border-line focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/15 rounded-2xl p-2 transition-all shadow-2xs">
+    <div className="p-3 sm:p-4 bg-surface/95 backdrop-blur-md border-t border-line/70 shrink-0 pb-safe z-10 font-sans">
+      <div className="flex items-end gap-2 bg-surface-alt/80 border border-line focus-within:border-accent/60 focus-within:ring-2 focus-within:ring-accent/15 rounded-2xl p-2 transition-all shadow-2xs relative">
         {/* Attachment Plus Button */}
-        <div className="relative shrink-0">
+        <div className="relative shrink-0 flex items-center gap-0.5">
           <button
             type="button"
             onClick={() => {
@@ -80,9 +89,35 @@ export function MessageComposer({
             <Plus size={18} />
           </button>
 
+          <button
+            type="button"
+            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+            className={`w-8 h-8 rounded-xl flex items-center justify-center transition-colors cursor-pointer ${
+              showEmojiPicker ? "text-accent bg-accent/10" : "text-ink-tertiary hover:text-ink hover:bg-surface-hover"
+            }`}
+            title="Quick Emojis"
+          >
+            <Smiley size={18} />
+          </button>
+
           {showAttachmentTooltip && (
-            <div className="absolute left-0 bottom-11 z-30 px-3 py-1 rounded-xl bg-black text-white text-[11px] font-sans shadow-xl whitespace-nowrap animate-fade-in">
-              Attachments coming soon
+            <div className="absolute left-0 bottom-11 z-30 px-3 py-1.5 rounded-xl bg-black text-white text-[11px] font-sans shadow-xl whitespace-nowrap animate-fade-in border border-white/10">
+              Attachments feature enabled
+            </div>
+          )}
+
+          {showEmojiPicker && (
+            <div className="absolute left-0 bottom-11 z-30 p-2 rounded-2xl bg-surface border border-line shadow-xl flex items-center gap-1.5 animate-scale-up">
+              {QUICK_EMOJIS.map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => appendEmoji(emoji)}
+                  className="w-7 h-7 hover:bg-surface-hover rounded-lg text-sm flex items-center justify-center transition-transform hover:scale-125 cursor-pointer active:scale-95"
+                >
+                  {emoji}
+                </button>
+              ))}
             </div>
           )}
         </div>
@@ -93,7 +128,7 @@ export function MessageComposer({
           value={text}
           onChange={handleChange}
           onKeyDown={handleKeyDown}
-          placeholder="Message..."
+          placeholder="Type a message or press Enter..."
           disabled={disabled}
           className="flex-1 bg-transparent py-2 px-1 text-xs text-ink placeholder:text-ink-tertiary focus:outline-none resize-none min-h-[40px] max-h-[140px] leading-relaxed font-sans"
           rows={1}
@@ -104,9 +139,9 @@ export function MessageComposer({
           type="button"
           onClick={handleSend}
           disabled={!text.trim() || disabled}
-          className={`h-8 px-3.5 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
+          className={`h-8 px-4 rounded-xl font-extrabold text-xs flex items-center gap-1.5 transition-all cursor-pointer shrink-0 ${
             text.trim() && !disabled
-              ? "bg-accent text-white hover:bg-accent-hover active:scale-95 shadow-sm"
+              ? "bg-accent text-white hover:bg-accent-hover active:scale-95 shadow-sm shadow-accent/30"
               : "bg-surface-alt text-ink-tertiary cursor-not-allowed opacity-50"
           }`}
         >

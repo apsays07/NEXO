@@ -21,47 +21,111 @@ function formatDate(d?: string): string {
   return d.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2").replace(/\s+/g, " ");
 }
 
+function parseStepDate(d?: string): Date | null {
+  if (!d) return null;
+  const cleaned = d.trim().replace(/^(\d+)([a-zA-Z]+)/, "$1 $2").replace(/\s+/g, " ");
+  const parsed = new Date(cleaned);
+  if (!isNaN(parsed.getTime())) {
+    return parsed;
+  }
+  return null;
+}
+
 function getSteps(ipo: IPOOpportunity): ScheduleStep[] {
-  const stage = ipo.status;
+  const openD = parseStepDate(ipo.metrics?.openDate);
+  const closeD = parseStepDate(ipo.metrics?.closeDate);
+  const allotD = parseStepDate(ipo.metrics?.allotmentDate);
+  const unblockD = parseStepDate(ipo.metrics?.fundUnblockDate || ipo.metrics?.allotmentDate);
+  const listD = parseStepDate(ipo.metrics?.listingDate);
 
-  const isDone = (stages: string[]) => stages.includes(stage);
-  const isActive = (s: string) => stage === s;
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
-  const openDone =
-    isDone(["APPLICATION_OPEN", "APPLYING", "APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
-  const closeDone =
-    isDone(["APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
-  const allotDone =
-    isDone(["ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
-  const listDone =
-    isDone(["LISTED", "HOLDING", "SOLD", "CLOSED"]);
+  let openStatus: ScheduleStep["status"] = "upcoming";
+  let closeStatus: ScheduleStep["status"] = "upcoming";
+  let allotStatus: ScheduleStep["status"] = "upcoming";
+  let unblockStatus: ScheduleStep["status"] = "upcoming";
+  let listStatus: ScheduleStep["status"] = "upcoming";
+
+  if (openD && closeD) {
+    const openTime = new Date(openD.getFullYear(), openD.getMonth(), openD.getDate()).getTime();
+    const closeTime = new Date(closeD.getFullYear(), closeD.getMonth(), closeD.getDate()).getTime();
+    const allotTime = allotD ? new Date(allotD.getFullYear(), allotD.getMonth(), allotD.getDate()).getTime() : closeTime + 4 * 86400000;
+    const unblockTime = unblockD ? new Date(unblockD.getFullYear(), unblockD.getMonth(), unblockD.getDate()).getTime() : allotTime + 86400000;
+    const listTime = listD ? new Date(listD.getFullYear(), listD.getMonth(), listD.getDate()).getTime() : unblockTime + 2 * 86400000;
+
+    const t = today.getTime();
+
+    if (t < openTime) {
+      openStatus = "active";
+    } else if (t >= openTime && t <= closeTime) {
+      openStatus = "done";
+      closeStatus = "active";
+    } else if (t > closeTime && t <= allotTime) {
+      openStatus = "done";
+      closeStatus = "done";
+      allotStatus = "active";
+    } else if (t > allotTime && t <= unblockTime) {
+      openStatus = "done";
+      closeStatus = "done";
+      allotStatus = "done";
+      unblockStatus = "active";
+    } else if (t > unblockTime && t <= listTime) {
+      openStatus = "done";
+      closeStatus = "done";
+      allotStatus = "done";
+      unblockStatus = "done";
+      listStatus = "active";
+    } else if (t > listTime) {
+      openStatus = "done";
+      closeStatus = "done";
+      allotStatus = "done";
+      unblockStatus = "done";
+      listStatus = "done";
+    }
+  } else {
+    const stage = ipo.status;
+    const isDone = (stages: string[]) => stages.includes(stage);
+    const isActive = (s: string) => stage === s;
+
+    const openDone = isDone(["APPLICATION_OPEN", "APPLYING", "APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
+    const closeDone = isDone(["APPLIED", "ALLOTMENT_PENDING", "ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
+    const allotDone = isDone(["ALLOTTED", "NOT_ALLOTTED", "LISTED", "HOLDING", "SOLD", "CLOSED"]);
+    const listDone = isDone(["LISTED", "HOLDING", "SOLD", "CLOSED"]);
+
+    openStatus = openDone ? "done" : isActive("RESEARCHING") || isActive("WATCHLIST") ? "active" : "upcoming";
+    closeStatus = closeDone ? "done" : isActive("APPLICATION_OPEN") || isActive("APPLYING") ? "active" : "upcoming";
+    allotStatus = allotDone ? "done" : isActive("APPLIED") || isActive("ALLOTMENT_PENDING") ? "active" : "upcoming";
+    unblockStatus = allotDone ? "done" : "upcoming";
+    listStatus = listDone ? "done" : "upcoming";
+  }
 
   return [
     {
       label: "IPO open date",
-      date: formatDate(ipo.metrics.openDate),
-      status: openDone ? "done" : isActive("RESEARCHING") || isActive("WATCHLIST") ? "active" : "upcoming",
+      date: formatDate(ipo.metrics?.openDate),
+      status: openStatus,
     },
     {
       label: "IPO close date",
-      date: formatDate(ipo.metrics.closeDate),
-      status: closeDone ? "done" : isActive("APPLICATION_OPEN") || isActive("APPLYING") ? "active" : "upcoming",
+      date: formatDate(ipo.metrics?.closeDate),
+      status: closeStatus,
     },
     {
       label: "Allotment date",
-      date: formatDate(ipo.metrics.allotmentDate),
-      status: allotDone ? "done" : isActive("APPLIED") || isActive("ALLOTMENT_PENDING") ? "active" : "upcoming",
+      date: formatDate(ipo.metrics?.allotmentDate),
+      status: allotStatus,
     },
     {
       label: "Funds unblock or debit",
-      date: formatDate(ipo.metrics.fundUnblockDate || ipo.metrics.allotmentDate),
+      date: formatDate(ipo.metrics?.fundUnblockDate || ipo.metrics?.allotmentDate),
       info: "Refund or debit based on allotment result",
-      status: allotDone ? "done" : "upcoming",
+      status: unblockStatus,
     },
     {
       label: "Tentative listing date",
-      date: formatDate(ipo.metrics.listingDate),
-      status: listDone ? "done" : "upcoming",
+      date: formatDate(ipo.metrics?.listingDate),
+      status: listStatus,
     },
   ];
 }

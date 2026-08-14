@@ -111,6 +111,20 @@ export async function PUT(req: Request) {
         { upsert: true }
       );
 
+      // Sync avatar, phone, name to nexo.members collection for Admin Panel & Roster visibility
+      const memberId = auth?.memberId || userId;
+      const memberSyncDoc: Record<string, any> = { updatedAt: new Date() };
+      if (body.avatar) memberSyncDoc.avatar = body.avatar;
+      if (body.phone) memberSyncDoc.phone = body.phone;
+      if (body.name) memberSyncDoc.name = body.name;
+
+      if (Object.keys(memberSyncDoc).length > 1) {
+        await client.db(DB).collection("members").updateOne(
+          { $or: [{ id: memberId }, { id: userId }] },
+          { $set: memberSyncDoc }
+        );
+      }
+
       const doc = await col.findOne({ userId });
       return NextResponse.json({ success: true, profile: toPublicProfile(doc || defaultProfile()) });
     } catch (dbErr) {

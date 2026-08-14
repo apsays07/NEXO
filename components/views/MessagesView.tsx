@@ -9,88 +9,7 @@ import { NewConversationModal } from "@/src/features/chat/components/NewConversa
 import { chatRealtime } from "@/src/features/chat/utils/chatRealtime";
 import { ChatCircleDots } from "@phosphor-icons/react";
 
-const STATIC_FALLBACK_CONVERSATIONS: Conversation[] = [
-  {
-    id: "conv_ipo_ipo_abc",
-    type: "IPO",
-    title: "Dhoot Transmission",
-    avatar: "/oggy.png",
-    ipoId: "ipo_abc",
-    createdBy: "mem_1",
-    lastMessage: "Application submitted ✓",
-    lastMessageAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 3 * 60 * 1000).toISOString(),
-    unreadCount: 1,
-    otherMember: {
-      id: "mem_2",
-      name: "Ashay",
-      username: "ashay",
-      email: "ashay@nexo.private",
-      avatar: "/jack.png",
-      role: "MEMBER",
-      panMasked: "BCDEF2345G",
-      panFull: "BCDEF2345G",
-      defaultContribution: 50000,
-      joinedAt: "Jan 2025",
-    },
-    participants: [
-      { id: "mem_1", name: "Ankit", username: "ankit", avatar: "/oggy.png", role: "ADMIN", email: "", panMasked: "", panFull: "", defaultContribution: 50000, joinedAt: "" },
-      { id: "mem_2", name: "Ashay", username: "ashay", avatar: "/jack.png", role: "MEMBER", email: "", panMasked: "", panFull: "", defaultContribution: 50000, joinedAt: "" },
-      { id: "mem_3", name: "Ranveer", username: "ranveer", avatar: "/sinchan.png", role: "MEMBER", email: "", panMasked: "", panFull: "", defaultContribution: 30000, joinedAt: "" },
-    ],
-  },
-  {
-    id: "conv_dir_mem_1_mem_2",
-    type: "DIRECT",
-    title: "Ashay",
-    avatar: "/jack.png",
-    createdBy: "mem_1",
-    directKey: "mem_1_mem_2",
-    lastMessage: "Let's discuss the lot size.",
-    lastMessageAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 16 * 60 * 1000).toISOString(),
-    unreadCount: 0,
-    otherMember: {
-      id: "mem_2",
-      name: "Ashay",
-      username: "ashay",
-      email: "ashay@nexo.private",
-      avatar: "/jack.png",
-      role: "MEMBER",
-      panMasked: "BCDEF2345G",
-      panFull: "BCDEF2345G",
-      defaultContribution: 50000,
-      joinedAt: "Jan 2025",
-    },
-  },
-  {
-    id: "conv_dir_mem_1_mem_3",
-    type: "DIRECT",
-    title: "Ranveer",
-    avatar: "/sinchan.png",
-    createdBy: "mem_1",
-    directKey: "mem_1_mem_3",
-    lastMessage: "Allotment results are out.",
-    lastMessageAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    createdAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    updatedAt: new Date(Date.now() - 60 * 60 * 1000).toISOString(),
-    unreadCount: 0,
-    otherMember: {
-      id: "mem_3",
-      name: "Ranveer",
-      username: "ranveer",
-      email: "ranveer@nexo.private",
-      avatar: "/sinchan.png",
-      role: "MEMBER",
-      panMasked: "CDEFG3456H",
-      panFull: "CDEFG3456H",
-      defaultContribution: 30000,
-      joinedAt: "Feb 2025",
-    },
-  },
-];
+const STATIC_FALLBACK_CONVERSATIONS: Conversation[] = [];
 
 export function MessagesView() {
   const {
@@ -116,21 +35,58 @@ export function MessagesView() {
     };
   }, [currentMemberId]);
 
-  // Fetch conversations list from API
+  // Fetch conversations list from API, filtering for active workspace members
   const fetchConversations = useCallback(async () => {
     try {
       const res = await fetch(`/api/conversations?memberId=${currentMemberId}`);
       const data = await res.json();
       if (data?.success && Array.isArray(data.conversations) && data.conversations.length > 0) {
-        setConversations(data.conversations);
-        if (!activeConversationId) {
-          setActiveConversationId(data.conversations[0].id);
+        const validConversations = data.conversations.filter((c: Conversation) => {
+          if (c.type === "DIRECT" && c.otherMember) {
+            return members.some((m) => m.id === c.otherMember?.id || m.username === c.otherMember?.username);
+          }
+          return true;
+        });
+
+        if (validConversations.length > 0) {
+          const uniqueConversations = validConversations.filter(
+            (c: Conversation, index: number, self: Conversation[]) =>
+              index === self.findIndex((item) => item.id === c.id)
+          );
+          setConversations(uniqueConversations);
+          if (!activeConversationId) {
+            setActiveConversationId(uniqueConversations[0].id);
+          }
+          return;
         }
+      }
+
+      // Build dynamic initial conversations for registered members
+      const registeredOtherMembers = members.filter((m) => m.id !== currentMemberId);
+      const generated: Conversation[] = registeredOtherMembers.map((m) => ({
+        id: `conv_dir_${currentMemberId}_${m.id}`,
+        type: "DIRECT" as const,
+        title: `@${(m.username || m.name).toLowerCase()}`,
+        avatar: m.avatar || "/oggy.png",
+        createdBy: currentMemberId,
+        directKey: `${currentMemberId}_${m.id}`,
+        lastMessage: `Tap to chat with @${(m.username || m.name).toLowerCase()}`,
+        lastMessageAt: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        unreadCount: 0,
+        otherMember: m,
+        participants: [activeUser, m],
+      }));
+
+      setConversations(generated);
+      if (generated.length > 0 && !activeConversationId) {
+        setActiveConversationId(generated[0].id);
       }
     } catch (err) {
       console.error("Failed to fetch conversations:", err);
     }
-  }, [currentMemberId, activeConversationId, setActiveConversationId]);
+  }, [currentMemberId, activeConversationId, setActiveConversationId, members, activeUser]);
 
   useEffect(() => {
     fetchConversations();

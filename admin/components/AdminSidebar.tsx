@@ -2,14 +2,15 @@
 
 import React from "react";
 import {
-  SquaresFour,
   TrendUp,
   Coins,
   Users,
-  ChartLineUp,
   ListChecks,
+  ClockCountdown,
   Plus,
   SignOut,
+  ShieldCheck,
+  CheckCircle,
 } from "@phosphor-icons/react";
 import { useAdmin } from "../context/AdminContext";
 
@@ -17,46 +18,51 @@ interface AdminSidebarProps {
   onAddIpoClick: () => void;
   activeTab: string;
   setActiveTab: (tab: string) => void;
+  onSignOutClick?: () => void;
 }
 
-export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSidebarProps) {
+export function AdminSidebar({
+  onAddIpoClick,
+  activeTab,
+  setActiveTab,
+  onSignOutClick,
+}: AdminSidebarProps) {
   const { currentUser } = useAdmin();
+  const isSuperAdmin = currentUser?.role === "SUPER_ADMIN";
 
   const mainNav = [
-    { id: "overview", label: "Overview", icon: SquaresFour },
     { id: "ipos", label: "IPO Management", icon: TrendUp },
+    { id: "allotment", label: "Allotment", icon: CheckCircle },
     { id: "distribute-profit", label: "Distribute Profit", icon: Coins },
     { id: "members", label: "Members", icon: Users },
   ];
 
   const secondaryNav = [
-    { id: "analytics", label: "Analytics", icon: ChartLineUp },
     { id: "audit", label: "Audit Logs", icon: ListChecks },
+    { id: "activity", label: "Activity & Audit", icon: ClockCountdown },
+    { id: "security", label: "Security", icon: ShieldCheck },
   ];
 
+  const handleLogout = async () => {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {}
+    window.location.href = "/admin/login";
+  };
+
   return (
-    <aside className="w-[240px] bg-slate-900 text-slate-200 flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none font-sans z-30">
-      <div>
+    <aside className="w-[240px] bg-surface border-r border-line flex flex-col justify-between h-screen sticky top-0 shrink-0 select-none font-sans z-30 overflow-hidden">
+      <div className="flex flex-col min-h-0 flex-1 overflow-y-auto">
         {/* Brand Header */}
-        <div className="p-4 border-b border-slate-800 flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-black text-sm shadow-md">
-            N
-          </div>
-          <div>
-            <h1 className="text-sm font-black tracking-tight text-white flex items-center gap-1.5">
-              NEXO
-              <span className="text-[10px] px-1.5 py-0.2 rounded bg-blue-500/20 text-blue-400 border border-blue-500/30 font-bold uppercase tracking-wider">
-                ADMIN
-              </span>
-            </h1>
-            <p className="text-[11px] text-slate-400 font-bold tracking-wider uppercase">
-              CONSOLE
-            </p>
+        <div className="h-14 px-4 border-b border-line flex items-center justify-between shrink-0 bg-surface sticky top-0 z-10">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xl font-black tracking-tight text-ink font-sans">NEXO</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-accent inline-block shadow-2xs shadow-accent/40" />
           </div>
         </div>
 
         {/* Navigation Sections */}
-        <nav className="p-3 space-y-4">
+        <nav className="p-3 space-y-4 flex-1">
           {/* MAIN MANAGEMENT */}
           <div className="space-y-1">
             {mainNav.map((item) => {
@@ -68,18 +74,18 @@ export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSi
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full h-9 flex items-center gap-3 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
+                      ? "bg-blue-600 dark:bg-[#22262E] text-white dark:text-[#F5F7FA] border border-transparent dark:border-[#6B93FF]/30 shadow-sm"
+                      : "text-slate-400 dark:text-[#AEB5C0] hover:text-slate-100 dark:hover:text-[#F5F7FA] hover:bg-slate-800/80 dark:hover:bg-[#1D2026]"
                   }`}
                 >
-                  <Icon size={17} className={isActive ? "text-white" : "text-slate-400"} />
+                  <Icon size={17} className={isActive ? "text-white dark:text-[#6B93FF]" : "text-slate-400 dark:text-[#858D99]"} />
                   <span>{item.label}</span>
                 </button>
               );
             })}
           </div>
 
-          <div className="border-t border-slate-800 pt-3 space-y-1">
+          <div className="border-t border-slate-800 dark:border-[#252931] pt-3 space-y-1">
             {secondaryNav.map((item) => {
               const Icon = item.icon;
               const isActive = activeTab === item.id;
@@ -89,11 +95,11 @@ export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSi
                   onClick={() => setActiveTab(item.id)}
                   className={`w-full h-9 flex items-center gap-3 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                     isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
+                      ? "bg-blue-600 dark:bg-[#22262E] text-white dark:text-[#F5F7FA] border border-transparent dark:border-[#6B93FF]/30 shadow-sm"
+                      : "text-slate-400 dark:text-[#AEB5C0] hover:text-slate-100 dark:hover:text-[#F5F7FA] hover:bg-slate-800/80 dark:hover:bg-[#1D2026]"
                   }`}
                 >
-                  <Icon size={17} className={isActive ? "text-white" : "text-slate-400"} />
+                  <Icon size={17} className={isActive ? "text-white dark:text-[#6B93FF]" : "text-slate-400 dark:text-[#858D99]"} />
                   <span>{item.label}</span>
                 </button>
               );
@@ -104,35 +110,38 @@ export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSi
           <div className="pt-2">
             <button
               onClick={onAddIpoClick}
-              className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+              className="w-full py-2.5 px-3 rounded-xl bg-blue-600 dark:bg-[#6B93FF] hover:bg-blue-500 dark:hover:bg-[#7BA0FF] text-white dark:text-[#101114] font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] cursor-pointer"
             >
               <Plus size={16} weight="bold" />
-              <span>+ Add IPO</span>
+              <span>Add IPO</span>
             </button>
           </div>
         </nav>
       </div>
 
       {/* Admin Profile Footer */}
-      <div className="p-3 border-t border-slate-800 bg-slate-950/50">
-        <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900 border border-slate-800">
-          <img
-            src={currentUser.avatar}
-            alt={currentUser.name}
-            className="w-8 h-8 rounded-full object-cover shrink-0"
-          />
-          <div className="min-w-0 flex-1">
-            <p className="text-xs font-extrabold text-white truncate">
-              {currentUser.name}
-            </p>
-            <p className="text-[10px] text-slate-400 font-medium truncate">
-              Administrator
-            </p>
+      <div className="p-3 border-t border-slate-800 dark:border-[#252931] bg-slate-950/50 dark:bg-[#090A0C]/50 shrink-0">
+        <div className="flex items-center gap-2.5 p-2 rounded-xl bg-slate-900 dark:bg-[#14161A] hover:bg-slate-850 dark:hover:bg-[#1D2026] border border-slate-800 dark:border-[#252931] transition-colors">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
+            <img
+              src={currentUser.avatar}
+              alt={currentUser.name}
+              className="w-8 h-8 rounded-full object-cover shrink-0 border border-slate-700 dark:border-[#343943]"
+            />
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-extrabold text-white dark:text-[#F5F7FA] truncate">
+                {currentUser.name}
+              </p>
+              <p className="text-[10px] text-slate-400 dark:text-[#858D99] font-mono font-bold uppercase truncate">
+                {currentUser.role || "ADMIN"}
+              </p>
+            </div>
           </div>
+
           <button
-            title="Sign Out"
-            onClick={() => alert("Admin signed out")}
-            className="p-1 rounded-md text-slate-400 hover:text-rose-400 hover:bg-slate-800 transition-colors cursor-pointer shrink-0"
+            title="Sign Out of Admin Console"
+            onClick={onSignOutClick || handleLogout}
+            className="p-1.5 rounded-lg text-slate-400 dark:text-[#858D99] hover:text-rose-400 dark:hover:text-[#FF6B6B] hover:bg-slate-800 dark:hover:bg-[#1D2026] transition-colors cursor-pointer shrink-0"
           >
             <SignOut size={16} />
           </button>

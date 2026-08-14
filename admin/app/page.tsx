@@ -19,7 +19,7 @@ export default function AdminHomePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
+    <div className="flex h-screen overflow-hidden bg-slate-50 text-slate-900 font-sans antialiased">
       {/* ADMIN SIDEBAR */}
       <AdminSidebar
         activeTab={activeTab}
@@ -28,13 +28,16 @@ export default function AdminHomePage() {
       />
 
       {/* MAIN ADMIN WORKSPACE CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Top Header Bar */}
         <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
           <div className="flex items-center gap-2">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
-              NEXO Admin Console Active • Port 3001
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+              Workspace /
+            </span>
+            <span className="text-xs font-extrabold text-slate-900 uppercase tracking-wider">
+              IPO Management
             </span>
           </div>
 

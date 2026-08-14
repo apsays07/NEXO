@@ -16,7 +16,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "NEXO ADMIN CONSOLE",
+  title: "NEXO- Admin",
   description: "Private Admin Console for NEXO IPO Dashboard & OS",
 };
 

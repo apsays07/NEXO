@@ -243,7 +243,7 @@ export function AdminIPOManagement({
             className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-accent hover:bg-accent-hover text-white font-extrabold text-xs transition-all shadow-md shadow-accent/20 active:scale-[0.98] cursor-pointer"
           >
             <Plus size={16} weight="bold" />
-            <span>+ Add IPO</span>
+            <span>Add IPO</span>
           </button>
         </div>
       </div>
@@ -873,7 +873,6 @@ export function AdminIPOManagement({
                 >
                   <option value="MEMBER">MEMBER (Standard User)</option>
                   <option value="ADMIN">ADMIN (Full Console Access)</option>
-                  <option value="SUPER_ADMIN">SUPER_ADMIN (Super Administrator)</option>
                 </select>
               </div>
 

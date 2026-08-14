@@ -61,6 +61,22 @@ const AdminContext = createContext<AdminContextType | undefined>(undefined);
 export function AdminProvider({ children }: { children: React.ReactNode }) {
   const [ipos, setIpos] = useState<IPOOpportunity[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [currentUser, setCurrentUser] = useState<Member>(defaultAdmin);
+
+  useEffect(() => {
+    fetch("/api/auth/me")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.authenticated && data.member) {
+          setCurrentUser({
+            ...defaultAdmin,
+            ...data.member,
+            role: (data.user?.role || data.member.role || "ADMIN") as any,
+          });
+        }
+      })
+      .catch(() => {});
+  }, []);
 
   const refreshIpos = async () => {
     try {
@@ -70,9 +86,11 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
       if (data?.success && Array.isArray(data.ipos)) {
         let extraLocal: IPOOpportunity[] = [];
         let hiddenLocal: string[] = [];
+        let profitDists: Record<string, any> = {};
         try {
           extraLocal = JSON.parse(localStorage.getItem("nexo_local_admin_ipos") || "[]");
           hiddenLocal = JSON.parse(localStorage.getItem("nexo_local_hidden_ipos") || "[]");
+          profitDists = JSON.parse(localStorage.getItem("nexo_shared_profit_dists") || "{}");
         } catch (e) {}
 
         const mergedMap = new Map<string, IPOOpportunity>();
@@ -86,20 +104,25 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
           }
         });
 
-        const combined = Array.from(mergedMap.values()).map((ipo) =>
-          hiddenLocal.includes(ipo.id) || ipo.isHidden === true
-            ? { ...ipo, isHidden: true }
-            : ipo
-        );
+        const combined = Array.from(mergedMap.values()).map((ipo) => {
+          const dist = profitDists[ipo.id] || ipo.profitDistribution;
+          return {
+            ...ipo,
+            isHidden: hiddenLocal.includes(ipo.id) || ipo.isHidden === true,
+            profitDistribution: dist || ipo.profitDistribution,
+          };
+        });
 
         setIpos(combined);
       }
     } catch (err) {
       let extraLocal: IPOOpportunity[] = [];
       let hiddenLocal: string[] = [];
+      let profitDists: Record<string, any> = {};
       try {
         extraLocal = JSON.parse(localStorage.getItem("nexo_local_admin_ipos") || "[]");
         hiddenLocal = JSON.parse(localStorage.getItem("nexo_local_hidden_ipos") || "[]");
+        profitDists = JSON.parse(localStorage.getItem("nexo_shared_profit_dists") || "{}");
       } catch (e) {}
 
       setIpos((prev) => {
@@ -108,15 +131,18 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
         extraLocal.forEach((ipo) => {
           if (!mergedMap.has(ipo.id)) mergedMap.set(ipo.id, ipo);
         });
-        return Array.from(mergedMap.values()).map((ipo) =>
-          hiddenLocal.includes(ipo.id) || ipo.isHidden === true
-            ? { ...ipo, isHidden: true }
-            : ipo
-        );
+        return Array.from(mergedMap.values()).map((ipo) => {
+          const dist = profitDists[ipo.id] || ipo.profitDistribution;
+          return {
+            ...ipo,
+            isHidden: hiddenLocal.includes(ipo.id) || ipo.isHidden === true,
+            profitDistribution: dist || ipo.profitDistribution,
+          };
+        });
       });
     } finally {
       setIsLoading(false);
-    }
+    };
   };
 
   useEffect(() => {
@@ -367,7 +393,7 @@ export function AdminProvider({ children }: { children: React.ReactNode }) {
     <AdminContext.Provider
       value={{
         ipos,
-        currentUser: defaultAdmin,
+        currentUser,
         isLoading,
         createIPO,
         updateIPO,

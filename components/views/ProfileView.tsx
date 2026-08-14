@@ -14,11 +14,13 @@ import {
   Shield,
   User,
   CheckCircle,
+  LockKey,
 } from "@phosphor-icons/react";
+import { ChangePasswordModal } from "../profile/ChangePasswordModal";
 
 const FIELD_ROWS = [
   { key: "name",      label: "Full Name",     Icon: User,               mono: false },
-  { key: "email",     label: "Email",         Icon: EnvelopeSimple,     mono: false },
+  { key: "username",  label: "Username",      Icon: User,               mono: true  },
   { key: "phone",     label: "Phone",         Icon: Phone,              mono: false },
   { key: "panMasked", label: "PAN",           Icon: IdentificationCard, mono: true  },
   { key: "roleLabel", label: "Role",          Icon: Shield,             mono: false },
@@ -32,6 +34,7 @@ export function ProfileView() {
 
   const [profileData, setProfileData] = useState<UserProfile | null>(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -43,21 +46,18 @@ export function ProfileView() {
     loadProfile();
   }, []);
 
-  // Session (activeUser) always wins for identity — the DB profile is supplemental only.
-  // profileData may be a stale singleton seeded with a placeholder name; never let it
-  // override the currently-logged-in user's real data.
-  const name        = activeUser?.name      || profileData?.name      || "Member";
+  const name        = activeUser?.name      || profileData?.name      || "Ankit";
   const displayName = name;
-  const email       = activeUser?.email     || (profileData?.email  && profileData.email.trim() ? profileData.email   : "")  || "";
-  const phone       = activeUser?.phone     || profileData?.phone     || "";
+  const rawUsername = activeUser?.username  || profileData?.username  || "ankitgod";
+  const username    = rawUsername.startsWith("@") ? rawUsername : `@${rawUsername}`;
+  const phone       = activeUser?.phone     || profileData?.phone     || "+91 98200 12345";
   const avatar      = activeUser?.avatar    || profileData?.avatar    || "";
   const rawRole     = String(activeUser?.role || profileData?.role || "MEMBER").toUpperCase();
-  // On user-side: SUPER_ADMIN is displayed as plain Member (admin identity is admin-panel only)
   const role        = rawRole === "SUPER_ADMIN" ? "MEMBER" : rawRole;
-  const panMasked   = activeUser?.panMasked || profileData?.panMasked || "";
+  const panMasked   = activeUser?.panMasked || profileData?.panMasked || "ABCDE1234F";
   const roleLabel   = role === "ADMIN" ? "Administrator" : "Member";
 
-  const fieldValues: Record<string, string> = { name, email, phone, panMasked, roleLabel };
+  const fieldValues: Record<string, string> = { name, username, phone, panMasked, roleLabel };
 
   const initials = name
     .split(" ")
@@ -66,151 +66,167 @@ export function ProfileView() {
     .toUpperCase()
     .slice(0, 2);
 
-  /* ── theme-dependent tokens ── */
-  const bgImage   = isDark ? "url('/profile-bg.jpg')"       : "url('/profile-bg-light.jpg')";
+  /* ── Dynamic Light/Dark Theme Tokens ── */
+  const bgImage   = isDark ? "url('/profile-bg.jpg')" : "url('/profile-bg-light.jpg')";
   const overlay   = isDark
-    ? "linear-gradient(to bottom, rgba(6,8,16,0.50) 0%, rgba(6,8,16,0.35) 40%, rgba(6,8,16,0.88) 80%, rgba(6,8,16,1) 100%)"
-    : "linear-gradient(to bottom, rgba(255,255,255,0.30) 0%, rgba(255,255,255,0.20) 40%, rgba(255,255,255,0.88) 80%, rgba(255,255,255,1) 100%)";
-  const cardBg    = isDark ? "rgba(14,16,22,0.70)"          : "rgba(255,255,255,0.72)";
-  const cardBorder= isDark ? "rgba(255,255,255,0.07)"       : "rgba(0,0,0,0.08)";
-  const rowDivide = isDark ? "rgba(255,255,255,0.05)"       : "rgba(0,0,0,0.06)";
-  const labelColor= isDark ? "rgba(133,141,153,0.75)"       : "rgba(80,90,110,0.75)";
-  const valueColor= isDark ? "#E8ECF0"                      : "#111318";
-  const nameColor = isDark ? "#F5F7FA"                      : "#111318";
-  const iconBg    = isDark ? "rgba(255,255,255,0.05)"       : "rgba(0,0,0,0.05)";
-  const iconBorder= isDark ? "rgba(255,255,255,0.08)"       : "rgba(0,0,0,0.08)";
-  const iconColor = isDark ? "rgba(133,141,153,0.8)"        : "rgba(80,90,110,0.8)";
-  const editBg    = isDark ? "rgba(255,255,255,0.06)"       : "rgba(0,0,0,0.05)";
-  const editBorder= isDark ? "rgba(255,255,255,0.12)"       : "rgba(0,0,0,0.12)";
-  const editColor = isDark ? "rgba(245,247,250,0.75)"       : "rgba(30,40,60,0.75)";
-  const footerColor= isDark ? "rgba(98,106,117,0.6)"        : "rgba(100,110,130,0.6)";
-  const dotColor  = isDark ? "rgba(180,200,255,0.07)"       : "rgba(60,100,220,0.05)";
+    ? "linear-gradient(to bottom, rgba(6,8,16,0.60) 0%, rgba(6,8,16,0.40) 40%, rgba(6,8,16,0.92) 80%, rgba(6,8,16,1) 100%)"
+    : "linear-gradient(to bottom, rgba(255,255,255,0.45) 0%, rgba(255,255,255,0.25) 40%, rgba(248,250,252,0.92) 80%, rgba(248,250,252,1) 100%)";
+  const cardBg    = isDark ? "rgba(16,18,26,0.75)" : "rgba(255,255,255,0.85)";
+  const cardBorder= isDark ? "rgba(255,255,255,0.10)" : "rgba(226,232,240,0.90)";
+  const rowDivide = isDark ? "rgba(255,255,255,0.06)" : "rgba(241,245,249,1)";
+  const labelColor= isDark ? "#94A3B8" : "#64748B";
+  const valueColor= isDark ? "#F8FAFC" : "#0F172A";
+  const nameColor = isDark ? "#FFFFFF" : "#0F172A";
+  const iconBg    = isDark ? "rgba(255,255,255,0.06)" : "rgba(239,246,255,1)";
+  const iconBorder= isDark ? "rgba(255,255,255,0.10)" : "rgba(219,234,254,1)";
+  const iconColor = isDark ? "#94A3B8" : "#3B82F6";
+  const dotColor  = isDark ? "rgba(180,200,255,0.08)" : "rgba(60,100,220,0.06)";
 
   return (
     <div
-      className="relative h-full flex flex-col items-center justify-center font-sans animate-fade-in overflow-hidden"
+      className="relative h-full flex flex-col items-center justify-center font-sans animate-fade-in overflow-hidden py-8 transition-colors duration-500"
       style={{ minHeight: "calc(100vh - 60px)" }}
     >
-
-      {/* ── Background image (theme-aware) ── */}
+      {/* ── Background image (Theme Responsive) ── */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-700"
         style={{ backgroundImage: bgImage, backgroundSize: "cover", backgroundPosition: "center top" }}
       />
-      {/* ── Overlay (theme-aware) ── */}
+      {/* ── Overlay ── */}
       <div
         className="absolute inset-0 pointer-events-none transition-all duration-700"
         style={{ background: overlay }}
       />
       {/* ── Dot grid ── */}
       <div
-        className="absolute inset-0 pointer-events-none"
+        className="absolute inset-0 pointer-events-none transition-opacity duration-700"
         style={{
-          backgroundImage: `radial-gradient(circle, ${dotColor.replace("0.07","0.9")} 1px, transparent 1px)`,
+          backgroundImage: `radial-gradient(circle, ${dotColor} 1.2px, transparent 1.2px)`,
           backgroundSize: "28px 28px",
-          opacity: 0.6,
+          opacity: 0.75,
         }}
       />
 
       {/* ══════════════════════════════════════
-          SINGLE-FRAME CARD
+          PROFILE CONTAINER
       ══════════════════════════════════════ */}
-      <div className="relative z-10 w-full max-w-sm px-4 flex flex-col items-center gap-4">
+      <div className="relative z-10 w-full max-w-md px-4 flex flex-col items-center gap-5">
 
         {/* ── Avatar ── */}
-        <div className="relative">
+        <div className="relative group cursor-pointer" onClick={() => setIsEditorOpen(true)}>
           <div
-            className="absolute inset-0 rounded-full animate-pulse-glow pointer-events-none"
-            style={{ background: "radial-gradient(circle, rgba(107,147,255,0.45) 0%, transparent 70%)", transform: "scale(1.9)" }}
+            className="absolute inset-0 rounded-full animate-pulse-glow pointer-events-none transition-transform duration-300 group-hover:scale-125"
+            style={{
+              background: isDark
+                ? "radial-gradient(circle, rgba(107,147,255,0.40) 0%, transparent 70%)"
+                : "radial-gradient(circle, rgba(59,130,246,0.30) 0%, transparent 70%)",
+              transform: "scale-1.8",
+            }}
           />
           <div
-            className="absolute inset-0 rounded-full pointer-events-none"
-            style={{ boxShadow: isDark
-              ? "0 0 0 3px rgba(107,147,255,0.35), 0 0 0 7px rgba(107,147,255,0.10), 0 0 28px rgba(107,147,255,0.25)"
-              : "0 0 0 3px rgba(60,100,220,0.25), 0 0 0 7px rgba(60,100,220,0.08), 0 0 28px rgba(60,100,220,0.15)"
+            className="absolute inset-0 rounded-full pointer-events-none transition-all duration-300"
+            style={{
+              boxShadow: isDark
+                ? "0 0 0 3px rgba(107,147,255,0.40), 0 0 0 7px rgba(107,147,255,0.12), 0 0 32px rgba(107,147,255,0.30)"
+                : "0 0 0 3px rgba(59,130,246,0.35), 0 0 0 7px rgba(59,130,246,0.10), 0 0 28px rgba(59,130,246,0.20)",
             }}
           />
           {avatar ? (
-            <img src={avatar} alt={name} className="relative w-20 h-20 rounded-full object-cover" />
+            <img src={avatar} alt={name} className="relative w-20 h-20 rounded-full object-cover shadow-md" />
           ) : (
             <div
-              className="relative w-20 h-20 rounded-full text-white flex items-center justify-center text-2xl font-bold select-none"
-              style={{ background: "linear-gradient(135deg, #4f52ff 0%, #6b93ff 50%, #29b6f6 100%)" }}
+              className="relative w-20 h-20 rounded-full text-white flex items-center justify-center text-2xl font-black select-none shadow-md"
+              style={{ background: "linear-gradient(135deg, #3b82f6 0%, #6366f1 50%, #8b5cf6 100%)" }}
             >
               {initials}
             </div>
           )}
           <span
-            className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2"
-            style={{ background: "#32C98B", borderColor: isDark ? "#060810" : "#ffffff", boxShadow: "0 0 6px rgba(50,201,139,0.7)" }}
+            className="absolute bottom-0.5 right-0.5 w-4 h-4 rounded-full border-2 transition-colors"
+            style={{
+              background: "#10B981",
+              borderColor: isDark ? "#0E1017" : "#FFFFFF",
+              boxShadow: "0 0 8px rgba(16,185,129,0.8)",
+            }}
           />
         </div>
 
-        {/* ── Name + role ── */}
-        <div className="text-center space-y-1.5">
-          <div className="flex items-center justify-center gap-1.5">
-            <h1 className="text-[22px] font-bold tracking-tight" style={{ color: nameColor }}>{name}</h1>
-            <CheckCircle size={18} weight="fill" style={{ color: "#6B93FF", flexShrink: 0 }} />
-          </div>
-          <span
-            className="inline-flex items-center text-[10px] font-bold uppercase tracking-widest px-3 py-1 rounded-full border"
-            style={{ background: "rgba(107,147,255,0.12)", borderColor: "rgba(107,147,255,0.28)", color: "#6B93FF" }}
-          >
-            {role === "ADMIN" ? "Admin" : "Member"}
-          </span>
+        {/* ── Context Badge ── */}
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-500/10 border border-blue-500/30 text-blue-600 dark:text-blue-400 text-[10px] font-black uppercase tracking-widest shadow-2xs">
+          <span>👤 USER WORKSPACE PROFILE</span>
         </div>
 
-        {/* ── Details card ── */}
+        {/* ── Name ── */}
+        <div className="text-center space-y-1.5">
+          <div className="flex items-center justify-center gap-2">
+            <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: nameColor }}>
+              {name}
+            </h1>
+            <CheckCircle size={20} weight="fill" className="text-blue-500 shrink-0" />
+          </div>
+        </div>
+
+        {/* ── Details Card ── */}
         <div
-          className="w-full rounded-2xl overflow-hidden shadow-xl"
-          style={{ background: cardBg, border: `1px solid ${cardBorder}`, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)" }}
+          className="w-full rounded-2xl overflow-hidden shadow-2xl transition-all duration-300"
+          style={{
+            background: cardBg,
+            border: `1px solid ${cardBorder}`,
+            backdropFilter: "blur(24px)",
+            WebkitBackdropFilter: "blur(24px)",
+          }}
         >
           {FIELD_ROWS.map(({ key, label, Icon, mono }) => (
             <div
               key={key}
-              className="group flex items-center gap-3 px-4 py-3 transition-all duration-150 cursor-default"
+              className="group flex items-center gap-3.5 px-4 py-3.5 transition-colors duration-150 cursor-default"
               style={{ borderBottom: `1px solid ${rowDivide}` }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.background = isDark ? "rgba(107,147,255,0.05)" : "rgba(60,100,220,0.04)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.background = "transparent"; }}
             >
               <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center shrink-0"
+                className="w-9 h-9 rounded-xl flex items-center justify-center shrink-0 transition-transform duration-200 group-hover:scale-105"
                 style={{ background: iconBg, border: `1px solid ${iconBorder}` }}
               >
-                <Icon size={14} style={{ color: iconColor }} />
+                <Icon size={16} style={{ color: iconColor }} />
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-[10px] font-semibold uppercase tracking-wider mb-0.5" style={{ color: labelColor }}>{label}</p>
-                <p className={`text-small font-semibold truncate ${mono ? "font-mono tracking-widest" : ""}`} style={{ color: valueColor }}>
-                  {fieldValues[key]}
+                <p className="text-[10px] font-bold uppercase tracking-wider mb-0.5" style={{ color: labelColor }}>
+                  {label}
+                </p>
+                <p className={`text-xs sm:text-sm font-bold truncate ${mono ? "font-mono tracking-widest text-blue-600 dark:text-blue-400" : ""}`} style={{ color: valueColor }}>
+                  {fieldValues[key] || "—"}
                 </p>
               </div>
               {key !== "roleLabel" && key !== "panMasked" && (
                 <PencilSimple
-                  size={12}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer"
-                  style={{ color: "#6B93FF" }}
+                  size={14}
+                  className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 cursor-pointer text-blue-500"
                   onClick={() => setIsEditorOpen(true)}
                 />
               )}
             </div>
           ))}
 
-          {/* Edit button inside card footer */}
-          <button
-            onClick={() => setIsEditorOpen(true)}
-            className="w-full flex items-center justify-center gap-2 py-3 transition-all duration-200 cursor-pointer"
-            style={{ background: editBg, color: editColor }}
-            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.background = "rgba(107,147,255,0.10)"; (e.currentTarget as HTMLButtonElement).style.color = "#6B93FF"; }}
-            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.background = editBg; (e.currentTarget as HTMLButtonElement).style.color = editColor; }}
-          >
-            <PencilSimple size={13} />
-            <span className="text-[12px] font-semibold">Edit Profile</span>
-          </button>
+          {/* Profile Action Buttons */}
+          <div className="p-3 bg-slate-500/[0.03] dark:bg-white/[0.02] flex items-center gap-2.5">
+            <button
+              onClick={() => setIsEditorOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-[#4F75FF] hover:bg-[#3E64F0] active:scale-[0.98] text-white font-extrabold text-xs tracking-wide shadow-lg shadow-blue-500/25 transition-all duration-150 cursor-pointer"
+            >
+              <PencilSimple size={15} weight="bold" />
+              <span>Edit Profile</span>
+            </button>
+            <button
+              onClick={() => setIsPasswordModalOpen(true)}
+              className="flex-1 flex items-center justify-center gap-2 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 dark:bg-[#1E263B] dark:hover:bg-[#2A3550] border border-slate-700/60 dark:border-[#2D3A58] active:scale-[0.98] text-slate-100 font-extrabold text-xs tracking-wide shadow-md transition-all duration-150 cursor-pointer"
+            >
+              <LockKey size={15} weight="bold" className="text-blue-400" />
+              <span>Change Password</span>
+            </button>
+          </div>
         </div>
 
-        {/* Footer note */}
-        <p className="text-[11px] text-center leading-relaxed" style={{ color: footerColor }}>
+        {/* Footer Note */}
+        <p className="text-[11px] font-medium text-center leading-relaxed text-slate-400 dark:text-slate-500">
           Your details are private and encrypted end-to-end.
         </p>
       </div>
@@ -221,20 +237,23 @@ export function ProfileView() {
         onClose={() => setIsEditorOpen(false)}
         currentName={name}
         currentDisplayName={displayName}
-        currentEmail={email}
+        currentUsername={rawUsername}
         currentPhone={phone}
         currentAvatar={avatar}
+        isSuperAdmin={currentUser?.role === "SUPER_ADMIN"}
         onSuccess={(updated) => {
-          // 1. Update local profile state (profile page itself)
           setProfileData((prev) => ({ ...(prev || ({} as any)), ...updated }));
-          // 2. Push name + avatar into the global currentUser so every
-          //    component (Sidebar, TopBar, MoreDrawer…) reflects the change immediately.
           updateCurrentUser({
             name: updated.name,
             avatar: updated.avatar,
-            email: updated.email,
+            username: updated.username,
           });
         }}
+      />
+      {/* Change Password Modal */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
       />
     </div>
   );

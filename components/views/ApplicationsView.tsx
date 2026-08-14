@@ -17,6 +17,21 @@ import {
   ShieldCheck,
 } from "@phosphor-icons/react";
 
+function formatAppDateTime(dateStr?: string): string {
+  if (!dateStr) return "";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const day = d.getDate();
+    const month = d.toLocaleString("en-US", { month: "short" });
+    const year = d.getFullYear();
+    const time = d.toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
+    return `${day} ${month} ${year}, ${time}`;
+  } catch {
+    return dateStr;
+  }
+}
+
 export function ApplicationsView() {
   const {
     ipos,
@@ -161,8 +176,11 @@ export function ApplicationsView() {
     });
   };
 
+  const [editPanError, setEditPanError] = useState<string | null>(null);
+
   const handlePanNumberChange = (index: number, val: string) => {
     if (!editingApp) return;
+    setEditPanError(null);
     const updated = [...editingApp.panNumbers];
     updated[index] = val.toUpperCase().slice(0, 10);
     setEditingApp({ ...editingApp, panNumbers: updated });
@@ -171,10 +189,43 @@ export function ApplicationsView() {
   const handleSaveEditApp = (e: React.FormEvent) => {
     e.preventDefault();
     if (editingApp) {
+      setEditPanError(null);
       const effectiveCount = Math.max(1, typeof editingApp.lotCount === "number" ? editingApp.lotCount : 1);
       const cleanPans = editingApp.panNumbers.map((p, idx) =>
-        p && !p.includes("X") && p.length === 10 ? p : `ABCDE274${idx + 1}D`
+        p && !p.includes("X") && p.length === 10 ? p.trim().toUpperCase() : `ABCDE274${idx + 1}D`
       );
+
+      // 1. Intra-form duplicate check
+      const seenPans = new Set<string>();
+      for (const pan of cleanPans) {
+        if (seenPans.has(pan)) {
+          setEditPanError(`Duplicate PAN card "${pan}" in form. Each PAN must be unique.`);
+          return;
+        }
+        seenPans.add(pan);
+      }
+
+      // 2. Check against other applications for this IPO
+      const targetIpo = ipos.find((i) => i.id === editingApp.ipoId);
+      if (targetIpo && targetIpo.applications) {
+        const otherAppsPans = new Set<string>();
+        targetIpo.applications
+          .filter((a) => a.id !== editingApp.appId)
+          .forEach((a) => {
+            if (a.panMasked) otherAppsPans.add(a.panMasked.trim().toUpperCase());
+            if (Array.isArray(a.panNumbers)) {
+              a.panNumbers.forEach((p) => p && otherAppsPans.add(p.trim().toUpperCase()));
+            }
+          });
+
+        for (const pan of cleanPans) {
+          if (otherAppsPans.has(pan)) {
+            setEditPanError(`PAN card "${pan}" is already used in another application for this IPO.`);
+            return;
+          }
+        }
+      }
+
       const primaryPan = cleanPans[0] || "ABCDE2741D";
 
       updateApplication(
@@ -211,16 +262,16 @@ export function ApplicationsView() {
 
   return (
     <div className="space-y-5 pb-12 animate-fade-in max-w-6xl mx-auto font-sans">
-      {/* TOP BAR: SELECT IPO, SCOPE TOGGLE (ALL VS MY), METRICS */}
-      <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-surface rounded-2xl border border-line shadow-xs">
-        <div className="flex flex-wrap items-center gap-4">
+      {/* TOP BAR: SELECT IPO, SCOPE TOGGLE (ALL VS MY), METRICS & CHECK ALLOTMENT */}
+      <div className="p-4 sm:p-5 bg-surface rounded-2xl border border-line shadow-xs flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div className="flex flex-wrap items-center gap-3 sm:gap-4">
           {/* Left: Select IPO / Company */}
           <div className="flex items-center gap-2.5 shrink-0">
             <span className="text-small font-semibold text-ink-secondary">Select IPO:</span>
             <select
               value={ipoFilter}
               onChange={(e) => setIpoFilter(e.target.value)}
-              className="bg-surface-alt border border-line-strong rounded-xl px-3.5 py-1.5 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer min-w-[190px] shadow-2xs transition-all"
+              className="bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2 text-small font-semibold text-ink focus:border-accent focus:bg-surface outline-none cursor-pointer min-w-[200px] shadow-2xs transition-all"
             >
               {ipos.map((ipo) => (
                 <option key={ipo.id} value={ipo.id}>
@@ -231,7 +282,7 @@ export function ApplicationsView() {
           </div>
 
           {/* Divider */}
-          <div className="hidden sm:block w-px h-6 bg-line-subtle" />
+          <div className="hidden md:block w-px h-6 bg-line-subtle" />
 
           {/* SCOPE FILTER: ALL FRIENDS VS MY APPLICATIONS */}
           <div className="flex items-center gap-1 bg-surface-alt p-1 rounded-xl border border-line shrink-0">
@@ -259,36 +310,35 @@ export function ApplicationsView() {
               <span>My Applications</span>
             </button>
           </div>
+        </div>
 
-          {/* Inline Summary Metrics */}
+        {/* Right Action Group: Inline Summary Metrics & Check Allotment Button */}
+        <div className="flex items-center justify-between sm:justify-end gap-4 shrink-0 pt-2 lg:pt-0 border-t lg:border-t-0 border-line-subtle">
           {activeIpoMetrics && (
-            <div className="flex flex-wrap items-center gap-4 text-small">
-              <div className="w-px h-6 bg-line-subtle hidden md:block" />
-
+            <div className="flex items-center gap-4 text-small">
               <div>
                 <span className="text-caption font-medium text-ink-tertiary block">Total Apps</span>
-                <span className="text-body-md font-semibold text-ink num-tabular">{activeIpoMetrics.totalApps}</span>
+                <span className="text-body-md font-extrabold text-ink num-tabular">{activeIpoMetrics.totalApps}</span>
               </div>
               <div>
                 <span className="text-caption font-medium text-ink-tertiary block">Total Amount</span>
-                <span className="text-body-md font-semibold text-ink num-tabular">{formatINR(activeIpoMetrics.totalAmount)}</span>
+                <span className="text-body-md font-extrabold text-ink num-tabular">{formatINR(activeIpoMetrics.totalAmount)}</span>
               </div>
             </div>
           )}
-        </div>
 
-        {/* Right: Check Allotment Button */}
-        {activeIpo && (
-          <a
-            href={activeIpo.registrarUrl || "https://ipostatus.kfintech.com"}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-accent hover:bg-accent-hover text-white font-semibold text-small shadow-xs transition-all cursor-pointer shrink-0"
-          >
-            <span>Check Allotment</span>
-            <ArrowSquareOut size={14} weight="bold" />
-          </a>
-        )}
+          {activeIpo && (
+            <a
+              href={activeIpo.registrarUrl || "https://ipostatus.kfintech.com"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-[#4F75FF] via-[#436AF5] to-[#3B5FE0] hover:from-[#3E64F0] hover:to-[#3254D0] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 transition-all cursor-pointer shrink-0 active:scale-[0.98] ring-1 ring-white/10"
+            >
+              <span>Check Allotment</span>
+              <ArrowSquareOut size={15} weight="bold" />
+            </a>
+          )}
+        </div>
       </div>
 
       {/* EDIT APPLICATION MODAL */}
@@ -311,6 +361,11 @@ export function ApplicationsView() {
             </div>
 
             <form onSubmit={handleSaveEditApp} className="space-y-4 text-small">
+              {editPanError && (
+                <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-600 dark:text-rose-400 rounded-xl text-xs font-semibold">
+                  {editPanError}
+                </div>
+              )}
               <div className="space-y-1">
                 <label className="block text-caption font-semibold text-ink">
                   Applicant Name
@@ -558,13 +613,27 @@ export function ApplicationsView() {
                   <div>No applications match your scope or filter criteria.</div>
                 </div>
               ) : (() => {
+                const formatApplicantHandles = (nameStr: string) => {
+                  if (!nameStr) return "Member";
+                  return nameStr
+                    .split(",")
+                    .map((part) => {
+                      const trimmed = part.trim();
+                      if (!trimmed) return "";
+                      return trimmed.startsWith("@") ? trimmed : `@${trimmed}`;
+                    })
+                    .filter(Boolean)
+                    .join(", ");
+                };
+
                 const nameTotalCounts: Record<string, number> = {};
                 filteredApps.forEach((app) => {
-                  const name =
+                  const rawName =
                     app.applicantName ||
                     (app.participants && app.participants.length > 0
                       ? app.participants.map((p) => p.memberName).join(", ")
                       : "Member");
+                  const name = formatApplicantHandles(rawName);
                   const count = Math.max(1, app.lotCount || 1);
                   nameTotalCounts[name] = (nameTotalCounts[name] || 0) + count;
                 });
@@ -582,11 +651,12 @@ export function ApplicationsView() {
                   const minInvest = ipo.metrics?.minInvestment || 14964;
                   const perLotAmount = Math.round(app.totalContribution / lotCount) || minInvest;
 
-                  const displayNames =
+                  const rawDisplayNames =
                     app.applicantName ||
                     (app.participants && app.participants.length > 0
                       ? app.participants.map((p) => p.memberName).join(", ")
                       : "Member");
+                  const displayNames = formatApplicantHandles(rawDisplayNames);
 
                   const currentUserName = (currentUser?.name || currentMember?.name || "").toLowerCase();
                   const currentUserId = currentUser?.id || currentMember?.id || "mem_1";
@@ -639,6 +709,11 @@ export function ApplicationsView() {
                             <div className="text-body-md font-semibold text-ink tracking-tight">
                               {lotDisplayName}
                             </div>
+                            {app.createdAt && (
+                              <div className="text-[11px] font-mono text-ink-tertiary mt-0.5">
+                                {formatAppDateTime(app.createdAt)}
+                              </div>
+                            )}
                           </div>
 
                           {/* PAN Card Column */}
@@ -710,9 +785,16 @@ export function ApplicationsView() {
                               <span className="num-tabular text-caption font-semibold text-ink-secondary bg-surface-alt px-2 py-0.5 rounded-md shrink-0 border border-line-subtle">
                                 #{formattedSeq}
                               </span>
-                              <span className="text-body-md font-semibold text-ink tracking-tight truncate">
-                                {lotDisplayName}
-                              </span>
+                              <div className="min-w-0">
+                                <span className="text-body-md font-semibold text-ink tracking-tight truncate block">
+                                  {lotDisplayName}
+                                </span>
+                                {app.createdAt && (
+                                  <span className="text-[10px] font-mono text-ink-tertiary block mt-0.5">
+                                    {formatAppDateTime(app.createdAt)}
+                                  </span>
+                                )}
+                              </div>
                             </div>
 
                             <div className="flex items-center gap-1 shrink-0">

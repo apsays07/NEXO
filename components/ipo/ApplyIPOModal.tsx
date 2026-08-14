@@ -46,7 +46,7 @@ const BAR_COLORS = [
 ];
 
 export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
-  const { members, currentUser, createApplication, openPremiumModal, isPremiumUser } = useNexo();
+  const { ipos, members, currentUser, createApplication, openPremiumModal, isPremiumUser } = useNexo();
 
   const [applicantMode, setApplicantMode] = useState<"SOLO" | "JOINT">("SOLO");
   const [applicantName, setApplicantName] = useState<string>("");
@@ -67,6 +67,29 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   const [panNumbers, setPanNumbers] = useState<string[]>([""]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  // Set of existing PAN card numbers for the current IPO application list
+  const existingIpoPans = React.useMemo(() => {
+    const set = new Set<string>();
+    const targetIpo = ipos.find((i) => i.id === ipo.id) || ipo;
+    if (targetIpo?.applications) {
+      targetIpo.applications.forEach((app) => {
+        if (app.panMasked) set.add(app.panMasked.trim().toUpperCase());
+        if (Array.isArray(app.panNumbers)) {
+          app.panNumbers.forEach((p) => {
+            if (p) set.add(p.trim().toUpperCase());
+          });
+        }
+        if (Array.isArray(app.participants)) {
+          app.participants.forEach((p) => {
+            if (p.panMasked) set.add(p.panMasked.trim().toUpperCase());
+            if (p.panFull) set.add(p.panFull.trim().toUpperCase());
+          });
+        }
+      });
+    }
+    return set;
+  }, [ipos, ipo]);
 
   // Clear error msg & sync user name when modal status changes
   useEffect(() => {
@@ -95,17 +118,23 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
   useEffect(() => {
     if (applicantMode === "JOINT") {
       const validNames = contributors
-        .map((c) => c.memberName.trim())
-        .filter((n) => n.length > 0);
+        .map((c) => {
+          const trimmed = c.memberName.trim();
+          if (!trimmed) return "";
+          return trimmed.startsWith("@") ? trimmed : `@${trimmed}`;
+        })
+        .filter(Boolean);
       if (validNames.length > 0) {
         setApplicantName(validNames.join(", "));
       }
     } else {
       if (!applicantName || applicantName.includes(",")) {
-        setApplicantName(members[0]?.name || "Member");
+        const rawUname = currentUser?.username || currentUser?.name || members[0]?.username || members[0]?.name || "Member";
+        const formatted = rawUname.trim().startsWith("@") ? rawUname.trim() : `@${rawUname.trim()}`;
+        setApplicantName(formatted);
       }
     }
-  }, [applicantMode, contributors, members]);
+  }, [applicantMode, contributors, members, currentUser]);
 
   const handleEqualSplit = () => {
     const count = contributors.length || 1;
@@ -205,6 +234,25 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
     if (anyInvalid) {
       setErrorMsg("Please enter a valid 10-character PAN card number for all entries.");
       return;
+    }
+
+    // 1. Intra-form duplicate check
+    const normalizedPanList = panNumbers.map((p) => p.trim().toUpperCase());
+    const seenPans = new Set<string>();
+    for (const pan of normalizedPanList) {
+      if (seenPans.has(pan)) {
+        setErrorMsg(`Duplicate PAN card number "${pan}" found in form entries. Each PAN card entry must be unique.`);
+        return;
+      }
+      seenPans.add(pan);
+    }
+
+    // 2. Current IPO Application List uniqueness check
+    for (const pan of normalizedPanList) {
+      if (existingIpoPans.has(pan)) {
+        setErrorMsg(`PAN card "${pan}" has already been used in an application for ${ipo.name}. Each PAN card can only apply once per IPO.`);
+        return;
+      }
     }
 
     setIsSubmitting(true);
@@ -553,10 +601,19 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
               <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
                 {panNumbers.map((pan, idx) => {
                   const valid = isValidPan(pan);
+                  const norm = pan.trim().toUpperCase();
+                  const isFormDuplicate = norm.length === 10 && panNumbers.filter((p) => p.trim().toUpperCase() === norm).length > 1;
+                  const isIpoDuplicate = norm.length === 10 && existingIpoPans.has(norm);
+                  const hasDuplicateError = isFormDuplicate || isIpoDuplicate;
+
                   return (
                     <div
                       key={idx}
-                      className="flex items-center gap-2.5 p-2 bg-surface-alt/80 border border-line/80 hover:border-line-strong rounded-2xl transition-all"
+                      className={`flex items-center gap-2.5 p-2 rounded-2xl transition-all ${
+                        hasDuplicateError
+                          ? "bg-rose-500/10 border border-rose-500/50"
+                          : "bg-surface-alt/80 border border-line/80 hover:border-line-strong"
+                      }`}
                     >
                       <span className="text-[11px] font-bold text-ink-tertiary w-16 shrink-0 font-mono text-center bg-surface py-1.5 px-2 rounded-xl border border-line shadow-2xs">
                         PAN #{idx + 1}
@@ -569,14 +626,23 @@ export function ApplyIPOModal({ ipo, isOpen, onClose }: ApplyIPOModalProps) {
                           placeholder={`e.g. ABCDE274${(idx % 9) + 1}D`}
                           value={pan}
                           onChange={(e) => handlePanChange(idx, e.target.value)}
-                          className="w-full bg-surface border border-line hover:border-line-strong rounded-xl px-3.5 py-2 text-xs font-mono font-bold text-ink tracking-widest uppercase focus:border-accent focus:ring-3 focus:ring-accent/10 focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-muted"
+                          className={`w-full bg-surface border rounded-xl px-3.5 py-2 text-xs font-mono font-bold tracking-widest uppercase focus:outline-none transition-all placeholder:font-sans placeholder:normal-case placeholder:font-normal placeholder:tracking-normal placeholder:text-ink-muted ${
+                            hasDuplicateError
+                              ? "border-rose-500 text-rose-600 focus:ring-2 focus:ring-rose-500/20"
+                              : "border-line hover:border-line-strong text-ink focus:border-accent focus:ring-3 focus:ring-accent/10"
+                          }`}
                         />
-                        {valid && (
+                        {valid && !hasDuplicateError && (
                           <div className="absolute right-3 top-1/2 -translate-y-1/2 text-positive animate-fade-in">
                             <CheckCircle size={16} weight="fill" />
                           </div>
                         )}
                       </div>
+                      {hasDuplicateError && (
+                        <span className="text-[10px] font-bold text-rose-500 shrink-0 bg-rose-100 dark:bg-rose-950/40 px-2 py-1 rounded-lg border border-rose-300 dark:border-rose-800/40">
+                          {isIpoDuplicate ? "Already Applied" : "Duplicate in Form"}
+                        </span>
+                      )}
                     </div>
                   );
                 })}

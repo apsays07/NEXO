@@ -284,8 +284,8 @@ export function Sidebar() {
                     <p className="text-small font-semibold text-ink truncate">{adminMember?.name || "Member"}</p>
                     <span className="w-1.5 h-1.5 rounded-full bg-positive shrink-0" />
                   </div>
-                  <p className="text-caption text-ink-tertiary font-medium uppercase tracking-wider truncate">
-                    {adminMember?.role || "ADMIN"}
+                  <p className="text-caption text-ink-tertiary font-semibold tracking-wide truncate">
+                    Member
                   </p>
                 </div>
                 <CaretUp size={14} className="text-ink-tertiary group-hover:text-ink transition-transform shrink-0" />

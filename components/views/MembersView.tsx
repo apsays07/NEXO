@@ -19,16 +19,20 @@ import {
   Sparkle,
   Phone,
   ChatCircleDots,
+  Trash,
+  Eye,
+  EyeSlash,
 } from "@phosphor-icons/react";
 import { Member, MemberRole } from "@/types/nexo";
 
 export function MembersView() {
-  const { members, ipos, addMember, updateMember, currentUser, openDirectChatWithUser } = useNexo();
+  const { members, ipos, addMember, updateMember, deleteMember, currentUser, openDirectChatWithUser } = useNexo();
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<Member | null>(null);
+  const [revealedPasswords, setRevealedPasswords] = useState<Record<string, boolean>>({});
   const [searchQuery, setSearchQuery] = useState("");
-  const [roleFilter, setRoleFilter] = useState<"ALL" | "ADMIN" | "MEMBER">("ALL");
+  const [roleFilter, setRoleFilter] = useState<"ALL" | "SUPER_ADMIN" | "ADMIN" | "MEMBER">("ALL");
 
   // Add form state
   const [name, setName] = useState("");
@@ -77,28 +81,27 @@ export function MembersView() {
   }, [members, ipos]);
 
   const adminCount = useMemo(() => {
-    return members.filter((m) => m.role === "ADMIN").length;
+    return members.filter((m) => m.role === "ADMIN" || m.role === "SUPER_ADMIN").length;
   }, [members]);
 
   // Filtered members list
   const filteredMembers = useMemo(() => {
-    return members
-      .filter((m) => m.role !== "SUPER_ADMIN") // hide super admin from user-side member list
-      .filter((member) => {
-        const mUsername = member.username || member.name.toLowerCase();
-        const mPhone = member.phone || "";
-        const matchesSearch =
-          member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          mPhone.includes(searchQuery);
+    return members.filter((member) => {
+      const mUsername = member.username || member.name.toLowerCase();
+      const mPhone = member.phone || "";
+      const matchesSearch =
+        member.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        mUsername.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        mPhone.includes(searchQuery);
 
-        const matchesRole =
-          roleFilter === "ALL" ||
-          (roleFilter === "ADMIN" && member.role === "ADMIN") ||
-          (roleFilter === "MEMBER" && member.role === "MEMBER");
+      const matchesRole =
+        roleFilter === "ALL" ||
+        (roleFilter === "SUPER_ADMIN" && member.role === "SUPER_ADMIN") ||
+        (roleFilter === "ADMIN" && member.role === "ADMIN") ||
+        (roleFilter === "MEMBER" && member.role === "MEMBER");
 
-        return matchesSearch && matchesRole;
-      });
+      return matchesSearch && matchesRole;
+    });
   }, [members, searchQuery, roleFilter]);
 
   const handleAddSubmit = async (e: React.FormEvent) => {
@@ -159,7 +162,15 @@ export function MembersView() {
     setEditingMember(null);
   };
 
-  const isCurrentUserAdmin = currentUser?.role === "ADMIN";
+  const canAddMembers = currentUser?.role === "ADMIN" || currentUser?.role === "SUPER_ADMIN";
+  const isSuperAdmin = currentUser?.role === "SUPER_ADMIN";
+
+  const handleDeleteMember = async (memberToDelete: Member) => {
+    if (memberToDelete.role === "SUPER_ADMIN" || memberToDelete.username === "ankitgod") return;
+    if (!confirm(`Are you sure you want to delete profile for @${memberToDelete.username || memberToDelete.name}? This cannot be undone.`)) return;
+
+    await deleteMember(memberToDelete.id);
+  };
 
   return (
     <div className="space-y-6 animate-fade-in font-sans">
@@ -173,11 +184,11 @@ export function MembersView() {
             </span>
           </div>
           <p className="text-xs text-ink-tertiary font-medium mt-1">
-            Manage your syndicate members, phone contacts, identity handles & IPO participation
+            Manage your syndicate members, phone contacts, identity handles &amp; IPO participation
           </p>
         </div>
 
-        {isCurrentUserAdmin && (
+        {canAddMembers && (
           <Button
             size="sm"
             variant="primary"
@@ -262,7 +273,7 @@ export function MembersView() {
 
         {/* Role Filter Tabs */}
         <div className="flex items-center gap-1 bg-surface-alt/80 dark:bg-[#151821] p-1 rounded-xl border border-line/70 shrink-0 font-sans">
-          {(["ALL", "ADMIN", "MEMBER"] as const).map((tab) => (
+          {(["ALL", "SUPER_ADMIN", "ADMIN", "MEMBER"] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setRoleFilter(tab)}
@@ -272,7 +283,7 @@ export function MembersView() {
                   : "text-ink-tertiary hover:text-ink font-semibold hover:bg-surface-hover/50"
               }`}
             >
-              {tab === "ALL" ? "All" : tab === "ADMIN" ? "Admins" : "Members"}
+              {tab === "ALL" ? "All" : tab === "SUPER_ADMIN" ? "Super Admin" : tab === "ADMIN" ? "Admins" : "Members"}
             </button>
           ))}
         </div>
@@ -323,11 +334,15 @@ export function MembersView() {
                           <h3 className="text-base font-black text-ink group-hover:text-accent transition-colors truncate tracking-tight">
                             {member.name}
                           </h3>
-                          {member.role === "ADMIN" && (
+                          {member.role === "SUPER_ADMIN" ? (
+                            <span className="px-2 py-0.5 rounded-full bg-purple-500/15 text-purple-400 border border-purple-500/30 text-[10px] font-mono font-extrabold tracking-wider uppercase shrink-0 flex items-center gap-1">
+                              <Crown size={11} className="text-purple-400" /> Super Admin
+                            </span>
+                          ) : member.role === "ADMIN" ? (
                             <span className="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 border border-amber-500/30 text-[10px] font-mono font-extrabold tracking-wider uppercase shrink-0 flex items-center gap-1">
                               <Crown size={11} className="text-amber-400" /> Admin
                             </span>
-                          )}
+                          ) : null}
                         </div>
 
                         {/* Username Tag & Phone Badge */}
@@ -394,12 +409,47 @@ export function MembersView() {
                       </button>
                     )}
 
-                    {isCurrentUserAdmin && (
+                    {canAddMembers && (
                       <button
                         onClick={() => openEditModal(member)}
                         className="text-ink-tertiary hover:text-accent font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-surface-hover transition-all border border-transparent hover:border-line"
                       >
                         <Pencil size={13} /> Edit
+                      </button>
+                    )}
+
+                    {isSuperAdmin && (
+                      <button
+                        onClick={() =>
+                          setRevealedPasswords((prev) => ({
+                            ...prev,
+                            [member.id]: !prev[member.id],
+                          }))
+                        }
+                        className="text-[#6B93FF] hover:text-[#4F75FF] font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-[#6B93FF]/10 transition-all border border-transparent hover:border-[#6B93FF]/20"
+                        title={revealedPasswords[member.id] ? "Hide Password" : "See Password"}
+                      >
+                        {revealedPasswords[member.id] ? (
+                          <>
+                            <EyeSlash size={13} />
+                            <span className="font-mono text-[11px] font-bold text-[#6B93FF]">{member.password || "user123"}</span>
+                          </>
+                        ) : (
+                          <>
+                            <Eye size={13} />
+                            <span>Password</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {canAddMembers && member.role !== "SUPER_ADMIN" && member.id !== currentUser?.id && (
+                      <button
+                        onClick={() => handleDeleteMember(member)}
+                        className="text-rose-500/80 hover:text-rose-600 font-semibold cursor-pointer flex items-center gap-1 px-2.5 py-1.5 rounded-xl hover:bg-rose-500/10 transition-all border border-transparent hover:border-rose-500/20"
+                        title={`Delete @${mUsername}`}
+                      >
+                        <Trash size={13} /> Delete
                       </button>
                     )}
                   </div>
@@ -500,7 +550,7 @@ export function MembersView() {
               <div>
                 <label className="block text-caption font-semibold text-ink mb-1">Avatar Preset</label>
                 <div className="flex items-center gap-3 pt-1">
-                  {["/oggy.png", "/jack.png", "/sinchan.png", "/doremon.png", "/cockroach.png"].map((img) => (
+                  {["/oggy.png", "/jack.png", "/sinchan.png", "/doremon.png", "/japlu.png"].map((img) => (
                     <button
                       key={img}
                       type="button"
@@ -564,13 +614,24 @@ export function MembersView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-caption font-semibold text-ink mb-1">Username *</label>
+                  <label className="block text-caption font-semibold text-ink mb-1 flex items-center justify-between">
+                    <span>Username *</span>
+                    {!isSuperAdmin && (
+                      <span className="text-[10px] text-ink-tertiary font-mono">🔒 Super Admin Only</span>
+                    )}
+                  </label>
                   <input
                     type="text"
                     value={editUsername}
                     onChange={(e) => setEditUsername(e.target.value)}
                     required
-                    className="w-full px-3.5 py-2 bg-surface-alt border border-line rounded-xl text-small text-ink font-sans focus:border-accent outline-none"
+                    readOnly={!isSuperAdmin}
+                    disabled={!isSuperAdmin}
+                    className={`w-full px-3.5 py-2 border rounded-xl text-small font-sans transition-colors ${
+                      isSuperAdmin
+                        ? "bg-surface-alt border-line text-ink focus:border-accent outline-none"
+                        : "bg-surface-alt/70 border-line-subtle text-ink-secondary opacity-65 cursor-not-allowed select-none"
+                    }`}
                   />
                 </div>
                 <div>

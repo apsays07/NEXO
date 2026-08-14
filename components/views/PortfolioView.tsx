@@ -21,6 +21,7 @@ import {
   ArrowRight,
   ShieldCheck,
   WarningCircle,
+  Copy,
 } from "@phosphor-icons/react";
 import { IPOOpportunity } from "@/types/nexo";
 
@@ -169,37 +170,7 @@ export function PortfolioView() {
         </div>
       )}
 
-      {/* Portfolio Mode Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between bg-gradient-to-r from-blue-600 via-blue-500 to-sky-500 dark:from-blue-900 dark:via-blue-800 dark:to-sky-800 border border-blue-500/40 dark:border-blue-700/40 p-4 sm:p-5 rounded-2xl gap-3 shadow-sm">
-        <div className="flex items-center gap-3.5">
-          <div className="p-3 bg-white/20 text-white rounded-xl shadow-xs shrink-0">
-            <Wallet size={24} weight="bold" />
-          </div>
-          <div>
-            <h2 className="text-base font-extrabold text-white">
-              Personal Fund &amp; Capital Management
-            </h2>
-            <p className="text-xs text-blue-100 dark:text-blue-200 font-medium mt-0.5">
-              Manage your savings pool, monitor IPO application deductions, and check available funds in real-time.
-            </p>
-          </div>
-        </div>
 
-        <div className="flex items-center gap-2 self-start sm:self-auto">
-          <Button
-            variant="primary"
-            size="sm"
-            onClick={() => {
-              setSavingsInput(individualSavings.toString());
-              setIsEditSavingsModalOpen(true);
-            }}
-            className="shadow-sm"
-          >
-            <PencilSimple size={15} weight="bold" />
-            Edit / Update Balance
-          </Button>
-        </div>
-      </div>
 
       {/* 3 Financial Metrics Header Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -209,8 +180,8 @@ export function PortfolioView() {
           value={formatINR(availableBalance)}
           subtitle={
             individualSavings > 0
-              ? `₹${(availableBalance / 1000).toFixed(0)}k ready for upcoming IPOs`
-              : "Set your savings pool to get started"
+              ? `₹${(availableBalance / 1000).toFixed(0)}k ready for IPOs`
+              : "Set savings balance"
           }
           icon={<Wallet size={20} className="text-blue-600" />}
           action={
@@ -231,7 +202,7 @@ export function PortfolioView() {
         <MetricCard
           label="Total Applied Capital"
           value={myTotalApplied > 0 ? formatINR(myTotalApplied) : "₹0"}
-          subtitle={`Deducted across ${transactions.length} active application(s)`}
+          subtitle={`${transactions.length} active application(s)`}
           icon={<FileText size={20} className="text-amber-600" />}
         />
 
@@ -239,11 +210,7 @@ export function PortfolioView() {
         <MetricCard
           label="Total Profit (PnL)"
           value={myTotalProfit > 0 ? formatINR(myTotalProfit, true) : "₹0"}
-          subtitle={
-            myTotalProfit > 0
-              ? `Realized/Declared profit on allotted IPOs`
-              : "Updates once allotment & listing gain is pushed by admin"
-          }
+          subtitle="Allotted IPO listing gains"
           icon={<TrendUp size={20} className="text-emerald-600" />}
         />
       </div>
@@ -361,9 +328,20 @@ export function PortfolioView() {
                         ) : null}
                       </td>
                       <td className="py-3.5 px-3">
-                        <span className="font-mono text-[11px] font-semibold text-ink bg-surface-alt px-2.5 py-1 rounded-md border border-line inline-block shadow-2xs">
-                          {txn.applicationNumber || "NEXO-APP-0000"}
-                        </span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const appNo = txn.applicationNumber || "NEXO-APP-0000";
+                            navigator.clipboard.writeText(appNo);
+                            setDeleteNotification(`Copied Application No: ${appNo}`);
+                            setTimeout(() => setDeleteNotification(null), 2500);
+                          }}
+                          title="Click to copy Application Number"
+                          className="font-mono text-[11px] font-bold text-ink bg-surface-alt hover:bg-blue-500/10 hover:text-blue-500 hover:border-blue-500/30 px-2.5 py-1 rounded-md border border-line inline-flex items-center gap-1.5 shadow-2xs transition-all cursor-pointer group"
+                        >
+                          <span>{txn.applicationNumber || "NEXO-APP-0000"}</span>
+                          <Copy size={12} className="opacity-60 group-hover:opacity-100" />
+                        </button>
                       </td>
                       <td className="py-3.5 px-3 text-ink-secondary">
                         <div className="font-semibold text-ink text-xs">{dateStr}</div>

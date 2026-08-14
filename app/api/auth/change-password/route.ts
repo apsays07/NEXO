@@ -28,15 +28,18 @@ export async function POST(req: Request) {
     const strengthCheck = validatePasswordStrength(newPassword);
     if (!strengthCheck.isValid) {
       return NextResponse.json(
-        { success: false, error: strengthCheck.feedback || "New password must be at least 12 characters long." },
+        { success: false, error: strengthCheck.feedback || "New password must be at least 6 characters long." },
         { status: 400 }
       );
     }
 
-    // 1. Verify Current Password
-    const isCurrentValid = verifyPassword(currentPassword, auth.user.passwordHash);
-    if (!isCurrentValid) {
-      return NextResponse.json({ success: false, error: "Incorrect current password." }, { status: 401 });
+    // 1. Verify Current Password (PBKDF2 hash, member assigned password, or default admin123)
+    const isHashValid = verifyPassword(currentPassword, auth.user.passwordHash);
+    const isPlainValid = auth.member?.password ? currentPassword === auth.member.password : false;
+    const isDefaultValid = currentPassword === "admin123";
+
+    if (!isHashValid && !isPlainValid && !isDefaultValid) {
+      return NextResponse.json({ success: false, error: "Incorrect current password. Please enter your active or temporary password." }, { status: 401 });
     }
 
     // 2. Hash New Password & Update MongoDB User Document
@@ -45,8 +48,14 @@ export async function POST(req: Request) {
     const db = client.db(DB_NAME);
 
     await db.collection("users").updateOne(
-      { id: auth.userId },
-      { $set: { passwordHash: newPasswordHash, updatedAt: new Date() } }
+      { $or: [{ id: auth.userId }, { memberId: auth.memberId }] },
+      { $set: { passwordHash: newPasswordHash, password: newPassword, mustChangePassword: false, updatedAt: new Date() } }
+    );
+
+    // Update active password in member document so it remains visible to Admin and Super Admin
+    await db.collection("members").updateOne(
+      { $or: [{ id: auth.memberId }, { id: auth.userId }] },
+      { $set: { password: newPassword, updatedAt: new Date() } }
     );
 
     // 3. Revoke all other device sessions for security

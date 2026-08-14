@@ -143,7 +143,7 @@ export function AdminSidebar({
 
   return (
     <aside
-      className={`bg-surface border-r border-line flex flex-col justify-between transition-all duration-200 z-30 select-none shrink-0 font-sans ${
+      className={`bg-surface border-r border-line flex flex-col justify-between transition-all duration-200 z-30 select-none shrink-0 font-sans h-screen sticky top-0 overflow-hidden ${
         isCollapsed ? "w-16" : "w-64"
       }`}
     >
@@ -186,7 +186,7 @@ export function AdminSidebar({
           title="Add New IPO Opportunity"
         >
           <Plus size={16} weight="bold" />
-          {!isCollapsed && <span>+ Add IPO</span>}
+          {!isCollapsed && <span>Add IPO</span>}
         </button>
       </div>
 

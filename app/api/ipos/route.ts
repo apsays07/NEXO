@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import fs from "fs";
 import path from "path";
+import { cookies } from "next/headers";
+import { validateSessionToken } from "@/src/lib/auth/session";
+import { logActivity } from "@/src/features/activity/activityService";
 
 const SHARED_FILE_PATH_PARENT = path.join(process.cwd(), "..", "shared_ipos.json");
 const SHARED_FILE_PATH_LOCAL = path.join(process.cwd(), "shared_ipos.json");
@@ -66,6 +69,25 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    let actorUserId = undefined;
+    let actorMemberId = undefined;
+    let actorName = "System";
+    let actorUsername = undefined;
+    let actorRole = undefined;
+
+    if (token) {
+      const sessionData = await validateSessionToken(token);
+      if (sessionData) {
+        actorUserId = sessionData.user.id;
+        actorMemberId = sessionData.member.id;
+        actorName = sessionData.member.name;
+        actorUsername = sessionData.member.username;
+        actorRole = sessionData.user.role;
+      }
+    }
+
     const body = await req.json().catch(() => null);
 
     if (!body || typeof body !== "object") {
@@ -84,6 +106,22 @@ export async function POST(req: NextRequest) {
         ipo.id === ipoId ? { ...ipo, profitDistribution } : ipo
       );
       writeSharedIpos(updated);
+      
+      await logActivity({
+        eventType: "ALLOTMENT_UPDATED",
+        category: "INVESTMENT",
+        severity: "SUCCESS",
+        actorUserId,
+        actorMemberId,
+        actorName,
+        actorUsername,
+        actorRole,
+        targetType: "IPO",
+        targetId: ipoId,
+        targetName: "Profit Distribution",
+        ipoId
+      });
+
       return NextResponse.json({ success: true, message: "Profit distribution published." }, { headers: corsHeaders });
     }
 
@@ -137,6 +175,22 @@ export async function POST(req: NextRequest) {
         return ipo;
       });
       writeSharedIpos(updated);
+
+      await logActivity({
+        eventType: "IPO_UPDATED",
+        category: "PRODUCT",
+        severity: "INFO",
+        actorUserId,
+        actorMemberId,
+        actorName,
+        actorUsername,
+        actorRole,
+        targetType: "IPO",
+        targetId: ipoId,
+        targetName: data.name || "IPO",
+        ipoId
+      });
+
       return NextResponse.json({ success: true, message: "IPO updated successfully." }, { headers: corsHeaders });
     }
 
@@ -187,6 +241,21 @@ export async function POST(req: NextRequest) {
     const updated = [newIpo, ...allIpos];
     writeSharedIpos(updated);
 
+    await logActivity({
+      eventType: "IPO_CREATED",
+      category: "PRODUCT",
+      severity: "INFO",
+      actorUserId,
+      actorMemberId,
+      actorName,
+      actorUsername,
+      actorRole,
+      targetType: "IPO",
+      targetId: newIpo.id,
+      targetName: name.trim(),
+      ipoId: newIpo.id
+    });
+
     return NextResponse.json({
       success: true,
       ipo: newIpo,
@@ -207,12 +276,47 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ success: false, message: "Missing IPO ID." }, { status: 400, headers: corsHeaders });
     }
 
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    let actorUserId = undefined;
+    let actorMemberId = undefined;
+    let actorName = "System";
+    let actorUsername = undefined;
+    let actorRole = undefined;
+
+    if (token) {
+      const sessionData = await validateSessionToken(token);
+      if (sessionData) {
+        actorUserId = sessionData.user.id;
+        actorMemberId = sessionData.member.id;
+        actorName = sessionData.member.name;
+        actorUsername = sessionData.member.username;
+        actorRole = sessionData.user.role;
+      }
+    }
+
     const allIpos = readSharedIpos();
     const updated = allIpos.map((ipo) =>
       ipo.id === id ? { ...ipo, isHidden: true } : ipo
     );
 
     writeSharedIpos(updated);
+
+    await logActivity({
+      eventType: "IPO_ARCHIVED",
+      category: "PRODUCT",
+      severity: "INFO",
+      actorUserId,
+      actorMemberId,
+      actorName,
+      actorUsername,
+      actorRole,
+      targetType: "IPO",
+      targetId: id,
+      targetName: "IPO",
+      ipoId: id
+    });
+
     return NextResponse.json({ success: true, message: "✓ IPO removed." }, { headers: corsHeaders });
   } catch (err: any) {
     console.error("DELETE /api/ipos error:", err);

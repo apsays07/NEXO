@@ -18,6 +18,7 @@ export async function GET() {
         email: auth.user.email,
         role: auth.user.role,
         status: auth.user.status,
+        mustChangePassword: auth.user.mustChangePassword || false,
         createdAt: auth.user.createdAt,
       },
       member: {

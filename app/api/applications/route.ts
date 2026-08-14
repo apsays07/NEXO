@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 import clientPromise from "@/lib/mongodb";
 import { IPOApplicationDocument } from "@/src/models/Application";
+import { validateSessionToken } from "@/src/lib/auth/session";
+import { logActivity } from "@/src/features/activity/activityService";
 
 const DB = "nexo";
 const COL = "applications";
@@ -8,7 +11,7 @@ const COL = "applications";
 /* ────────────────────────────────────────────────────────────────
    GET /api/applications
    Fetches all saved IPO application responses from MongoDB.
-──────────────────────────────────────────────────────────────── */
+ * ──────────────────────────────────────────────────────────────── */
 export async function GET() {
   try {
     const client = await clientPromise;
@@ -29,7 +32,7 @@ export async function GET() {
 /* ────────────────────────────────────────────────────────────────
    POST /api/applications
    Stores a new IPO application response in MongoDB.
-──────────────────────────────────────────────────────────────── */
+ * ──────────────────────────────────────────────────────────────── */
 export async function POST(req: Request) {
   try {
     const body = await req.json().catch(() => ({}));
@@ -61,6 +64,26 @@ export async function POST(req: Request) {
       const client = await clientPromise;
       const col = client.db(DB).collection<IPOApplicationDocument>(COL);
 
+      // Check for PAN card uniqueness for this ipoId
+      const inputPans = (newDoc.panNumbers || []).map((p) => p.trim().toUpperCase());
+      if (inputPans.length > 0) {
+        const existingDoc = await col.findOne({
+          id: { $ne: newDoc.id },
+          ipoId: newDoc.ipoId,
+          $or: [
+            { panNumbers: { $in: inputPans } },
+            { panMasked: { $in: inputPans } }
+          ]
+        });
+
+        if (existingDoc) {
+          return NextResponse.json(
+            { success: false, error: "One or more PAN cards have already been used in an application for this IPO." },
+            { status: 400 }
+          );
+        }
+      }
+
       await col.updateOne(
         { id: newDoc.id },
         { $set: newDoc },
@@ -69,6 +92,48 @@ export async function POST(req: Request) {
     } catch (dbErr) {
       console.warn("POST /api/applications MongoDB unavailable, continuing locally.");
     }
+
+    // Resolve actor from session for audit log
+    const cookieStore = await cookies();
+    const token = cookieStore.get("nexo_session")?.value;
+    let actorUserId = undefined;
+    let actorMemberId = undefined;
+    let actorName = newDoc.applicantName;
+    let actorUsername = undefined;
+    let actorRole = undefined;
+
+    if (token) {
+      const sessionData = await validateSessionToken(token);
+      if (sessionData) {
+        actorUserId = sessionData.user.id;
+        actorMemberId = sessionData.member.id;
+        actorName = sessionData.member.name;
+        actorUsername = sessionData.member.username;
+        actorRole = sessionData.user.role;
+      }
+    }
+
+    await logActivity({
+      eventType: "APPLICATION_CREATED",
+      category: "APPLICATION",
+      severity: "SUCCESS",
+      actorUserId,
+      actorMemberId,
+      actorName,
+      actorUsername,
+      actorRole,
+      targetType: "APPLICATION",
+      targetId: newDoc.id,
+      targetName: `${newDoc.ipoName} Application`,
+      ipoId: newDoc.ipoId,
+      memberId: newDoc.memberId,
+      applicationId: newDoc.id,
+      metadata: {
+        type: newDoc.fundingStructure,
+        amount: newDoc.totalContribution,
+        ipoName: newDoc.ipoName
+      }
+    });
 
     return NextResponse.json({
       success: true,

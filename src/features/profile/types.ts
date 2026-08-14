@@ -5,6 +5,7 @@ export interface UserProfile {
   userId?: string;
   name: string;
   displayName: string;
+  username?: string;
   email?: string;
   phone?: string;
   avatar?: string;

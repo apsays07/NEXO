@@ -102,12 +102,12 @@ export function MembersTab({ onOpenAddMember }: MembersTabProps) {
                     <select
                       value={mem.role}
                       onChange={(e) => handleRoleChange(mem.id, e.target.value as MemberRole)}
-                      disabled={roleChangingId === mem.id}
+                      disabled={roleChangingId === mem.id || mem.role === "SUPER_ADMIN"}
                       className="h-7 px-2 rounded-md bg-surface-alt border border-line text-[11px] font-semibold text-ink cursor-pointer"
                     >
                       <option value="MEMBER">Member</option>
                       <option value="ADMIN">Admin</option>
-                      <option value="SUPER_ADMIN">Super Admin</option>
+                      {mem.role === "SUPER_ADMIN" && <option value="SUPER_ADMIN">Super Admin</option>}
                     </select>
                   </td>
                 </tr>

@@ -1,368 +1,22 @@
 [
   {
-    "id": "ipo_1786623010222",
-    "name": "gtr",
-    "company": "gtr",
-    "logo": "GT",
+    "id": "ipo_1786720662450",
+    "name": "NEW IPO",
+    "company": "NEW IPO",
+    "logo": "NE",
     "category": "Mainboard",
     "status": "APPLICATION_OPEN",
     "recommendation": "APPLY",
-    "thesis": "cjdncjdnc",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "gmpPercent": 230,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786618696311",
-    "name": "holy",
-    "company": "holy",
-    "logo": "HO",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "fvfvvg",
+    "thesis": "2pm",
     "isHidden": false,
     "metrics": {
-      "issueSize": "₹2,400 Cr",
+      "issueSize": "₹1,500 Cr",
       "priceBand": {
         "min": 0,
         "max": 0
       },
       "lotSize": 1,
-      "minInvestment": 15000,
-      "gmpPercent": 10,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 75000,
-    "applications": [
-      {
-        "id": "app_1786623197490",
-        "ipoId": "ipo_1786618696311",
-        "type": "COMBINED",
-        "applicantName": "User1, User2",
-        "memberId": "mem_super_admin",
-        "panMasked": "HDGDS9878M",
-        "panNumbers": [
-          "HDGDS9878M"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T12:13:17.490Z",
-        "applicationNumber": "NEXO-APP-5506",
-        "participants": [
-          {
-            "memberId": "mem_user",
-            "memberName": "User1, User2",
-            "avatar": "/jack.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "HDGDS9878M",
-            "panFull": "HDGDS9878M",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_user",
-            "memberName": "User",
-            "avatar": "/jack.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786623102957",
-        "ipoId": "ipo_1786618696311",
-        "type": "INDIVIDUAL",
-        "applicantName": "User",
-        "memberId": "mem_user",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T12:11:42.957Z",
-        "applicationNumber": "NEXO-APP-4580",
-        "participants": [
-          {
-            "memberId": "mem_user",
-            "memberName": "User",
-            "avatar": "/jack.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786619040328",
-        "ipoId": "ipo_1786618696311",
-        "type": "INDIVIDUAL",
-        "applicantName": "bhushan",
-        "memberId": "mem_1",
-        "panMasked": "GXPPI8988T",
-        "panNumbers": [
-          "GXPPI8988T"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T11:04:00.328Z",
-        "applicationNumber": "NEXO-APP-3286",
-        "participants": [
-          {
-            "memberId": "mem_1",
-            "memberName": "bhushan",
-            "avatar": "/oggy.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "GXPPI8988T",
-            "panFull": "GXPPI8988T",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786618763173",
-        "ipoId": "ipo_1786618696311",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam",
-        "memberId": "mem_1",
-        "panMasked": "GXPPI8988T",
-        "panNumbers": [
-          "GXPPI8988T"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:59:23.173Z",
-        "applicationNumber": "NEXO-APP-9985",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "GXPPI8988T",
-            "panFull": "GXPPI8988T",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_2",
-            "memberName": "Ashay",
-            "avatar": "/jack.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786618716376",
-        "ipoId": "ipo_1786618696311",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:58:36.376Z",
-        "applicationNumber": "NEXO-APP-8764",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ],
-    "profitDistribution": {
-      "totalProfit": 30000,
-      "totalLots": 5,
-      "allottedLots": 1,
-      "oneLotProfit": 6000,
-      "publishedAt": "2026-08-13T12:15:23.314Z"
-    }
-  },
-  {
-    "id": "ipo_1786617142968",
-    "name": "xyz",
-    "company": "xyz",
-    "logo": "XY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "sjbbsjsb",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "gmpPercent": 18.5,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 30000,
-    "applications": [
-      {
-        "id": "app_1786617239629",
-        "ipoId": "ipo_1786617142968",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam",
-        "memberId": "mem_1",
-        "panMasked": "IKXPP8978P",
-        "panNumbers": [
-          "IKXPP8978P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:33:59.629Z",
-        "applicationNumber": "NEXO-APP-4415",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer, shivam",
-            "avatar": "/sinchan.png",
-            "contribution": 10000,
-            "percentage": 66.7,
-            "panMasked": "IKXPP8978P",
-            "panFull": "IKXPP8978P",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_2",
-            "memberName": "Ashay",
-            "avatar": "/jack.png",
-            "contribution": 5000,
-            "percentage": 33.3,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786617210921",
-        "ipoId": "ipo_1786617142968",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:33:30.921Z",
-        "applicationNumber": "NEXO-APP-5114",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ],
-    "profitDistribution": {
-      "totalProfit": 20000,
-      "totalLots": 1.9999999999999998,
-      "allottedLots": 1,
-      "oneLotProfit": 10000,
-      "publishedAt": "2026-08-13T10:53:54.032Z"
-    }
-  },
-  {
-    "id": "ipo_1786617115490",
-    "name": "abc",
-    "company": "abc",
-    "logo": "AB",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "mbdjbhd",
-    "isHidden": false,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
+      "minInvestment": 1234,
       "gmpPercent": 18.5,
       "openDate": "18 Aug 2026",
       "closeDate": "28 Aug 2026",
@@ -376,914 +30,340 @@
     "applications": []
   },
   {
-    "id": "ipo_1786616156090",
-    "name": "bb",
-    "company": "bb",
-    "logo": "BB",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "dfff",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 14893,
-      "gmpPercent": 18.5,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "10 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 29786,
-    "applications": [
-      {
-        "id": "app_1786616210913",
-        "ipoId": "ipo_1786616156090",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam",
-        "memberId": "mem_1",
-        "panMasked": "IKXPP8088P",
-        "panNumbers": [
-          "IKXPP8088P"
-        ],
-        "totalContribution": 14893,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:16:50.913Z",
-        "applicationNumber": "NEXO-APP-6851",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer, shivam",
-            "avatar": "/sinchan.png",
-            "contribution": 7447,
-            "percentage": 50,
-            "panMasked": "IKXPP8088P",
-            "panFull": "IKXPP8088P",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_2",
-            "memberName": "Ashay",
-            "avatar": "/jack.png",
-            "contribution": 7446,
-            "percentage": 50,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786616188871",
-        "ipoId": "ipo_1786616156090",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 14893,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:16:28.871Z",
-        "applicationNumber": "NEXO-APP-2931",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 14893,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "ipo_1786615514773",
-    "name": "milk",
-    "company": "milk",
-    "logo": "MI",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "cfjjf cjf",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "gmpPercent": 28,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 45000,
-    "applications": [
-      {
-        "id": "app_1786615913083",
-        "ipoId": "ipo_1786615514773",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ankit",
-        "memberId": "mem_1",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:11:53.084Z",
-        "applicationNumber": "NEXO-APP-3632",
-        "participants": [
-          {
-            "memberId": "mem_1",
-            "memberName": "Ankit",
-            "avatar": "/oggy.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786615547592",
-        "ipoId": "ipo_1786615514773",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam",
-        "memberId": "mem_1",
-        "panMasked": "UTRID8988P",
-        "panNumbers": [
-          "UTRID8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:05:47.592Z",
-        "applicationNumber": "NEXO-APP-6055",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "UTRID8988P",
-            "panFull": "UTRID8988P",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_4",
-            "memberName": "shivam",
-            "avatar": "/jack.png",
-            "contribution": 7500,
-            "percentage": 50,
-            "panMasked": "UTRID8988P",
-            "panFull": "UTRID8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786615529363",
-        "ipoId": "ipo_1786615514773",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ankit",
-        "memberId": "mem_1",
-        "panMasked": "UTRID8988P",
-        "panNumbers": [
-          "UTRID8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:05:29.363Z",
-        "applicationNumber": "NEXO-APP-7962",
-        "participants": [
-          {
-            "memberId": "mem_1",
-            "memberName": "Ankit",
-            "avatar": "/oggy.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "UTRID8988P",
-            "panFull": "UTRID8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ],
-    "profitDistribution": {
-      "totalProfit": 30017,
-      "totalLots": 1,
-      "oneLotProfit": 30017,
-      "publishedAt": "2026-08-13T10:22:00.513Z"
-    }
-  },
-  {
-    "id": "ipo_1786604363126",
-    "name": "xyz",
-    "company": "xyz",
-    "logo": "XY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "all ok",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026",
-      "gmpPercent": 79.5
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 60000,
-    "applications": [
-      {
-        "id": "app_1786615331751",
-        "ipoId": "ipo_1786604363126",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam 2",
-        "memberId": "mem_1",
-        "panMasked": "UTRID8988P",
-        "panNumbers": [
-          "UTRID8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T10:02:11.751Z",
-        "applicationNumber": "NEXO-APP-7425",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer, shivam 2",
-            "avatar": "/sinchan.png",
-            "contribution": 5000,
-            "percentage": 33.3,
-            "panMasked": "UTRID8988P",
-            "panFull": "UTRID8988P",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_2",
-            "memberName": "Ashay",
-            "avatar": "/jack.png",
-            "contribution": 10000,
-            "percentage": 66.7,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786605370801",
-        "ipoId": "ipo_1786604363126",
-        "type": "COMBINED",
-        "applicantName": "Ranveer, shivam",
-        "memberId": "mem_1",
-        "panMasked": "UTRID8988P",
-        "panNumbers": [
-          "UTRID8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T07:16:10.801Z",
-        "applicationNumber": "NEXO-APP-3341",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 12000,
-            "percentage": 80,
-            "panMasked": "UTRID8988P",
-            "panFull": "UTRID8988P",
-            "status": "SUBMITTED"
-          },
-          {
-            "memberId": "mem_4",
-            "memberName": "Shivam",
-            "avatar": "/jack.png",
-            "contribution": 3000,
-            "percentage": 20,
-            "panMasked": "BCDEF2345G",
-            "panFull": "BCDEF2345G",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786605327433",
-        "ipoId": "ipo_1786604363126",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "FGRRI8988N",
-        "panNumbers": [
-          "FGRRI8988N"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T07:15:27.433Z",
-        "applicationNumber": "NEXO-APP-4357",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "FGRRI8988N",
-            "panFull": "FGRRI8988N",
-            "status": "SUBMITTED"
-          }
-        ]
-      },
-      {
-        "id": "app_1786604840168",
-        "ipoId": "ipo_1786604363126",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T07:07:20.168Z",
-        "applicationNumber": "NEXO-APP-7716",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ],
-    "profitDistribution": {
-      "totalProfit": 20000,
-      "totalLots": 2,
-      "oneLotProfit": 10000,
-      "publishedAt": "2026-08-13T09:53:23.804Z"
-    }
-  },
-  {
-    "id": "ipo_1786604150290",
-    "name": "xyz",
-    "company": "xyz",
-    "logo": "XY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "n n n",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786602932044",
-    "name": "xyz",
-    "company": "xyz",
-    "logo": "XY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "nb nb",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 15000,
-    "applications": [
-      {
-        "id": "app_1786603732669",
-        "ipoId": "ipo_1786602932044",
-        "type": "INDIVIDUAL",
-        "applicantName": "Ranveer",
-        "memberId": "mem_3",
-        "panMasked": "IKXPP8988P",
-        "panNumbers": [
-          "IKXPP8988P"
-        ],
-        "totalContribution": 15000,
-        "lotCount": 1,
-        "verified": true,
-        "allotmentStatus": "AWAITING",
-        "status": "AWAITING",
-        "createdAt": "2026-08-13T06:48:52.669Z",
-        "applicationNumber": "NEXO-APP-9528",
-        "participants": [
-          {
-            "memberId": "mem_3",
-            "memberName": "Ranveer",
-            "avatar": "/sinchan.png",
-            "contribution": 15000,
-            "percentage": 100,
-            "panMasked": "IKXPP8988P",
-            "panFull": "IKXPP8988P",
-            "status": "SUBMITTED"
-          }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "ipo_1786600585536",
-    "name": "teee",
-    "company": "teee",
-    "logo": "TE",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "jnvfvnfkn",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": [],
-    "profitDistribution": {
-      "totalProfit": 150000,
-      "totalLots": 10,
-      "oneLotProfit": 15000,
-      "publishedAt": "2026-08-13T06:01:40.234Z"
-    }
-  },
-  {
-    "id": "ipo_1786599974790",
-    "name": "it done",
-    "company": "it done",
-    "logo": "IT",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "fvbjdfvj",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786599875214",
-    "name": "ok",
-    "company": "ok",
-    "logo": "OK",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "knkn",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786599691359",
-    "name": "fds",
-    "company": "fds",
-    "logo": "FD",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "sdd",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786599294543",
-    "name": "zomato",
-    "company": "zomato",
-    "logo": "ZO",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "dcdc",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "20 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786566183005",
-    "name": "fvf",
-    "company": "fvf",
-    "logo": "FV",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "jhjhbh",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786563193103",
-    "name": "zyx",
-    "company": "zyx",
-    "logo": "ZY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "shivam",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "7 Aug 2026",
-      "closeDate": "8 Aug 2026",
-      "allotmentDate": "9 Sep 2026",
-      "listingDate": "10 Sep 2026",
-      "fundUnblockDate": "11 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786563118867",
-    "name": "xyz",
-    "company": "xyz",
-    "logo": "XY",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "hi",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "30 Aug 2026",
-      "allotmentDate": "07 Sep 2026",
-      "listingDate": "10 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786563066145",
-    "name": "abc",
-    "company": "abc",
-    "logo": "AB",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "applay after 2 pm",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "18 Aug 2026",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026",
-      "fundUnblockDate": "02 Sep 2026"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786560829431",
-    "name": "ipo 1",
-    "company": "ipo 1",
-    "logo": "IP",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "ncvkdf",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "Open",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "—",
-      "listingDate": "—"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786560451938",
-    "name": "randi ltd ipo",
-    "company": "randi ltd ipo",
-    "logo": "RA",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "till",
-    "isHidden": true,
-    "metrics": {
-      "issueSize": "₹6,969 Cr",
-      "priceBand": {
-        "min": 0,
-        "max": 0
-      },
-      "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "Open",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "—",
-      "listingDate": "—"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1786560326377",
-    "name": "shivam ltd",
-    "company": "shivam ltd",
+    "id": "ipo_1786694812510",
+    "name": "Shiprocket",
+    "company": "Shiprocket",
     "logo": "SH",
     "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
+    "status": "ALLOTMENT_OUT",
     "recommendation": "APPLY",
-    "thesis": "apply after 2 pm",
-    "isHidden": true,
+    "thesis": "Apply after 2 pm",
+    "isHidden": false,
     "metrics": {
-      "issueSize": "₹2,408 Cr",
+      "issueSize": "₹1,600 Cr",
       "priceBand": {
         "min": 0,
         "max": 0
       },
       "lotSize": 1,
-      "minInvestment": 15000,
-      "openDate": "Open",
-      "closeDate": "28 Aug 2026",
-      "allotmentDate": "—",
-      "listingDate": "—"
-    },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 0,
-    "combinedCapital": 0,
-    "applications": []
-  },
-  {
-    "id": "ipo_1",
-    "name": "ABC Industries IPO",
-    "company": "ABC Industries IPO",
-    "logo": "AB",
-    "category": "Mainboard",
-    "status": "APPLICATION_OPEN",
-    "recommendation": "APPLY",
-    "thesis": "Leading automotive component manufacturer with strong domestic and export presence.",
-    "metrics": {
-      "issueSize": "₹2,400 Cr",
-      "priceBand": {
-        "min": 250,
-        "max": 270
-      },
-      "lotSize": 50,
-      "minInvestment": 15000,
+      "minInvestment": 14938,
+      "gmpPercent": 20,
       "openDate": "18 Aug 2026",
       "closeDate": "28 Aug 2026",
       "allotmentDate": "01 Sep 2026",
-      "listingDate": "04 Sep 2026"
+      "listingDate": "04 Sep 2026",
+      "fundUnblockDate": "02 Sep 2026"
     },
     "createdBy": "Shivam Prasad",
-    "participantsCount": 4,
-    "combinedCapital": 60000,
-    "applications": [],
-    "isHidden": true
+    "participantsCount": 0,
+    "combinedCapital": 74690,
+    "applications": [
+      {
+        "id": "app_1786713334301",
+        "ipoId": "ipo_1786694812510",
+        "type": "COMBINED",
+        "applicantName": "@krish, @shivamprasad",
+        "memberId": "mem_admin",
+        "panMasked": "HSCPP7066A",
+        "panNumbers": [
+          "HSCPP7066A"
+        ],
+        "totalContribution": 14938,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
+        "createdAt": "2026-08-14T13:15:34.301Z",
+        "applicationNumber": "NEXO-APP-1181",
+        "participants": [
+          {
+            "memberId": "mem_1786713174555",
+            "memberName": "@krish, @shivamprasad",
+            "avatar": "/doremon.png",
+            "contribution": 7469,
+            "percentage": 50,
+            "panMasked": "HSCPP7066A",
+            "panFull": "HSCPP7066A",
+            "status": "SUBMITTED"
+          },
+          {
+            "memberId": "mem_1786684730514",
+            "memberName": "shivamprasad",
+            "avatar": "/jack.png",
+            "contribution": 7469,
+            "percentage": 50,
+            "panMasked": "ABCDE1234F",
+            "panFull": "ABCDE1234F",
+            "status": "SUBMITTED"
+          }
+        ],
+        "updatedAt": "2026-08-14T16:34:40.489Z"
+      },
+      {
+        "id": "app_1786713257321",
+        "ipoId": "ipo_1786694812510",
+        "type": "INDIVIDUAL",
+        "applicantName": "krish",
+        "memberId": "mem_1786713174555",
+        "panMasked": "HSCPP7066Q",
+        "panNumbers": [
+          "HSCPP7066Q"
+        ],
+        "totalContribution": 14938,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
+        "createdAt": "2026-08-14T13:14:17.321Z",
+        "applicationNumber": "NEXO-APP-2558",
+        "participants": [
+          {
+            "memberId": "mem_1786713174555",
+            "memberName": "krish",
+            "avatar": "/doremon.png",
+            "contribution": 14938,
+            "percentage": 100,
+            "panMasked": "HSCPP7066Q",
+            "panFull": "HSCPP7066Q",
+            "status": "SUBMITTED"
+          }
+        ],
+        "updatedAt": "2026-08-14T16:34:40.489Z"
+      },
+      {
+        "id": "app_1786697965236",
+        "ipoId": "ipo_1786694812510",
+        "type": "COMBINED",
+        "applicantName": "@user2, @shivamprasad",
+        "memberId": "mem_admin",
+        "panMasked": "HSCPA8077A",
+        "panNumbers": [
+          "HSCPA8077A"
+        ],
+        "totalContribution": 14938,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "NOT_ALLOTTED",
+        "status": "NOT_ALLOTTED",
+        "createdAt": "2026-08-14T08:59:25.236Z",
+        "applicationNumber": "NEXO-APP-9310",
+        "participants": [
+          {
+            "memberId": "mem_1786680225463",
+            "memberName": "@user2, @shivamprasad",
+            "avatar": "/sinchan.png",
+            "contribution": 7469,
+            "percentage": 50,
+            "panMasked": "HSCPA8077A",
+            "panFull": "HSCPA8077A",
+            "status": "SUBMITTED"
+          },
+          {
+            "memberId": "mem_1786684730514",
+            "memberName": "shivamprasad",
+            "avatar": "/jack.png",
+            "contribution": 7469,
+            "percentage": 50,
+            "panMasked": "ABCDE1234F",
+            "panFull": "ABCDE1234F",
+            "status": "SUBMITTED"
+          }
+        ],
+        "updatedAt": "2026-08-14T16:34:40.489Z"
+      },
+      {
+        "id": "app_1786695102163",
+        "ipoId": "ipo_1786694812510",
+        "type": "INDIVIDUAL",
+        "applicantName": "shivamprasad",
+        "memberId": "mem_1786684730514",
+        "panMasked": "HSCPP7066A",
+        "panNumbers": [
+          "HSCPP7066A"
+        ],
+        "totalContribution": 14938,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "NOT_ALLOTTED",
+        "status": "NOT_ALLOTTED",
+        "createdAt": "2026-08-14T08:11:42.163Z",
+        "applicationNumber": "NEXO-APP-2738",
+        "participants": [
+          {
+            "memberId": "mem_1786684730514",
+            "memberName": "shivamprasad",
+            "avatar": "/jack.png",
+            "contribution": 14938,
+            "percentage": 100,
+            "panMasked": "HSCPP7066A",
+            "panFull": "HSCPP7066A",
+            "status": "SUBMITTED"
+          }
+        ],
+        "updatedAt": "2026-08-14T16:34:40.489Z"
+      },
+      {
+        "id": "app_1786694857088",
+        "ipoId": "ipo_1786694812510",
+        "type": "INDIVIDUAL",
+        "applicantName": "user4",
+        "memberId": "mem_1786684473400",
+        "panMasked": "HSCPP7066Q",
+        "panNumbers": [
+          "HSCPP7066Q"
+        ],
+        "totalContribution": 14938,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "NOT_ALLOTTED",
+        "status": "NOT_ALLOTTED",
+        "createdAt": "2026-08-14T08:07:37.088Z",
+        "applicationNumber": "NEXO-APP-9731",
+        "participants": [
+          {
+            "memberId": "mem_1786684473400",
+            "memberName": "user4",
+            "avatar": "/oggy.png",
+            "contribution": 14938,
+            "percentage": 100,
+            "panMasked": "HSCPP7066Q",
+            "panFull": "HSCPP7066Q",
+            "status": "SUBMITTED"
+          }
+        ],
+        "updatedAt": "2026-08-14T16:34:40.489Z"
+      }
+    ],
+    "profitDistribution": {
+      "totalProfit": 12000,
+      "totalLots": 5,
+      "allottedLots": 1,
+      "oneLotProfit": 2400,
+      "publishedAt": "2026-08-14T13:19:21.342Z"
+    },
+    "allotmentFinalized": true,
+    "allotmentFinalizedAt": "2026-08-14T16:34:40.489Z",
+    "allotmentFinalizedBy": "Ankit"
   },
   {
-    "id": "ipo_2",
-    "name": "XYZ Technologies IPO",
-    "company": "XYZ Technologies IPO",
-    "logo": "XY",
+    "id": "ipo_1786630252147",
+    "name": "HDB Financial Services",
+    "company": "HDB Financial Services Limited",
+    "logo": "HDB",
     "category": "Mainboard",
     "status": "APPLICATION_OPEN",
     "recommendation": "APPLY",
-    "thesis": "High-growth enterprise software provider specializing in cloud migration solutions.",
+    "thesis": "Leading NBFC subsidiary of HDFC Bank with strong retail lending and credit distribution network.",
+    "isHidden": false,
     "metrics": {
-      "issueSize": "₹1,800 Cr",
+      "issueSize": "₹2,400 Cr",
       "priceBand": {
-        "min": 140,
-        "max": 150
+        "min": 700,
+        "max": 740
       },
-      "lotSize": 80,
-      "minInvestment": 12000,
-      "openDate": "20 Aug 2026",
-      "closeDate": "30 Aug 2026",
-      "allotmentDate": "03 Sep 2026",
-      "listingDate": "06 Sep 2026"
+      "lotSize": 20,
+      "minInvestment": 14800,
+      "gmpPercent": 18.5,
+      "openDate": "18 Aug 2026",
+      "closeDate": "28 Aug 2026",
+      "allotmentDate": "01 Sep 2026",
+      "listingDate": "04 Sep 2026",
+      "fundUnblockDate": "02 Sep 2026"
     },
-    "createdBy": "Shivam Prasad",
-    "participantsCount": 3,
-    "combinedCapital": 45000,
-    "applications": [],
-    "isHidden": true
+    "createdBy": "Admin",
+    "participantsCount": 1,
+    "combinedCapital": 44600,
+    "applications": [
+      {
+        "id": "app_1786684232663",
+        "ipoId": "ipo_1786630252147",
+        "type": "INDIVIDUAL",
+        "applicantName": "user",
+        "memberId": "mem_admin",
+        "panMasked": "HSCPP7066S",
+        "panNumbers": [
+          "HSCPP7066S"
+        ],
+        "totalContribution": 14800,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
+        "createdAt": "2026-08-14T05:10:32.663Z",
+        "applicationNumber": "NEXO-APP-7940",
+        "participants": [
+          {
+            "memberId": "mem_admin",
+            "memberName": "user",
+            "avatar": "/oggy.png",
+            "contribution": 14800,
+            "percentage": 100,
+            "panMasked": "HSCPP7066S",
+            "panFull": "HSCPP7066S",
+            "status": "SUBMITTED"
+          }
+        ]
+      },
+      {
+        "id": "app_1786684188970",
+        "ipoId": "ipo_1786630252147",
+        "type": "INDIVIDUAL",
+        "applicantName": "user",
+        "memberId": "mem_admin",
+        "panMasked": "HSCPP7066V",
+        "panNumbers": [
+          "HSCPP7066V"
+        ],
+        "totalContribution": 14800,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
+        "createdAt": "2026-08-14T05:09:48.970Z",
+        "applicationNumber": "NEXO-APP-5418",
+        "participants": [
+          {
+            "memberId": "mem_admin",
+            "memberName": "user",
+            "avatar": "/oggy.png",
+            "contribution": 14800,
+            "percentage": 100,
+            "panMasked": "HSCPP7066V",
+            "panFull": "HSCPP7066V",
+            "status": "SUBMITTED"
+          }
+        ]
+      },
+      {
+        "id": "app_1786683514267",
+        "ipoId": "ipo_1786630252147",
+        "type": "INDIVIDUAL",
+        "applicantName": "user",
+        "memberId": "mem_1786680225463",
+        "panMasked": "HSCPP7066Q",
+        "panNumbers": [
+          "HSCPP7066Q"
+        ],
+        "totalContribution": 15000,
+        "lotCount": 1,
+        "verified": true,
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
+        "createdAt": "2026-08-14T04:58:34.267Z",
+        "applicationNumber": "NEXO-APP-6912",
+        "participants": [
+          {
+            "memberId": "mem_1786680225463",
+            "memberName": "user",
+            "avatar": "/japlu.png",
+            "contribution": 15000,
+            "percentage": 100,
+            "panMasked": "HSCPP7066Q",
+            "panFull": "HSCPP7066Q",
+            "status": "SUBMITTED"
+          }
+        ]
+      }
+    ]
   }
 ]

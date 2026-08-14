@@ -16,11 +16,12 @@ export type AllotmentStatus = "AWAITING" | "ALLOTTED" | "NOT_ALLOTTED";
 
 export type RecommendationType = "APPLY" | "WATCH" | "SKIP";
 
-export type MemberRole = "ADMIN" | "MEMBER";
+export type MemberRole = "SUPER_ADMIN" | "ADMIN" | "MEMBER";
 
 export interface Member {
   id: string;
   name: string;
+  username?: string;
   email: string;
   avatar: string;
   role: MemberRole;
@@ -44,6 +45,7 @@ export interface FinancialMetrics {
 export interface ProfitDistribution {
   totalProfit: number;
   totalLots: number;
+  allottedLots?: number;
   oneLotProfit: number;
   publishedAt?: string;
 }

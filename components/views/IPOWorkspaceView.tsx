@@ -37,11 +37,13 @@ export function IPOWorkspaceView() {
   // Form State for Adding a Listed IPO Card
   const [name, setName] = useState("");
   const [category, setCategory] = useState<"Mainboard" | "SME">("Mainboard");
+  const [lotsApplied, setLotsApplied] = useState<number>(1);
   const [lotsAllotted, setLotsAllotted] = useState<number>(1);
   const [applicantsCount, setApplicantsCount] = useState<number>(1);
   const [oneLotProfit, setOneLotProfit] = useState<number>(15000);
   const [totalProfit, setTotalProfit] = useState<number>(15000);
   const [userProfitShare, setUserProfitShare] = useState<number>(15000);
+  const [userLotsApplied, setUserLotsApplied] = useState<number>(1);
   const [listingDate, setListingDate] = useState("22 Aug 2026");
   const [lotPrice, setLotPrice] = useState<number>(15000);
 
@@ -73,6 +75,11 @@ export function IPOWorkspaceView() {
     0
   );
 
+  const totalLotsApplied = filteredListedIpos.reduce(
+    (acc, ipo) => acc + (ipo.lotsApplied || ipo.lotsAllotted || 0),
+    0
+  );
+
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return;
@@ -80,6 +87,7 @@ export function IPOWorkspaceView() {
     addListedIpo({
       name: name.trim(),
       category,
+      lotsApplied: Number(lotsApplied) || 1,
       lotsAllotted: Number(lotsAllotted) || 1,
       applicantsCount: Number(applicantsCount) || 1,
       oneLotProfit: Number(oneLotProfit) || 0,
@@ -91,17 +99,20 @@ export function IPOWorkspaceView() {
           memberId: activeUserId,
           memberName: activeUserName,
           profit: Number(userProfitShare) || Number(oneLotProfit) || 0,
+          lotsApplied: Number(userLotsApplied) || Number(lotsApplied) || 1,
         },
       ],
     });
 
     // Reset Form
     setName("");
+    setLotsApplied(1);
     setLotsAllotted(1);
     setApplicantsCount(1);
     setOneLotProfit(15000);
     setTotalProfit(15000);
     setUserProfitShare(15000);
+    setUserLotsApplied(1);
     setIsAddModalOpen(false);
   };
 
@@ -168,20 +179,20 @@ export function IPOWorkspaceView() {
           </p>
         </div>
 
-        {/* STAT 3: Total Allotted Lots */}
+        {/* STAT 3: Total Applied & Allotted Lots */}
         <div className="p-4 rounded-2xl bg-surface border border-line shadow-xs space-y-1.5">
           <div className="flex items-center justify-between text-ink-tertiary">
-            <span className="text-caption font-medium text-ink-secondary">Total Allotted Lots</span>
+            <span className="text-caption font-medium text-ink-secondary">Total Applied & Allotted</span>
             <div className="p-1.5 rounded-lg bg-surface-alt text-ink-secondary border border-line-subtle">
               <Coins size={16} weight="bold" />
             </div>
           </div>
           <div className="text-h3 font-semibold text-ink num-tabular">
-            {totalLotsAllotted} <span className="text-small font-medium text-ink-tertiary">Lots</span>
+            {totalLotsAllotted} <span className="text-small font-medium text-ink-tertiary">Allotted ({totalLotsApplied} Applied)</span>
           </div>
           <p className="text-caption font-medium text-ink-tertiary">
             {filteredListedIpos.length > 0
-              ? `${(totalLotsAllotted / filteredListedIpos.length).toFixed(1)} avg lots / IPO`
+              ? `${(totalLotsApplied / filteredListedIpos.length).toFixed(1)} avg applied / IPO`
               : "No IPOs listed"}
           </p>
         </div>
@@ -240,26 +251,37 @@ export function IPOWorkspaceView() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
+              <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-ink-secondary mb-1 text-caption">Number of IPO Allotted (Lots)</label>
+                  <label className="block text-ink-secondary mb-1 text-caption">IPO Applied (Lots)</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={lotsApplied}
+                    onChange={(e) => setLotsApplied(Number(e.target.value))}
+                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-ink-secondary mb-1 text-caption">IPO Allotted (Lots)</label>
                   <input
                     type="number"
                     min={1}
                     value={lotsAllotted}
                     onChange={(e) => setLotsAllotted(Number(e.target.value))}
-                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
+                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-ink-secondary mb-1 text-caption">Number of Applicants</label>
+                  <label className="block text-ink-secondary mb-1 text-caption">Applicants</label>
                   <input
                     type="number"
                     min={1}
                     value={applicantsCount}
                     onChange={(e) => setApplicantsCount(Number(e.target.value))}
-                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
+                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
                   />
                 </div>
               </div>
@@ -288,6 +310,17 @@ export function IPOWorkspaceView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
+                  <label className="block text-ink-secondary mb-1 text-caption">User Applied Lots ({activeUserName})</label>
+                  <input
+                    type="number"
+                    min={1}
+                    value={userLotsApplied}
+                    onChange={(e) => setUserLotsApplied(Number(e.target.value))}
+                    className="w-full bg-accent-soft border border-accent/40 rounded-xl px-3.5 py-2.5 text-accent num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
+                  />
+                </div>
+
+                <div>
                   <label className="block text-ink-secondary mb-1 text-caption">Total Syndicate Profit (₹)</label>
                   <input
                     type="number"
@@ -296,17 +329,17 @@ export function IPOWorkspaceView() {
                     className="w-full bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2.5 text-ink num-tabular font-semibold focus:border-accent focus:bg-surface outline-none transition-all"
                   />
                 </div>
+              </div>
 
-                <div>
-                  <label className="block text-ink-secondary mb-1 text-caption">Listing Date</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. 22 Aug 2026"
-                    value={listingDate}
-                    onChange={(e) => setListingDate(e.target.value)}
-                    className="w-full bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2.5 text-ink font-medium focus:border-accent focus:bg-surface outline-none transition-all"
-                  />
-                </div>
+              <div>
+                <label className="block text-ink-secondary mb-1 text-caption">Listing Date</label>
+                <input
+                  type="text"
+                  placeholder="e.g. 22 Aug 2026"
+                  value={listingDate}
+                  onChange={(e) => setListingDate(e.target.value)}
+                  className="w-full bg-surface-alt border border-line-strong rounded-xl px-3.5 py-2.5 text-ink font-medium focus:border-accent focus:bg-surface outline-none transition-all"
+                />
               </div>
 
               <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-line">
@@ -352,6 +385,11 @@ export function IPOWorkspaceView() {
                 ? myProfits.reduce((sum, u) => sum + u.profit, 0)
                 : ipo.oneLotProfit;
 
+            const myAppliedLots =
+              myProfits && myProfits.length > 0
+                ? myProfits.reduce((sum, u) => sum + (u.lotsApplied || 1), 0)
+                : (ipo.lotsApplied || 1);
+
             return (
               <div
                 key={ipo.id}
@@ -395,23 +433,32 @@ export function IPOWorkspaceView() {
 
                 {/* CARD BODY */}
                 <div className="px-5 pb-5 space-y-3.5 flex-1">
-                  {/* METRICS 1: ALLOTTED & APPLICANTS */}
-                  <div className="grid grid-cols-2 gap-3 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle">
+                  {/* METRICS 1: APPLIED, ALLOTTED & APPLICANTS */}
+                  <div className="grid grid-cols-3 gap-2 p-3 rounded-xl bg-surface-alt/70 border border-line-subtle">
                     <div className="space-y-0.5">
-                      <span className="text-caption font-medium text-ink-secondary block uppercase tracking-wider">
+                      <span className="text-[10px] sm:text-caption font-medium text-ink-secondary block uppercase tracking-wider truncate">
+                        IPO Applied
+                      </span>
+                      <span className="text-small sm:text-body-md font-semibold text-ink num-tabular">
+                        {ipo.lotsApplied || ipo.lotsAllotted || 1} {(ipo.lotsApplied || ipo.lotsAllotted || 1) === 1 ? "Lot" : "Lots"}
+                      </span>
+                    </div>
+
+                    <div className="space-y-0.5 border-l border-line-subtle pl-2">
+                      <span className="text-[10px] sm:text-caption font-medium text-ink-secondary block uppercase tracking-wider truncate">
                         IPO Allotted
                       </span>
-                      <span className="text-body-md font-semibold text-ink num-tabular">
+                      <span className="text-small sm:text-body-md font-semibold text-ink num-tabular">
                         {ipo.lotsAllotted} {ipo.lotsAllotted === 1 ? "Lot" : "Lots"}
                       </span>
                     </div>
 
-                    <div className="space-y-0.5 border-l border-line-subtle pl-3">
-                      <span className="text-caption font-medium text-ink-secondary block uppercase tracking-wider">
+                    <div className="space-y-0.5 border-l border-line-subtle pl-2">
+                      <span className="text-[10px] sm:text-caption font-medium text-ink-secondary block uppercase tracking-wider truncate">
                         Applicants
                       </span>
-                      <span className="text-body-md font-semibold text-ink num-tabular flex items-center gap-1">
-                        <Users size={14} className="text-ink-muted" />
+                      <span className="text-small sm:text-body-md font-semibold text-ink num-tabular flex items-center gap-1">
+                        <Users size={14} className="text-ink-muted shrink-0" />
                         {ipo.applicantsCount}
                       </span>
                     </div>
@@ -430,7 +477,7 @@ export function IPOWorkspaceView() {
                             User Profit ({activeUserName})
                           </span>
                           <span className="text-caption font-medium text-accent">
-                            Your Allocation
+                            Your Allocation ({myAppliedLots} {myAppliedLots === 1 ? "Lot" : "Lots"} Applied)
                           </span>
                         </div>
                       </div>

@@ -34,17 +34,24 @@ export async function GET(
     const msgCol = db.collection<MessageDocument>(COL_MSG);
     const userCol = db.collection<MemberDocument>(COL_USERS);
 
-    /* Security check: verify membership */
-    const isMember = await memberCol.findOne({
+    /* Security & Membership Check with Auto-Enrollment */
+    let isMember = await memberCol.findOne({
       conversationId,
       memberId: currentMemberId,
     });
 
     if (!isMember) {
-      return NextResponse.json(
-        { success: false, error: "Access denied. You are not a member of this conversation." },
-        { status: 403 }
-      );
+      const conv = await convCol.findOne({ id: conversationId });
+      if (conv) {
+        await memberCol.insertOne({
+          id: `cm_${conversationId}_${currentMemberId}`,
+          conversationId,
+          memberId: currentMemberId,
+          role: "MEMBER",
+          joinedAt: new Date(),
+          lastReadAt: new Date(),
+        });
+      }
     }
 
     const query: any = { conversationId };
@@ -137,17 +144,44 @@ export async function POST(
     const msgCol = db.collection<MessageDocument>(COL_MSG);
     const userCol = db.collection<MemberDocument>(COL_USERS);
 
-    /* Security check */
-    const isMember = await memberCol.findOne({
+    /* Security check with Auto-Provisioning for seamless 1-on-1 chatting */
+    let isMember = await memberCol.findOne({
       conversationId,
       memberId: senderId,
     });
 
     if (!isMember) {
-      return NextResponse.json(
-        { success: false, error: "Access denied. You are not a member of this conversation." },
-        { status: 403 }
-      );
+      const conv = await convCol.findOne({ id: conversationId });
+      if (conv) {
+        await memberCol.insertOne({
+          id: `cm_${conversationId}_${senderId}`,
+          conversationId,
+          memberId: senderId,
+          role: "MEMBER",
+          joinedAt: new Date(),
+          lastReadAt: new Date(),
+        });
+      } else {
+        // Provision conversation document if missing
+        await convCol.insertOne({
+          id: conversationId,
+          type: "DIRECT",
+          title: "Direct Chat",
+          createdBy: senderId,
+          lastMessage: text,
+          lastMessageAt: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+        await memberCol.insertOne({
+          id: `cm_${conversationId}_${senderId}`,
+          conversationId,
+          memberId: senderId,
+          role: "OWNER",
+          joinedAt: new Date(),
+          lastReadAt: new Date(),
+        });
+      }
     }
 
     const now = new Date();

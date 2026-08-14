@@ -86,31 +86,16 @@ export function AdminSidebar({
 
   return (
     <aside
-      className={`bg-surface border-r border-line flex flex-col justify-between transition-all duration-300 z-30 select-none shrink-0 ${
+      className={`bg-surface border-r border-line flex flex-col justify-between transition-all duration-300 z-30 select-none shrink-0 h-screen sticky top-0 overflow-hidden ${
         isCollapsed ? "w-16 sm:w-20" : "w-64"
       }`}
     >
       {/* ── TOP HEADER / BRAND ── */}
-      <div className="h-20 px-4 border-b border-line flex items-center justify-between shrink-0">
+      <div className="h-14 px-4 border-b border-line flex items-center justify-between shrink-0">
         {!isCollapsed ? (
-          <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-9 h-9 rounded-xl bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold shrink-0">
-              <ShieldCheck size={22} weight="fill" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-1.5">
-                <span className="text-sm font-black text-ink tracking-tight truncate">
-                  NEXO ADMIN
-                </span>
-                <span className="text-[9px] font-mono font-extrabold px-1.5 py-0.2 rounded bg-accent-soft text-accent border border-accent/20 uppercase shrink-0">
-                  V2.0
-                </span>
-              </div>
-              <div className="flex items-center gap-1 text-[10px] font-semibold text-positive">
-                <span className="w-1.5 h-1.5 rounded-full bg-positive animate-pulse" />
-                <span>MongoDB Online</span>
-              </div>
-            </div>
+          <div className="flex items-center gap-1.5">
+            <span className="text-xl font-black tracking-tight text-ink font-sans">NEXO</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-600 inline-block shadow-2xs shadow-blue-500/40" />
           </div>
         ) : (
           <div className="w-9 h-9 mx-auto rounded-xl bg-accent-soft border border-accent/20 text-accent flex items-center justify-center font-bold">

@@ -59,9 +59,9 @@ export function ProfileHeader({
         {/* Right CTA */}
         <button
           onClick={onEditProfile}
-          className="px-4 py-2 rounded-xl bg-surface-alt border border-line-strong hover:bg-surface-hover text-ink font-semibold text-small shadow-2xs transition-all active:scale-98 cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-center"
+          className="px-4 py-2.5 rounded-xl bg-[#4F75FF] hover:bg-[#3E64F0] text-white font-extrabold text-xs shadow-md shadow-blue-500/20 active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 self-start sm:self-center"
         >
-          <PencilSimple size={15} />
+          <PencilSimple size={15} weight="bold" />
           <span>Edit Profile</span>
         </button>
       </div>

@@ -19,13 +19,23 @@ export function useTheme() {
 }
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("dark");
   const [mounted, setMounted] = useState(false);
 
-  // On mount, sync React state with the class already applied by the inline script
+  // On mount, sync React state with stored preference or active document class
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains("dark");
-    setTheme(isDark ? "dark" : "light");
+    let initial: Theme = "dark";
+    try {
+      const stored = localStorage.getItem("nexo-theme");
+      if (stored === "light" || stored === "dark") {
+        initial = stored;
+      } else if (document.documentElement.classList.contains("dark")) {
+        initial = "dark";
+      }
+    } catch {}
+
+    setTheme(initial);
+    document.documentElement.classList.toggle("dark", initial === "dark");
     setMounted(true);
   }, []);
 

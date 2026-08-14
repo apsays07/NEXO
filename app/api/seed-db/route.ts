@@ -2,17 +2,27 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { MOCK_MEMBERS, MOCK_IPOS } from "@/lib/mockData";
 import { hashPassword, normalizeEmail } from "@/src/lib/auth/password";
+import { ensureActivityIndexes } from "@/src/features/activity/activityService";
 
 const DB_NAME = "nexo";
 
 export async function POST() {
   try {
+    await ensureActivityIndexes();
     const client = await clientPromise;
     const db = client.db(DB_NAME);
 
+    // Fetch existing SUPER_ADMIN user to preserve it
+    const existingSuperAdminUser = await db.collection("users").findOne({ role: "SUPER_ADMIN" });
+    const superAdminMemberId = existingSuperAdminUser?.memberId;
+
     // 1. SEED MEMBERS COLLECTION ("members")
     const membersCol = db.collection("members");
-    await membersCol.deleteMany({});
+    if (superAdminMemberId) {
+      await membersCol.deleteMany({ id: { $ne: superAdminMemberId } });
+    } else {
+      await membersCol.deleteMany({});
+    }
     const memberDocs = MOCK_MEMBERS.map((m) => ({
       ...m,
       createdAt: new Date(),
@@ -22,7 +32,11 @@ export async function POST() {
 
     // 2. SEED USERS COLLECTION ("users") FOR AUTHENTICATION
     const usersCol = db.collection("users");
-    await usersCol.deleteMany({});
+    if (existingSuperAdminUser) {
+      await usersCol.deleteMany({ role: { $ne: "SUPER_ADMIN" } });
+    } else {
+      await usersCol.deleteMany({});
+    }
     const userDocs = MOCK_MEMBERS.map((m) => {
       const pass = m.password || (m.role === "SUPER_ADMIN" || m.role === "ADMIN" ? "admin123" : "user123");
       const emailNorm = normalizeEmail(m.email);
@@ -105,7 +119,11 @@ export async function POST() {
 
     // 6. SEED PROFILES COLLECTION ("profiles")
     const profilesCol = db.collection("profiles");
-    await profilesCol.deleteMany({});
+    if (superAdminMemberId) {
+      await profilesCol.deleteMany({ userId: { $ne: superAdminMemberId } });
+    } else {
+      await profilesCol.deleteMany({});
+    }
     const profileDocs = MOCK_MEMBERS.map((m) => ({
       userId: m.id,
       name: m.name,

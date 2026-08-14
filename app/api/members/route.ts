@@ -2,14 +2,27 @@ import { NextResponse } from "next/server";
 import clientPromise from "@/lib/mongodb";
 import { MemberDocument } from "@/src/models/Member";
 import { MOCK_MEMBERS } from "@/lib/mockData";
+import { MemberPermissions } from "@/types/nexo";
+import { logActivity } from "@/src/features/activity/activityService";
 
 const DB = "nexo";
 const COL = "members";
 
+function getDefaultPermissions(role: string): MemberPermissions {
+  const isAdmin = role === "ADMIN" || role === "SUPER_ADMIN";
+  const isSuper = role === "SUPER_ADMIN";
+  return {
+    canSubmitApplications: true,
+    canDistributeProfit: isAdmin,
+    canEditIpos: isAdmin,
+    canAccessAdminConsole: isAdmin,
+    canManageMembers: isSuper,
+  };
+}
+
 /* ────────────────────────────────────────────────────────────────
    GET /api/members
-   Fetches all group members & admin-assigned credentials from MongoDB.
-   Seeds initial default members if collection is empty.
+   Fetches all group members & credentials from MongoDB.
 ──────────────────────────────────────────────────────────────── */
 export async function GET() {
   try {
@@ -28,11 +41,13 @@ export async function GET() {
         email: m.email,
         avatar: m.avatar,
         role: m.role,
+        status: (m as any).status || "ACTIVE",
         panMasked: m.panMasked,
         panFull: m.panFull || m.panMasked,
         defaultContribution: m.defaultContribution,
         joinedAt: m.joinedAt,
         phone: m.phone,
+        permissions: getDefaultPermissions(m.role),
         createdAt: new Date(),
         updatedAt: new Date(),
       }));
@@ -54,7 +69,7 @@ export async function GET() {
 
 /* ────────────────────────────────────────────────────────────────
    POST /api/members
-   Creates a new group member with assigned Username & Password.
+   Creates a new user / member with assigned Username, Password, Role, Status & Permissions.
 ──────────────────────────────────────────────────────────────── */
 export async function POST(req: Request) {
   try {
@@ -63,20 +78,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ success: false, error: "Missing required member fields" }, { status: 400 });
     }
 
+    const role = body.role || "MEMBER";
+
     const newMember: MemberDocument = {
       id: body.id || `mem_${Date.now()}`,
       name: body.name,
-      username: body.username || body.name.toLowerCase().replace(/\s+/g, ""),
+      username: (body.username || body.name.toLowerCase().replace(/\s+/g, "")).toLowerCase(),
       password: body.password || "user123",
       email: body.email || `${body.username || "user"}@nexo.private`,
       avatar: body.avatar || "/oggy.png",
-      role: body.role || "MEMBER",
+      role: role,
+      status: body.status || "ACTIVE",
       panMasked: body.panMasked || body.panFull || "ABCDE1234F",
       panFull: body.panFull || body.panMasked || "ABCDE1234F",
       defaultContribution: Number(body.defaultContribution) || 50000,
       joinedAt: body.joinedAt || "Just now",
-      phone: body.phone,
+      phone: body.phone || "+91 98765 43210",
       upiId: body.upiId,
+      permissions: body.permissions || getDefaultPermissions(role),
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -103,7 +122,7 @@ export async function POST(req: Request) {
             passwordHash: passwordHash,
             memberId: newMember.id,
             role: newMember.role,
-            status: "ACTIVE",
+            status: newMember.status || "ACTIVE",
             emailVerified: true,
             updatedAt: new Date(),
           },
@@ -115,9 +134,20 @@ export async function POST(req: Request) {
       console.warn("POST /api/members MongoDB unavailable, continuing with local store.");
     }
 
+    // Audit log — MEMBER_CREATED
+    await logActivity({
+      eventType: "MEMBER_CREATED",
+      category: "USER",
+      targetType: "MEMBER",
+      targetId: newMember.id,
+      targetName: newMember.name,
+      memberId: newMember.id,
+      metadata: { role: newMember.role, username: newMember.username },
+    });
+
     return NextResponse.json({
       success: true,
-      message: "Member saved successfully.",
+      message: "User created successfully.",
       member: newMember,
     });
   } catch (err: any) {
@@ -128,7 +158,7 @@ export async function POST(req: Request) {
 
 /* ────────────────────────────────────────────────────────────────
    PUT /api/members
-   Updates an existing member's credentials or profile in MongoDB.
+   Updates an existing member's credentials, status, role or permissions.
 ──────────────────────────────────────────────────────────────── */
 export async function PUT(req: Request) {
   try {
@@ -145,11 +175,15 @@ export async function PUT(req: Request) {
       "email",
       "avatar",
       "role",
+      "status",
       "panMasked",
       "panFull",
       "defaultContribution",
       "phone",
       "upiId",
+      "permissions",
+      "sessionsRevokedAt",
+      "lastLoginAt",
     ];
 
     for (const key of allowed) {
@@ -161,13 +195,57 @@ export async function PUT(req: Request) {
       const col = client.db(DB).collection<MemberDocument>(COL);
 
       await col.updateOne({ id: body.id }, { $set: updateDoc });
+
+      // Sync user auth credentials if username/password/role/status modified
+      if (body.password || body.role || body.status || body.email) {
+        const usersCol = client.db(DB).collection("users");
+        const { hashPassword, normalizeEmail } = await import("@/src/lib/auth/password");
+        const member = await col.findOne({ id: body.id });
+        if (member) {
+          const userEmail = member.email;
+          const emailNorm = normalizeEmail(userEmail);
+          const userUpdate: Record<string, any> = { updatedAt: new Date() };
+
+          if (body.role) userUpdate.role = body.role;
+          if (body.status) userUpdate.status = body.status;
+          if (body.password) userUpdate.passwordHash = hashPassword(body.password);
+
+          await usersCol.updateOne(
+            { $or: [{ memberId: body.id }, { emailNormalized: emailNorm }] },
+            { $set: userUpdate }
+          );
+        }
+      }
     } catch (dbErr) {
       console.warn("PUT /api/members MongoDB unavailable, continuing with local store.");
     }
 
+    // Audit log — MEMBER_UPDATED or ROLE_CHANGED
+    if (body.role) {
+      await logActivity({
+        eventType: "ROLE_CHANGED",
+        category: "SECURITY",
+        targetType: "MEMBER",
+        targetId: body.id,
+        memberId: body.id,
+        previousValue: body.previousRole ? { role: body.previousRole } : undefined,
+        newValue: { role: body.role },
+        metadata: { memberId: body.id },
+      });
+    } else {
+      await logActivity({
+        eventType: "MEMBER_UPDATED",
+        category: "USER",
+        targetType: "MEMBER",
+        targetId: body.id,
+        memberId: body.id,
+        metadata: { updatedFields: Object.keys(updateDoc).filter((k) => k !== "updatedAt") },
+      });
+    }
+
     return NextResponse.json({
       success: true,
-      message: "Member updated successfully.",
+      message: "User updated successfully.",
     });
   } catch (err: any) {
     console.error("PUT /api/members error:", err);

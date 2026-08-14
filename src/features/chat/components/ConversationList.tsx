@@ -2,8 +2,9 @@
 
 import React, { useState, useMemo } from "react";
 import { Conversation } from "@/types/nexo";
+import { useNexo } from "@/context/NexoContext";
 import { ConversationListItem } from "./ConversationListItem";
-import { MagnifyingGlass, Plus, X, ChatCircleDots } from "@phosphor-icons/react";
+import { MagnifyingGlass, Plus, X, ChatCircleDots, UserPlus, ChatCircle, Users, TrendUp } from "@phosphor-icons/react";
 
 interface ConversationListProps {
   conversations: Conversation[];
@@ -20,43 +21,110 @@ export function ConversationList({
   onSelectConversation,
   onOpenNewMessageModal,
 }: ConversationListProps) {
+  const { members, openDirectChatWithUser } = useNexo();
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState<"ALL" | "DIRECT" | "IPO">("ALL");
 
   const filteredConversations = useMemo(() => {
-    if (!searchQuery.trim()) return conversations;
-    const q = searchQuery.toLowerCase().trim();
-    return conversations.filter((c) => {
-      const titleMatch = c.title?.toLowerCase().includes(q);
-      const otherMatch = c.otherMember?.name?.toLowerCase().includes(q) || c.otherMember?.username?.toLowerCase().includes(q);
-      const msgMatch = c.lastMessage?.toLowerCase().includes(q);
-      return titleMatch || otherMatch || msgMatch;
+    const list = !searchQuery.trim()
+      ? conversations
+      : conversations.filter((c) => {
+          const q = searchQuery.toLowerCase().trim();
+          const titleMatch = c.title?.toLowerCase().includes(q);
+          const otherMatch = c.otherMember?.name?.toLowerCase().includes(q) || c.otherMember?.username?.toLowerCase().includes(q);
+          const msgMatch = c.lastMessage?.toLowerCase().includes(q);
+          return titleMatch || otherMatch || msgMatch;
+        });
+
+    const seen = new Set<string>();
+    const unique = list.filter((c) => {
+      if (!c || !c.id || seen.has(c.id)) return false;
+      seen.add(c.id);
+      return true;
     });
-  }, [conversations, searchQuery]);
+
+    if (activeTab === "DIRECT") return unique.filter((c) => c.type === "DIRECT");
+    if (activeTab === "IPO") return unique.filter((c) => c.type === "IPO");
+    return unique;
+  }, [conversations, searchQuery, activeTab]);
+
+  const matchingMembers = useMemo(() => {
+    const q = searchQuery.trim().toLowerCase().replace(/^@/, "");
+    if (!q) return [];
+    return members.filter((m) => {
+      if (m.id === currentMemberId) return false;
+      const uName = (m.username || "").toLowerCase();
+      const fName = (m.name || "").toLowerCase();
+      return uName.includes(q) || fName.includes(q) || `@${uName}`.includes(q);
+    });
+  }, [members, searchQuery, currentMemberId]);
 
   return (
     <div className="flex flex-col h-full bg-surface border-r border-line select-none">
       {/* List Header */}
-      <div className="p-3.5 border-b border-line flex items-center justify-between gap-2 shrink-0">
+      <div className="p-3.5 border-b border-line flex items-center justify-between gap-2 shrink-0 bg-surface/90 backdrop-blur-md">
         <div>
-          <h2 className="text-sm font-extrabold text-ink tracking-tight flex items-center gap-2">
-            Messages
-          </h2>
-          <p className="text-[11px] text-ink-tertiary font-medium">
-            Private conversations
+          <div className="flex items-center gap-2">
+            <h2 className="text-sm font-black text-ink tracking-tight">
+              Messages
+            </h2>
+            <span className="px-1.5 py-0.5 rounded-full bg-accent/15 text-accent text-[10px] font-extrabold font-mono border border-accent/25">
+              {conversations.length}
+            </span>
+          </div>
+          <p className="text-[11px] text-ink-tertiary font-medium mt-0.5">
+            Syndicate discussions & chats
           </p>
         </div>
 
         <button
           onClick={onOpenNewMessageModal}
-          className="h-8 px-2.5 rounded-lg bg-accent text-white hover:bg-accent-hover font-semibold text-xs transition-all flex items-center gap-1.5 shadow-2xs cursor-pointer active:scale-95 shrink-0"
+          className="h-8 px-3 rounded-xl bg-accent text-white hover:bg-accent-hover font-extrabold text-xs transition-all flex items-center gap-1.5 shadow-sm shadow-accent/25 cursor-pointer active:scale-95 shrink-0"
         >
           <Plus size={14} weight="bold" />
-          <span>New Message</span>
+          <span>New</span>
         </button>
       </div>
 
-      {/* Search Input Bar */}
-      <div className="p-2.5 border-b border-line/70 shrink-0">
+      {/* Filter Tabs & Search Container */}
+      <div className="p-2.5 border-b border-line/70 shrink-0 space-y-2 bg-surface-alt/30">
+        {/* Segment Filter Tabs */}
+        <div className="grid grid-cols-3 gap-1 p-1 bg-surface border border-line rounded-xl text-xs font-bold">
+          <button
+            onClick={() => setActiveTab("ALL")}
+            className={`py-1 rounded-lg text-[11px] transition-all cursor-pointer ${
+              activeTab === "ALL"
+                ? "bg-accent text-white shadow-2xs"
+                : "text-ink-tertiary hover:text-ink hover:bg-surface-hover"
+            }`}
+          >
+            All
+          </button>
+          <button
+            onClick={() => setActiveTab("DIRECT")}
+            className={`py-1 rounded-lg text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1 ${
+              activeTab === "DIRECT"
+                ? "bg-accent text-white shadow-2xs"
+                : "text-ink-tertiary hover:text-ink hover:bg-surface-hover"
+            }`}
+          >
+            <ChatCircle size={12} weight="bold" />
+            <span>Direct</span>
+          </button>
+          <button
+            onClick={() => setActiveTab("IPO")}
+            className={`py-1 rounded-lg text-[11px] transition-all cursor-pointer flex items-center justify-center gap-1 ${
+              activeTab === "IPO"
+                ? "bg-accent text-white shadow-2xs"
+                : "text-ink-tertiary hover:text-ink hover:bg-surface-hover"
+            }`}
+          >
+            <TrendUp size={12} weight="bold" />
+            <span>IPOs</span>
+          </button>
+        </div>
+
+        {/* Search Input Bar */}
         <div className="relative">
           <MagnifyingGlass
             size={15}
@@ -66,8 +134,8 @@ export function ConversationList({
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search messages..."
-            className="w-full pl-8.5 pr-8 py-1.5 bg-surface-alt/70 border border-line rounded-xl text-xs text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-accent transition-colors"
+            placeholder="Search messages or @username..."
+            className="w-full pl-8.5 pr-8 py-1.5 bg-surface border border-line rounded-xl text-xs text-ink placeholder:text-ink-tertiary focus:outline-none focus:border-accent transition-colors"
           />
           {searchQuery ? (
             <button
@@ -86,7 +154,46 @@ export function ConversationList({
 
       {/* Scrollable Conversation List */}
       <div className="flex-1 overflow-y-auto divide-y divide-line/40">
-        {filteredConversations.length === 0 ? (
+        {/* Direct Member Search Results */}
+        {matchingMembers.length > 0 && (
+          <div className="p-2 border-b border-line bg-surface-alt/40 space-y-1.5">
+            <span className="text-[10px] font-bold text-accent uppercase tracking-wider px-2 block">
+              Start Direct Chat
+            </span>
+            {matchingMembers.map((m) => (
+              <div
+                key={m.id}
+                onClick={() => {
+                  openDirectChatWithUser(m.id);
+                  onSelectConversation(m.id);
+                  setSearchQuery("");
+                }}
+                className="flex items-center justify-between p-2 rounded-xl bg-surface hover:bg-accent/10 border border-line hover:border-accent/30 cursor-pointer transition-all group shadow-2xs"
+              >
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <img
+                    src={m.avatar || "/oggy.png"}
+                    alt={m.name}
+                    className="w-7 h-7 rounded-full object-cover shrink-0 ring-1 ring-line"
+                  />
+                  <div className="min-w-0">
+                    <span className="font-mono font-bold text-xs text-ink block truncate group-hover:text-accent">
+                      @{ (m.username || m.name).toLowerCase() }
+                    </span>
+                    <span className="text-[10px] text-ink-tertiary block truncate">
+                      {m.name}
+                    </span>
+                  </div>
+                </div>
+                <span className="px-2.5 py-1 rounded-lg bg-accent text-white text-[10px] font-extrabold shadow-2xs shrink-0 group-hover:bg-accent-hover transition-colors">
+                  Message →
+                </span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {filteredConversations.length === 0 && matchingMembers.length === 0 ? (
           <div className="text-center py-12 px-4 space-y-2">
             <ChatCircleDots size={32} className="mx-auto text-ink-tertiary opacity-40" />
             <p className="text-xs font-semibold text-ink">No conversations found</p>

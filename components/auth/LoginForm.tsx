@@ -2,224 +2,452 @@
 
 import React, { useState } from "react";
 import { useNexo } from "@/context/NexoContext";
-import { useTheme } from "@/components/providers/ThemeProvider";
-import {
-  Lock,
-  User,
-  Eye,
-  EyeSlash,
-  ShieldCheck,
-  ArrowRight,
-  WarningCircle,
-  Key,
-  Sun,
-  Moon,
-} from "@phosphor-icons/react";
+import { Lock, Eye, EyeSlash, ShieldCheck, ArrowRight, WarningCircle, CircleNotch, Phone, Sparkle, CheckCircle, UploadSimple } from "@phosphor-icons/react";
+
+function safeNextPath(raw: string | null): string {
+  if (!raw) return "/";
+  try {
+    const clean = decodeURIComponent(raw).trim();
+    if (clean.startsWith("/login") || clean.startsWith("/admin/login")) return "/";
+    const url = new URL(clean, "http://localhost");
+    if (url.origin !== "http://localhost") return "/";
+    if (url.pathname.startsWith("/login") || url.pathname.startsWith("/admin/login")) return "/";
+    return url.pathname + url.search;
+  } catch {
+    return "/";
+  }
+}
 
 export function LoginForm() {
-  const { members, login, authError, setAuthError } = useNexo();
-  const { theme, toggleTheme } = useTheme();
-  const isDark = theme === "dark";
+  const { login, authError, setAuthError, isAuthenticated } = useNexo();
 
   const [usernameInput, setUsernameInput] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [rememberMe, setRememberMe] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  // Post-login profile setup states
+  const [step, setStep] = useState<"LOGIN" | "PROFILE_SETUP">("LOGIN");
+  const [selectedAvatar, setSelectedAvatar] = useState<string>("");
+  const [phoneNumber, setPhoneNumber] = useState<string>("");
+  const [targetPath, setTargetPath] = useState<string>("/");
 
-    setTimeout(() => {
-      login(usernameInput, password);
-      setIsSubmitting(false);
-    }, 300);
+  const AVATAR_OPTIONS = [
+    { id: "oggy", name: "Oggy", url: "/oggy.png" },
+    { id: "jack", name: "Jack", url: "/jack.png" },
+    { id: "sinchan", name: "Shinchan", url: "/sinchan.png" },
+    { id: "doremon", name: "Doraemon", url: "/doremon.png" },
+    { id: "japlu", name: "Japlu", url: "/japlu.png" },
+  ];
+
+  const getRandomAvatar = () => {
+    const list = ["/oggy.png", "/jack.png", "/sinchan.png", "/doremon.png", "/japlu.png"];
+    return list[Math.floor(Math.random() * list.length)];
   };
 
-  const fillDemo = (u: string, p: string) => {
-    setUsernameInput(u);
-    setPassword(p);
+  const isFormSigningIn = React.useRef(false);
+
+  // Auto redirect already authenticated users away from /login if already signed in on initial load
+  React.useEffect(() => {
+    if (
+      isAuthenticated &&
+      step === "LOGIN" &&
+      !isFormSigningIn.current &&
+      typeof window !== "undefined" &&
+      window.location.pathname.startsWith("/login")
+    ) {
+      const params = new URLSearchParams(window.location.search);
+      const target = safeNextPath(params.get("next"));
+      window.location.href = target;
+    }
+  }, [isAuthenticated, step]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    isFormSigningIn.current = true;
+    setIsSubmitting(true);
     if (setAuthError) setAuthError(null);
+
+    try {
+      const res = await login(usernameInput, password);
+      if (res.success) {
+        let target = "/";
+        if (typeof window !== "undefined") {
+          const params = new URLSearchParams(window.location.search);
+          target = safeNextPath(params.get("next"));
+        }
+        setTargetPath(target);
+        setStep("PROFILE_SETUP");
+      } else if (res.message && setAuthError) {
+        setAuthError(res.message);
+        isFormSigningIn.current = false;
+      }
+    } catch {
+      if (setAuthError) setAuthError("Failed to sign in. Please verify your credentials.");
+      isFormSigningIn.current = false;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const [setupError, setSetupError] = useState<string | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setSetupError("Image size must be under 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setSelectedAvatar(event.target.result as string);
+          if (setupError) setSetupError(null);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleFinishSetup = async (overrideAvatar?: string) => {
+    if (!phoneNumber.trim()) {
+      setSetupError("Mobile number is compulsory. Please enter your mobile number.");
+      return;
+    }
+    setSetupError(null);
+    setIsSubmitting(true);
+    const chosenAvatar = overrideAvatar || selectedAvatar || getRandomAvatar();
+
+    try {
+      await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          avatar: chosenAvatar,
+          phone: phoneNumber.trim(),
+        }),
+      }).catch(() => {});
+
+      try {
+        sessionStorage.setItem("nexo_just_logged_in", "true");
+      } catch {}
+
+      if (typeof window !== "undefined") {
+        if (window.location.pathname === targetPath) {
+          window.location.reload();
+        } else {
+          window.location.href = targetPath;
+        }
+      }
+    } catch {
+      if (typeof window !== "undefined") {
+        window.location.href = targetPath;
+      }
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
-    <div className="relative min-h-screen w-full flex items-center justify-center p-4 sm:p-6 text-ink font-sans antialiased overflow-hidden transition-colors duration-200">
-      {/* Dynamic Theme Background Image & Glass Overlay */}
-      <div
-        className="absolute inset-0 z-0 bg-cover bg-center bg-no-repeat transition-all duration-700"
-        style={{
-          backgroundImage: `url('${isDark ? "/login_bg_dark.jpg" : "/login_bg_light.jpg"}')`,
-        }}
-      >
+    <div className="min-h-screen w-full bg-[#07080B] text-slate-100 font-sans flex flex-col md:flex-row antialiased overflow-x-hidden select-none">
+
+      {/* ══════════════════════════════════════
+          LEFT SIDE - BRAND HERO PANEL
+      ══════════════════════════════════════ */}
+      <div className="w-full md:w-1/2 min-h-[45vh] md:min-h-screen p-8 sm:p-12 md:p-16 flex flex-col justify-between border-b md:border-b-0 md:border-r border-[#1B1E28] bg-[#0A0C10] relative overflow-hidden">
+        
+        {/* Ambient Subtle Background Pattern */}
         <div
-          className={`absolute inset-0 backdrop-blur-sm transition-colors duration-500 ${
-            isDark ? "bg-[#060911]/80" : "bg-white/75"
-          }`}
+          className="absolute inset-0 pointer-events-none opacity-20"
+          style={{
+            backgroundImage: "radial-gradient(circle, rgba(79,117,255,0.15) 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
         />
-      </div>
 
-      {/* Theme Toggle Button on Login Page */}
-      <button
-        onClick={toggleTheme}
-        className="absolute top-5 right-5 z-20 p-2.5 rounded-full bg-surface/90 border border-line text-ink hover:text-accent shadow-md backdrop-blur-md transition-all cursor-pointer"
-        title={`Switch to ${isDark ? "Light" : "Dark"} Mode`}
-      >
-        {isDark ? <Sun size={20} className="text-caution" /> : <Moon size={20} className="text-accent" />}
-      </button>
-
-      {/* Main Glassmorphic Login Card matching NEXO UI */}
-      <div className="relative z-10 w-full max-w-md sm:max-w-lg bg-surface/90 dark:bg-surface/85 backdrop-blur-xl border border-line shadow-2xl rounded-2xl p-7 sm:p-9 transition-all duration-300">
         {/* Brand Header */}
-        <div className="flex flex-col items-center text-center mb-6">
-          <h1 className="text-2xl font-black tracking-tight text-ink flex items-center gap-1.5">
+        <div className="relative z-10">
+          <span className="text-xl sm:text-2xl font-black tracking-widest text-white font-mono">
             NEXO
-            <span className="w-3 h-3 rounded-full bg-accent inline-block shadow-2xs shadow-accent/40" />
+          </span>
+        </div>
+
+        {/* Hero Title & Features */}
+        <div className="relative z-10 my-auto py-8 space-y-4 max-w-md">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black tracking-tight text-white leading-tight">
+            NEXO Private Workspace
           </h1>
-          <p className="text-xs text-ink-tertiary mt-1 font-normal">
-            Private Group IPO Workspace
+
+          <p className="text-sm text-slate-400 font-medium leading-relaxed">
+            Track group IPO applications, live allotments, and portfolio performance in one secure workspace.
           </p>
         </div>
 
-        {/* Error Alert */}
-        {authError && (
-          <div className="mb-5 p-3 rounded-xl bg-negative-soft border border-negative/30 flex items-start gap-2 text-xs text-negative">
-            <WarningCircle size={16} className="text-negative shrink-0 mt-0.5" />
-            <span className="leading-snug">{authError}</span>
-          </div>
-        )}
+        {/* Left Footer */}
+        <div className="relative z-10 flex items-center justify-between pt-4 border-t border-[#181B26]">
+          <span className="text-xs text-slate-500 font-medium">
+            © 2026 NEXO Private Workspace
+          </span>
 
-        {/* Login Form */}
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Username Field */}
-          <div>
-            <label className="block text-xs font-semibold text-ink mb-1.5 flex items-center justify-between">
-              <span>Username / User ID</span>
-              <span className="text-[11px] text-ink-tertiary font-normal">Issued by Admin</span>
-            </label>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-tertiary">
-                <User size={16} />
-              </div>
-              <input
-                type="text"
-                value={usernameInput}
-                onChange={(e) => {
-                  setUsernameInput(e.target.value);
-                  if (authError) setAuthError(null);
-                }}
-                placeholder="Enter admin-assigned username"
-                required
-                className="w-full pl-10 pr-3.5 py-2.5 bg-surface-alt border border-line hover:border-line-strong focus:bg-surface focus:border-accent focus:ring-2 focus:ring-accent/10 rounded-xl text-sm text-ink placeholder-ink-muted transition-colors outline-none"
-              />
-            </div>
-          </div>
-
-          {/* Password Field */}
-          <div>
-            <div className="flex items-center justify-between mb-1.5">
-              <label className="block text-xs font-semibold text-ink">
-                Password
-              </label>
-            </div>
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-ink-tertiary">
-                <Lock size={16} />
-              </div>
-              <input
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => {
-                  setPassword(e.target.value);
-                  if (authError) setAuthError(null);
-                }}
-                placeholder="Enter password assigned by Admin"
-                required
-                className="w-full pl-10 pr-10 py-2.5 bg-surface-alt border border-line hover:border-line-strong focus:bg-surface focus:border-accent focus:ring-2 focus:ring-accent/10 rounded-xl text-sm text-ink placeholder-ink-muted transition-colors outline-none"
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-ink-tertiary hover:text-ink transition-colors cursor-pointer"
-              >
-                {showPassword ? <EyeSlash size={16} /> : <Eye size={16} />}
-              </button>
-            </div>
-          </div>
-
-          {/* Remember me & security tag */}
-          <div className="flex items-center justify-between pt-0.5">
-            <label className="flex items-center gap-2 cursor-pointer select-none">
-              <input
-                type="checkbox"
-                checked={rememberMe}
-                onChange={(e) => setRememberMe(e.target.checked)}
-                className="w-3.5 h-3.5 rounded border-line text-accent focus:ring-accent"
-              />
-              <span className="text-xs text-ink-tertiary">Keep me signed in</span>
-            </label>
-            <span className="text-[11px] text-ink-muted flex items-center gap-1">
-              <ShieldCheck size={13} className="text-positive" /> Encrypted Credentials
-            </span>
-          </div>
-
-          {/* Submit Button */}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-2.5 px-4 bg-accent hover:bg-accent/90 text-white font-semibold text-sm rounded-xl shadow-2xs transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50 mt-2"
-          >
-            {isSubmitting ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <>
-                <span>Sign In to Workspace</span>
-                <ArrowRight size={15} />
-              </>
-            )}
-          </button>
-        </form>
-
-        {/* Dynamic Admin-Assigned Member Credentials Quick Test List */}
-        <div className="mt-6 pt-5 border-t border-line">
-          <div className="text-[11px] font-medium text-ink-tertiary text-center mb-2.5 flex items-center justify-center gap-1">
-            <Key size={13} className="text-accent" />
-            Admin-Issued Member Credentials
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            {(members && members.length > 0 ? members.slice(0, 4) : []).map((m) => {
-              const uName = m.username || m.name.toLowerCase();
-              const uPass = m.password || (m.role === "ADMIN" ? "admin123" : "user123");
-
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  onClick={() => fillDemo(uName, uPass)}
-                  className="flex items-center gap-2 p-2.5 rounded-xl bg-surface-alt hover:bg-surface-hover border border-line text-left transition-colors cursor-pointer group"
-                >
-                  <img
-                    src={m.avatar || "/oggy.png"}
-                    alt={m.name}
-                    className="w-6 h-6 rounded-full object-contain bg-surface p-0.5 border border-line shrink-0"
-                  />
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs font-semibold text-ink group-hover:text-accent truncate flex items-center gap-1">
-                      {m.name}
-                      {m.role === "ADMIN" && (
-                        <span className="text-[9px] text-caution font-bold">ADM</span>
-                      )}
-                    </div>
-                    <div className="text-[10px] text-ink-tertiary font-mono truncate">
-                      {uName} / {uPass}
-                    </div>
-                  </div>
-                </button>
-              );
-            })}
+          <div className="w-8 h-8 rounded-full bg-[#12151E] border border-[#232735] flex items-center justify-center font-black text-white text-xs shadow-md">
+            N
           </div>
         </div>
       </div>
+
+      {/* ══════════════════════════════════════
+          RIGHT SIDE - LOGIN / SETUP FORM PANEL
+      ══════════════════════════════════════ */}
+      <div className="w-full md:w-1/2 min-h-[55vh] md:min-h-screen p-8 sm:p-12 md:p-16 flex flex-col justify-between items-center bg-[#07080A] relative">
+
+        <div className="w-full max-w-md my-auto space-y-7">
+          {step === "PROFILE_SETUP" ? (
+            <form onSubmit={(e) => { e.preventDefault(); handleFinishSetup(); }} className="space-y-6 animate-in fade-in zoom-in-95 duration-300">
+              {/* Badge Step Pill */}
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#121726] border border-[#202942] text-[#6B93FF] text-[10px] font-mono font-extrabold tracking-widest uppercase">
+                <span className="w-2 h-2 rounded-full bg-[#4F75FF] animate-pulse" />
+                <span>STEP 2 OF 2 · PROFILE SETUP</span>
+              </div>
+
+              {/* Title & Description */}
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
+                  Setup Your Profile
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1.5 leading-relaxed">
+                  Choose your avatar and enter your mobile number for <span className="font-mono font-bold text-[#6B93FF]">@{usernameInput.trim().toLowerCase()}</span>.
+                </p>
+              </div>
+
+              {/* Live Selected Avatar Preview */}
+              <div className="flex flex-col items-center justify-center p-5 bg-[#0D0F17] border border-[#1E2332] rounded-2xl relative">
+                <div className="relative">
+                  <img
+                    src={selectedAvatar || getRandomAvatar()}
+                    alt="Profile Preview"
+                    className="w-20 h-20 rounded-full object-cover ring-4 ring-[#4F75FF]/30 border-2 border-[#4F75FF] shadow-xl shadow-blue-500/20"
+                  />
+                  <div className="absolute -bottom-1 -right-1 bg-[#4F75FF] text-white p-1 rounded-full shadow-md">
+                    <CheckCircle size={14} weight="fill" />
+                  </div>
+                </div>
+                <span className="text-xs font-extrabold text-white mt-3 tracking-wide">
+                  {AVATAR_OPTIONS.find((a) => a.url === selectedAvatar)?.name || "Random Preset Avatar"}
+                </span>
+                <span className="text-[11px] text-slate-500 font-medium">Selected Workspace Identity</span>
+              </div>
+
+              {/* Error Alert */}
+              {setupError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold flex items-start gap-2.5 animate-in fade-in">
+                  <WarningCircle size={17} className="shrink-0 mt-0.5" />
+                  <span className="leading-snug">{setupError}</span>
+                </div>
+              )}
+
+              {/* Avatar Preset Grid */}
+              <div className="space-y-2.5">
+                <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
+                  CHOOSE AVATAR PRESET
+                </label>
+                <div className="grid grid-cols-5 gap-2.5">
+                  {AVATAR_OPTIONS.map((av) => {
+                    const isSelected = selectedAvatar === av.url;
+                    return (
+                      <button
+                        key={av.id}
+                        type="button"
+                        onClick={() => setSelectedAvatar(av.url)}
+                        className={`flex flex-col items-center gap-1.5 p-2.5 rounded-2xl border transition-all duration-200 cursor-pointer ${
+                          isSelected
+                            ? "border-[#4F75FF] bg-[#4F75FF]/20 scale-105 shadow-lg shadow-blue-500/20 ring-2 ring-[#4F75FF]/50"
+                            : "border-[#232734] hover:border-slate-600 bg-[#11131B] hover:bg-[#181B26]"
+                        }`}
+                      >
+                        <img src={av.url} alt={av.name} className="w-10 h-10 rounded-full object-cover border border-slate-700" />
+                        <span className={`text-[10px] font-bold ${isSelected ? "text-[#6B93FF]" : "text-slate-400"}`}>
+                          {av.name}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Phone Number Input */}
+              <div className="space-y-2 pt-2 border-t border-[#1C1F2B]">
+                <div className="flex items-center justify-between">
+                  <label className="block text-[11px] font-extrabold text-slate-300 uppercase tracking-wider">
+                    MOBILE NUMBER <span className="text-rose-500 font-bold">*</span>
+                  </label>
+                  <span className="text-[10px] text-slate-500 font-medium">Required for verification</span>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Phone size={16} />
+                  </div>
+                  <input
+                    type="text"
+                    value={phoneNumber}
+                    onChange={(e) => {
+                      setPhoneNumber(e.target.value);
+                      if (setupError) setSetupError(null);
+                    }}
+                    placeholder="e.g. +91 98200 12345"
+                    required
+                    className={`w-full pl-10 pr-4 py-3.5 bg-[#11131B] border ${
+                      setupError ? "border-rose-500/80 ring-2 ring-rose-500/20" : "border-[#232734] focus:border-[#4F75FF]"
+                    } focus:ring-2 focus:ring-[#4F75FF]/20 rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-200`}
+                  />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-3 pt-4 border-t border-[#1C202E]">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={isSubmitting}
+                  className="w-1/2 py-3.5 px-4 rounded-xl border border-[#2B3245] bg-[#121622] hover:bg-[#1A2030] hover:border-[#3D4760] text-slate-200 hover:text-white text-xs font-extrabold shadow-xs transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 group active:scale-[0.98]"
+                >
+                  <UploadSimple size={16} className="text-[#6B93FF] group-hover:-translate-y-0.5 transition-transform duration-200" weight="bold" />
+                  <span>Upload Photo</span>
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-1/2 py-3.5 px-4 rounded-xl bg-gradient-to-r from-[#4F75FF] via-[#436AF5] to-[#3B5FE0] hover:from-[#3E64F0] hover:to-[#3254D0] text-white text-xs font-extrabold shadow-xl shadow-blue-500/25 transition-all duration-200 cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 active:scale-[0.98] ring-1 ring-white/10"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <CircleNotch size={18} className="animate-spin" />
+                      <span>Saving...</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Complete Setup</span>
+                      <ArrowRight size={15} weight="bold" />
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          ) : (
+            <>
+              {/* Header */}
+              <div>
+                <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-white">
+                  Sign in to NEXO
+                </h2>
+                <p className="text-xs sm:text-sm text-slate-400 font-medium mt-1.5">
+                  Access your private investment workspace.
+                </p>
+              </div>
+
+              {/* Error Alert */}
+              {authError && (
+                <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 text-xs font-semibold flex items-start gap-2.5 animate-in fade-in">
+                  <WarningCircle size={17} className="shrink-0 mt-0.5" />
+                  <span className="leading-snug">{authError}</span>
+                </div>
+              )}
+
+              {/* Login Form */}
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {/* Username */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Username
+                  </label>
+                  <input
+                    type="text"
+                    value={usernameInput}
+                    onChange={(e) => {
+                      setUsernameInput(e.target.value);
+                      if (authError && setAuthError) setAuthError(null);
+                    }}
+                    placeholder="Enter your username"
+                    required
+                    className="w-full px-4 py-3 bg-[#11131B] border border-[#232734] focus:border-[#4F75FF] focus:ring-2 focus:ring-[#4F75FF]/20 rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-200"
+                  />
+                </div>
+
+                {/* Password */}
+                <div>
+                  <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
+                    Password
+                  </label>
+                  <div className="relative flex items-center">
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        if (authError && setAuthError) setAuthError(null);
+                      }}
+                      placeholder="Enter your password"
+                      required
+                      className="w-full px-4 py-3 pr-11 bg-[#11131B] border border-[#232734] focus:border-[#4F75FF] focus:ring-2 focus:ring-[#4F75FF]/20 rounded-xl text-xs sm:text-sm text-white placeholder:text-slate-500 outline-none transition-all duration-200"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 text-slate-400 hover:text-white transition-colors cursor-pointer"
+                    >
+                      {showPassword ? <EyeSlash size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Submit Button */}
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-[#4F75FF] hover:bg-[#3E64F0] active:scale-[0.98] text-white font-bold text-xs sm:text-sm shadow-lg shadow-blue-500/25 transition-all cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2 mt-2"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <CircleNotch size={18} className="animate-spin" />
+                      <span>Signing In...</span>
+                    </>
+                  ) : (
+                    <span>Sign In</span>
+                  )}
+                </button>
+              </form>
+
+              {/* Protected Workspace Subtext */}
+              <div className="pt-4 border-t border-[#1C1F2B] text-center space-y-1">
+                <div className="flex items-center justify-center gap-1.5 text-xs font-semibold text-slate-400">
+                  <Lock size={14} className="text-slate-400" />
+                  <span>Protected private workspace</span>
+                </div>
+                <p className="text-[11px] text-slate-500 leading-snug">
+                  Access restricted to authorized members provisioned by Admin.
+                </p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* Right Footer */}
+        <div className="pt-6 text-center shrink-0">
+          <span className="text-[11px] text-slate-500 font-mono font-semibold tracking-widest uppercase">
+            NEXO WORKSPACE · 2026
+          </span>
+        </div>
+      </div>
+
     </div>
   );
 }

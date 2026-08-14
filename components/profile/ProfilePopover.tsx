@@ -27,7 +27,7 @@ export function ProfilePopover({
   onClose,
   onOpenShortcuts,
 }: ProfilePopoverProps) {
-  const { setActiveTab, currentUser, members, logout } = useNexo();
+  const { setActiveTab, currentUser, members, logout, openUserLogoutModal } = useNexo();
   const { theme, toggleTheme } = useTheme();
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -114,19 +114,6 @@ export function ProfilePopover({
           <span>View Profile</span>
         </button>
 
-        {role === "ADMIN" && (
-          <button
-            onClick={() => {
-              setActiveTab("admin" as any);
-              onClose();
-            }}
-            className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-small font-bold text-blue-600 dark:text-blue-400 bg-blue-50/60 dark:bg-blue-950/30 hover:bg-blue-100/80 transition-colors cursor-pointer border border-blue-200/60"
-          >
-            <ShieldCheck size={16} className="text-blue-600" />
-            <span>Admin IPO Console</span>
-          </button>
-        )}
-
         <button
           onClick={() => {
             toggleTheme();
@@ -180,7 +167,11 @@ export function ProfilePopover({
       <button
         onClick={() => {
           onClose();
-          if (logout) logout();
+          if (openUserLogoutModal) {
+            openUserLogoutModal();
+          } else if (logout) {
+            logout();
+          }
         }}
         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-small font-semibold text-negative hover:bg-negative-soft transition-colors cursor-pointer"
       >

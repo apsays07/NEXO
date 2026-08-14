@@ -95,8 +95,8 @@ export async function POST(req: Request) {
       });
 
       if (mockMatch) {
-        const expectedPass = mockMatch.password || (mockMatch.role === "ADMIN" ? "admin123" : "user123");
-        if (passwordRaw === expectedPass || passwordRaw === "admin123" || passwordRaw === "user123") {
+        const expectedPass = mockMatch.password || "admin123";
+        if (passwordRaw === expectedPass) {
           // Seed member into MongoDB
           const newMemberDoc: MemberDocument = {
             id: mockMatch.id,
@@ -174,12 +174,11 @@ export async function POST(req: Request) {
       );
     }
 
-    // Verify password hash — accept hashed, member.password, or default fallback passwords
+    // Verify password hash or assigned member password
     const isHashValid   = verifyPassword(passwordRaw, user.passwordHash);
-    const isMemberPass  = member.password && passwordRaw === member.password;
-    const isDemoPass    = passwordRaw === "admin123" || passwordRaw === "user123";
+    const isMemberPass  = Boolean(member.password && passwordRaw === member.password);
 
-    if (!isHashValid && !isMemberPass && !isDemoPass) {
+    if (!isHashValid && !isMemberPass) {
       await recordSecurityEvent(failedLoginEvent, {
         email: user.email,
         ipAddress,
@@ -204,6 +203,26 @@ export async function POST(req: Request) {
         {
           success: false,
           error: "Administrative access is not available for this account.",
+        },
+        { status: 403 }
+      );
+    }
+
+    // ── User Context Role Check ─────────────────────────────────
+    // User Workspace is exclusively for regular Members added in Member Section.
+    // Super Admins and Admins are restricted from logging into the User Workspace.
+    if (context === "USER" && (user.role === "SUPER_ADMIN" || user.role === "ADMIN" || member.role === "SUPER_ADMIN" || member.role === "ADMIN")) {
+      await recordSecurityEvent("ADMIN_ACCESS_DENIED", {
+        userId: user.id,
+        email: user.email,
+        memberName: member.name,
+        ipAddress,
+        loginContext: "USER",
+      });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Access Denied: Admins and Super Admins cannot access the User Workspace. Please log in at the Admin Portal (/admin/login).",
         },
         { status: 403 }
       );

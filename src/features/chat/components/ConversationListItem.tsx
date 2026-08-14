@@ -25,7 +25,8 @@ export function ConversationListItem({
   let avatar = conversation.avatar || "/oggy.png";
 
   if (isDirect && conversation.otherMember) {
-    title = conversation.otherMember.name;
+    const handle = (conversation.otherMember.username || conversation.otherMember.name).toLowerCase();
+    title = `@${handle}`;
     avatar = conversation.otherMember.avatar || "/oggy.png";
   }
 
