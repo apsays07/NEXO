@@ -80,38 +80,6 @@ export function AdminSidebar({ onAddIpoClick, activeTab, setActiveTab }: AdminSi
               );
             })}
           </div>
-
-          <div className="border-t border-slate-800 pt-3 space-y-1">
-            {secondaryNav.map((item) => {
-              const Icon = item.icon;
-              const isActive = activeTab === item.id;
-              return (
-                <button
-                  key={item.id}
-                  onClick={() => setActiveTab(item.id)}
-                  className={`w-full h-9 flex items-center gap-3 px-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-blue-600 text-white shadow-sm"
-                      : "text-slate-400 hover:text-slate-100 hover:bg-slate-800/80"
-                  }`}
-                >
-                  <Icon size={17} className={isActive ? "text-white" : "text-slate-400"} />
-                  <span>{item.label}</span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* ACTION BUTTON */}
-          <div className="pt-2">
-            <button
-              onClick={onAddIpoClick}
-              className="w-full py-2.5 px-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs flex items-center justify-center gap-2 transition-all shadow-md active:scale-[0.98] cursor-pointer"
-            >
-              <Plus size={16} weight="bold" />
-              <span>+ Add IPO</span>
-            </button>
-          </div>
         </nav>
       </div>
 
