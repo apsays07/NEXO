@@ -308,11 +308,11 @@
       }
     ],
     "profitDistribution": {
-      "totalProfit": 30000,
+      "totalProfit": 20000,
       "totalLots": 5,
-      "allottedLots": 1,
-      "oneLotProfit": 6000,
-      "publishedAt": "2026-08-13T12:15:23.314Z"
+      "allottedLots": 5,
+      "oneLotProfit": 4000,
+      "publishedAt": "2026-08-14T04:58:31.652Z"
     }
   },
   {

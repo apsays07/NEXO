@@ -347,22 +347,6 @@ export function RegistrarCheckerTab() {
             </table>
           </div>
         )}
-
-        {/* Bottom Publish Bar */}
-        {filteredApplicants.length > 0 && (
-          <div className="p-4 border-t border-slate-200 bg-slate-50/80 flex items-center justify-between">
-            <div className="text-xs font-bold text-slate-600 space-x-3">
-              <span className="text-emerald-700">✓ {allotted} Allotted</span>
-              <span className="text-amber-700">⏳ {awaiting} Awaiting</span>
-              <span className="text-rose-700">✗ {notAllotted} Not Allotted</span>
-            </div>
-            <button onClick={publishAllResults} disabled={isPublishing || filteredApplicants.length === 0}
-              className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              <PaperPlaneTilt size={14} weight="fill" />
-              {isPublishing ? "Publishing..." : "Publish All Results"}
-            </button>
-          </div>
-        )}
       </div>
 
       {/* ── PAN CHECK MODAL ── */}
