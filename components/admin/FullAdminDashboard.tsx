@@ -21,18 +21,18 @@ function AdminDashboardContent() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-slate-900 font-sans antialiased">
-      {/* ADMIN SIDEBAR */}
+    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans antialiased overflow-hidden">
+      {/* ADMIN SIDEBAR (FIXED LEFT) */}
       <AdminSidebar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onAddIpoClick={() => setIsDrawerOpen(true)}
       />
 
-      {/* MAIN ADMIN WORKSPACE CONTENT AREA */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* MAIN ADMIN WORKSPACE CONTENT AREA (SCROLLABLE RIGHT) */}
+      <div className="flex-1 flex flex-col min-w-0 h-screen overflow-y-auto">
         {/* Top Header Bar */}
-        <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20">
+        <header className="h-14 bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-20 shrink-0">
           <div className="flex items-center gap-2">
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse"></span>
             <span className="text-xs font-extrabold text-slate-700 uppercase tracking-wider">
@@ -49,7 +49,7 @@ function AdminDashboardContent() {
 
         {/* Feedback Alert */}
         {feedbackMsg && (
-          <div className="m-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-xs font-bold flex items-center justify-between">
+          <div className="m-4 p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-xs font-bold flex items-center justify-between shrink-0">
             <span>{feedbackMsg}</span>
             <button onClick={() => setFeedbackMsg(null)} className="text-emerald-500 hover:text-emerald-700">✕</button>
           </div>
