@@ -203,38 +203,26 @@ export function RegistrarCheckerTab() {
   return (
     <div className="space-y-6 font-sans select-none pb-12">
       {/* ── HEADER ── */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 text-white shadow-xl relative overflow-hidden">
-        <div className="absolute -right-12 -bottom-12 w-64 h-64 bg-blue-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
-          <div className="space-y-1.5">
-            <span className="px-2.5 py-0.5 rounded-full bg-blue-500/20 text-blue-400 border border-blue-500/30 text-[10px] font-black uppercase tracking-wider">
-              Allotment Manager
-            </span>
-            <h1 className="text-2xl font-black tracking-tight text-white">Allotment Status Manager</h1>
-            <p className="text-xs text-slate-400 max-w-xl font-medium leading-relaxed">
-              Click on any status badge to cycle through <strong className="text-amber-400">Awaiting</strong> → <strong className="text-emerald-400">Allotted</strong> → <strong className="text-rose-400">Not Allotted</strong>. Then publish to update user side.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-3 shrink-0">
-            <button onClick={() => { setIsRealPanModalOpen(true); setCheckResult(null); }}
-              className="px-4 py-3 rounded-2xl bg-slate-800 hover:bg-slate-700 text-slate-100 border border-slate-700 font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer">
-              <IdentificationCard size={16} className="text-amber-400" /> Check PAN
-            </button>
-            <button onClick={publishAllResults} disabled={isPublishing || filteredApplicants.length === 0}
-              className="px-5 py-3 rounded-2xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-lg shadow-blue-600/25 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
-              <PaperPlaneTilt size={16} weight="fill" />
-              {isPublishing ? "Publishing..." : "Publish Results"}
-            </button>
-          </div>
+      <div className="flex items-center justify-between">
+        <h1 className="text-xl font-black text-slate-900 tracking-tight">IPO Allotment</h1>
+        <div className="flex items-center gap-3">
+          <button onClick={() => { setIsRealPanModalOpen(true); setCheckResult(null); }}
+            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer">
+            <IdentificationCard size={16} className="text-amber-600" /> Check PAN
+          </button>
+          <button onClick={publishAllResults} disabled={isPublishing || filteredApplicants.length === 0}
+            className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
+            <PaperPlaneTilt size={14} weight="fill" />
+            {isPublishing ? "Publishing..." : "Publish Results"}
+          </button>
         </div>
-
-        {publishResult && (
-          <div className={`mt-4 p-3 rounded-xl border text-xs font-bold ${publishResult.startsWith("✓") ? "bg-emerald-900/30 border-emerald-700/50 text-emerald-300" : "bg-rose-900/30 border-rose-700/50 text-rose-300"}`}>
-            {publishResult}
-          </div>
-        )}
       </div>
+
+      {publishResult && (
+        <div className={`p-3 rounded-xl border text-xs font-bold ${publishResult.startsWith("✓") ? "bg-emerald-50 border-emerald-200 text-emerald-800" : "bg-rose-50 border-rose-200 text-rose-800"}`}>
+          {publishResult}
+        </div>
+      )}
 
       {/* ── METRICS ── */}
       <div className="grid grid-cols-3 gap-4">

@@ -134,8 +134,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "ALLOTTED",
-        "status": "ALLOTTED",
+        "allotmentStatus": "REFUNDED",
+        "status": "REFUNDED",
         "createdAt": "2026-08-13T12:13:17.490Z",
         "applicationNumber": "NEXO-APP-5506",
         "participants": [
@@ -161,7 +161,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T13:45:13.053Z",
+        "updatedAt": "2026-08-13T14:31:17.670Z",
         "updatedBy": "admin"
       },
       {
@@ -194,7 +194,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T13:45:13.138Z",
+        "updatedAt": "2026-08-13T14:31:17.776Z",
         "updatedBy": "admin"
       },
       {
@@ -210,8 +210,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "ALLOTTED",
-        "status": "ALLOTTED",
+        "allotmentStatus": "REFUNDED",
+        "status": "REFUNDED",
         "createdAt": "2026-08-13T11:04:00.328Z",
         "applicationNumber": "NEXO-APP-3286",
         "participants": [
@@ -227,7 +227,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T13:45:13.194Z",
+        "updatedAt": "2026-08-13T14:31:17.844Z",
         "updatedBy": "admin"
       },
       {
@@ -243,8 +243,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "REFUNDED",
-        "status": "REFUNDED",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:59:23.173Z",
         "applicationNumber": "NEXO-APP-9985",
         "participants": [
@@ -270,7 +270,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T13:45:13.245Z",
+        "updatedAt": "2026-08-13T14:31:17.887Z",
         "updatedBy": "admin"
       },
       {
@@ -286,8 +286,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "REFUNDED",
-        "status": "REFUNDED",
+        "allotmentStatus": "ALLOTTED",
+        "status": "ALLOTTED",
         "createdAt": "2026-08-13T10:58:36.376Z",
         "applicationNumber": "NEXO-APP-8764",
         "participants": [
@@ -303,7 +303,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T13:45:13.298Z",
+        "updatedAt": "2026-08-13T14:31:17.926Z",
         "updatedBy": "admin"
       }
     ],
