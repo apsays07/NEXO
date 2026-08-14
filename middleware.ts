@@ -83,7 +83,7 @@ export function middleware(request: NextRequest) {
   }
 
   // ── All other protected routes ────────────────────────────────
-  if (!isAuthenticated) {
+  if (!isAuthenticated && pathname !== USER_LOGIN_PAGE) {
     const loginUrl = new URL(USER_LOGIN_PAGE, request.url);
     loginUrl.searchParams.set("next", pathname);
     return NextResponse.redirect(loginUrl);
