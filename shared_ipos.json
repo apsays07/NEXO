@@ -134,8 +134,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "REFUNDED",
-        "status": "REFUNDED",
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
         "createdAt": "2026-08-13T12:13:17.490Z",
         "applicationNumber": "NEXO-APP-5506",
         "participants": [
@@ -161,7 +161,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T14:31:17.670Z",
+        "updatedAt": "2026-08-14T04:47:18.541Z",
         "updatedBy": "admin"
       },
       {
@@ -194,7 +194,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T14:31:17.776Z",
+        "updatedAt": "2026-08-14T04:47:22.094Z",
         "updatedBy": "admin"
       },
       {
@@ -227,7 +227,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T14:31:17.844Z",
+        "updatedAt": "2026-08-14T04:47:24.896Z",
         "updatedBy": "admin"
       },
       {
@@ -243,8 +243,8 @@
         "totalContribution": 15000,
         "lotCount": 1,
         "verified": true,
-        "allotmentStatus": "ALLOTTED",
-        "status": "ALLOTTED",
+        "allotmentStatus": "AWAITING",
+        "status": "AWAITING",
         "createdAt": "2026-08-13T10:59:23.173Z",
         "applicationNumber": "NEXO-APP-9985",
         "participants": [
@@ -270,7 +270,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T14:31:17.887Z",
+        "updatedAt": "2026-08-14T04:47:31.792Z",
         "updatedBy": "admin"
       },
       {
@@ -303,7 +303,7 @@
           }
         ],
         "registrarCheckedAt": "2026-08-13T13:13:00.614Z",
-        "updatedAt": "2026-08-13T14:31:17.926Z",
+        "updatedAt": "2026-08-14T04:47:43.244Z",
         "updatedBy": "admin"
       }
     ],

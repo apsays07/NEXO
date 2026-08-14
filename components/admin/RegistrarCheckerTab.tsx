@@ -23,7 +23,9 @@ export function RegistrarCheckerTab() {
   const { ipos, refreshIpos } = useAdmin();
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedIpoId, setSelectedIpoId] = useState<string>("ALL");
+  // Default to most recent IPO (first item in ipos array)
+  const mostRecentIpoId = ipos[0]?.id || "ALL";
+  const [selectedIpoId, setSelectedIpoId] = useState<string>(mostRecentIpoId);
   const [revealedPans, setRevealedPans] = useState<Record<string, boolean>>({});
 
   // Local status overrides (before publishing)
@@ -206,10 +208,6 @@ export function RegistrarCheckerTab() {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-black text-slate-900 tracking-tight">IPO Allotment</h1>
         <div className="flex items-center gap-3">
-          <button onClick={() => { setIsRealPanModalOpen(true); setCheckResult(null); }}
-            className="px-4 py-2.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200 font-extrabold text-xs flex items-center gap-2 transition-all cursor-pointer">
-            <IdentificationCard size={16} className="text-amber-600" /> Check PAN
-          </button>
           <button onClick={publishAllResults} disabled={isPublishing || filteredApplicants.length === 0}
             className="px-5 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 active:scale-[0.98] text-white font-extrabold text-xs flex items-center gap-2 shadow-md shadow-blue-600/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
             <PaperPlaneTilt size={14} weight="fill" />
